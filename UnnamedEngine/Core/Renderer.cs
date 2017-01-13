@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using CSGL;
 using CSGL.Vulkan;
 
-namespace UnnamedEngine {
+namespace UnnamedEngine.Core {
     public class Renderer : IDisposable {
         bool disposed;
 

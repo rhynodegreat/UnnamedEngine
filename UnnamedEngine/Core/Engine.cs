@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UnnamedEngine {
+namespace UnnamedEngine.Core {
     public class Engine : IDisposable {
         bool disposed;
 
