@@ -5,8 +5,12 @@ namespace UnnamedEngine {
     public class Engine : IDisposable {
         bool disposed;
 
-        public Engine() {
+        public Renderer Renderer { get; private set; }
 
+        public Engine(Renderer renderer) {
+            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+
+            Renderer = renderer;
         }
 
         public void Dispose() {
@@ -16,6 +20,12 @@ namespace UnnamedEngine {
 
         void Dispose(bool disposing) {
             if (disposed) return;
+
+            if (disposing) {
+                Renderer.Dispose();
+            }
+
+            Renderer = null;
 
             disposed = true;
         }
