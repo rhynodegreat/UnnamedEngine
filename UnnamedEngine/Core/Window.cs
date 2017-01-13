@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 
 using CSGL.GLFW;
+using CSGL.Vulkan;
 
 namespace UnnamedEngine.Core {
     public class Window : IDisposable {
-        WindowPtr window;
         bool disposed;
+
+        WindowPtr window;
+        Surface surface;
 
         public bool ShouldClose {
             get {
@@ -16,7 +19,9 @@ namespace UnnamedEngine.Core {
 
         public Window(Engine engine, int width, int height, string title) {
             GLFW.WindowHint(WindowHint.ClientAPI, (int)ClientAPI.NoAPI);
+
             window = GLFW.CreateWindow(width, height, title, MonitorPtr.Null, WindowPtr.Null);
+            surface = new Surface(engine.Renderer.PhysicalDevice, window);
         }
 
         public void Dispose() {
