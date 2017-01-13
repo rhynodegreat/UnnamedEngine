@@ -9,14 +9,14 @@ namespace UnnamedEngine.Core {
         bool disposed;
 
         public Instance Instance { get; private set; }
-        public Device Device { get; private set; }
+        public PhysicalDevice PhysicalDevice { get; private set; }
 
-        public Renderer(Instance instance, Device device) {
+        public Renderer(Instance instance, PhysicalDevice physicalDevice) {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
-            if (device == null) throw new ArgumentNullException(nameof(device));
+            if (physicalDevice == null) throw new ArgumentNullException(nameof(physicalDevice));
 
             Instance = instance;
-            Device = device;
+            PhysicalDevice = physicalDevice;
         }
 
         public void Dispose() {
@@ -28,12 +28,11 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
-                Device.Dispose();
                 Instance.Dispose();
             }
 
             Instance = null;
-            Device = null;
+            PhysicalDevice = null;
 
             disposed = true;
         }
