@@ -13,6 +13,10 @@ namespace UnnamedEngine.Core {
             Renderer = renderer;
         }
 
+        public void Run() {
+            if (Renderer == null) throw new EngineException("Renderer not set");
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -33,5 +37,10 @@ namespace UnnamedEngine.Core {
         ~Engine() {
             Dispose(false);
         }
+    }
+
+    public class EngineException : Exception {
+        public EngineException(string message) : base(message) { }
+        public EngineException(string format, params object[] args) : base(string.Format(format, args)) { }
     }
 }
