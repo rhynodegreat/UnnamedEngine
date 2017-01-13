@@ -21,9 +21,9 @@ namespace Test {
             GLFW.Init();
 
             Instance instance = CreateInstance();
-            Device device = null;
+            PhysicalDevice physicalDevice = PickPhysicalDevice(instance);
 
-            Renderer renderer = new Renderer(instance, device);
+            Renderer renderer = new Renderer(instance, physicalDevice);
             Engine engine = new Engine(renderer);
 
             GLFW.Terminate();
@@ -35,8 +35,8 @@ namespace Test {
             return new Instance(info);
         }
 
-        Device CreateDevice(Instance instance) {
-            return null;
+        PhysicalDevice PickPhysicalDevice(Instance instance) {
+            return instance.PhysicalDevices[0];
         }
     }
 }
