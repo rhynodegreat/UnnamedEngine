@@ -2,14 +2,23 @@
 using System.Collections.Generic;
 
 using CSGL;
+using CSGL.GLFW;
 using CSGL.Vulkan;
 
 namespace UnnamedEngine.Core {
     public class Renderer : IDisposable {
         bool disposed;
+        
+        string[] deviceExtensions = {
+            "VK_KHR_swapchain"
+        };
 
         public Instance Instance { get; private set; }
         public PhysicalDevice PhysicalDevice { get; private set; }
+        public Device Device { get; private set; }
+
+        public Queue GraphicsQueue { get; private set; }
+        public Queue PresentQueue { get; private set; }
 
         public Renderer(Instance instance, PhysicalDevice physicalDevice) {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
@@ -17,6 +26,48 @@ namespace UnnamedEngine.Core {
 
             Instance = instance;
             PhysicalDevice = physicalDevice;
+
+            CreateDevice();
+        }
+
+        void CreateDevice() {
+            uint graphicsIndex;
+            uint presentIndex;
+            int g = -1;
+            int p = -1;
+
+            for (int i = 0; i < PhysicalDevice.QueueFamilies.Count; i++) {
+                var family = PhysicalDevice.QueueFamilies[i];
+                if (g == -1 && (family.Flags & VkQueueFlags.GraphicsBit) != 0) {
+                    g = i;
+                }
+
+                if (p == -1 && GLFW_VK.GetPhysicalDevicePresentationSupport(Instance.Native, PhysicalDevice.Native, (uint)i)) {
+                    p = i;
+                }
+            }
+
+            graphicsIndex = (uint)g;
+            presentIndex = (uint)p;
+
+            var features = PhysicalDevice.Features;
+
+            HashSet<uint> uniqueIndices = new HashSet<uint> { graphicsIndex, presentIndex };
+            float[] priorities = new float[] { 1f };
+            DeviceQueueCreateInfo[] queueInfos = new DeviceQueueCreateInfo[uniqueIndices.Count];
+
+            int j = 0;
+            foreach (var ind in uniqueIndices) {
+                var queueInfo = new DeviceQueueCreateInfo(ind, 1, priorities);
+                queueInfos[j] = queueInfo;
+                j++;
+            }
+
+            var info = new DeviceCreateInfo(deviceExtensions, queueInfos, features);
+            Device = new Device(PhysicalDevice, info);
+
+            GraphicsQueue = Device.GetQueue(graphicsIndex, 0);
+            PresentQueue = Device.GetQueue(presentIndex, 0);
         }
 
         public void Dispose() {
@@ -28,11 +79,15 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
+                Device.Dispose();
                 Instance.Dispose();
             }
 
             Instance = null;
             PhysicalDevice = null;
+            Device = null;
+            GraphicsQueue = null;
+            PresentQueue = null;
 
             disposed = true;
         }
