@@ -7,8 +7,19 @@ namespace UnnamedEngine.Core {
     public class Engine : IDisposable {
         bool disposed;
 
+        Window window;
+
         public Renderer Renderer { get; private set; }
-        public Window Window { get; private set; }
+
+        public Window Window {
+            get {
+                return window;
+            }
+            set {
+                if (value == null) throw new ArgumentNullException(nameof(Window));
+                window = value;
+            }
+        }
 
         public Engine(Renderer renderer) {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
