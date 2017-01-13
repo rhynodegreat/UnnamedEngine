@@ -8,6 +8,12 @@ namespace UnnamedEngine.Core {
         WindowPtr window;
         bool disposed;
 
+        public bool ShouldClose {
+            get {
+                return GLFW.WindowShouldClose(window);
+            }
+        }
+
         public Window(Engine engine, int width, int height, string title) {
             GLFW.WindowHint(WindowHint.ClientAPI, (int)ClientAPI.NoAPI);
             window = GLFW.CreateWindow(width, height, title, MonitorPtr.Null, WindowPtr.Null);
