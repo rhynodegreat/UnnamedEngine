@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using CSGL.GLFW;
+
 namespace UnnamedEngine.Core {
     public class Engine : IDisposable {
         bool disposed;
 
         public Renderer Renderer { get; private set; }
+        public Window Window { get; private set; }
 
         public Engine(Renderer renderer) {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
@@ -15,6 +18,13 @@ namespace UnnamedEngine.Core {
 
         public void Run() {
             if (Renderer == null) throw new EngineException("Renderer not set");
+            if (Window == null) throw new EngineException("Window not set");
+
+            while (true) {
+                GLFW.PollEvents();
+
+                if (Window.ShouldClose) break;
+            }
         }
 
         public void Dispose() {
@@ -26,6 +36,7 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
+                Window.Dispose();
                 Renderer.Dispose();
             }
 
