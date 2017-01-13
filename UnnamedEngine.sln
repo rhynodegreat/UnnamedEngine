@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnnamedEngine", "UnnamedEngine\UnnamedEngine.csproj", "{39A33D3A-59DB-4779-B240-0DD029612901}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpGameLibrary", "..\CSharpGameLibrary\CSharpGameLibrary\CSharpGameLibrary.csproj", "{D7103402-1C84-4921-AF9C-38D9A6231E7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSGL.Vulkan", "..\CSharpGameLibrary\CSGL.Vulkan\CSGL.Vulkan.csproj", "{F3E51928-2259-4AED-9581-E7D4C49EA957}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{39A33D3A-59DB-4779-B240-0DD029612901}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39A33D3A-59DB-4779-B240-0DD029612901}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39A33D3A-59DB-4779-B240-0DD029612901}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7103402-1C84-4921-AF9C-38D9A6231E7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7103402-1C84-4921-AF9C-38D9A6231E7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7103402-1C84-4921-AF9C-38D9A6231E7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7103402-1C84-4921-AF9C-38D9A6231E7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3E51928-2259-4AED-9581-E7D4C49EA957}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3E51928-2259-4AED-9581-E7D4C49EA957}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3E51928-2259-4AED-9581-E7D4C49EA957}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3E51928-2259-4AED-9581-E7D4C49EA957}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
