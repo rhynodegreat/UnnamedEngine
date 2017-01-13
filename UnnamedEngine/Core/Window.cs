@@ -28,6 +28,8 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             GLFW.DestroyWindow(window);
+
+            disposed = true;
         }
 
         ~Window() {
