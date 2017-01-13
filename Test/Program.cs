@@ -26,6 +26,13 @@ namespace Test {
             Renderer renderer = new Renderer(instance, physicalDevice);
             Engine engine = new Engine(renderer);
 
+            Window window = new Window(engine, 800, 600, "Test");
+            engine.Window = window;
+
+            using (engine) {
+                engine.Run();
+            }
+
             GLFW.Terminate();
         }
 
