@@ -40,9 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Engine.cs" />
+    <Compile Include="Core\Engine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Renderer.cs" />
+    <Compile Include="Core\Renderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CSharpGameLibrary\CSGL.Vulkan\CSGL.Vulkan.csproj">
