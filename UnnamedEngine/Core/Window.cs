@@ -37,7 +37,7 @@ namespace UnnamedEngine.Core {
             window = GLFW.CreateWindow(width, height, title, MonitorPtr.Null, WindowPtr.Null);
 
             surface = new Surface(engine.Renderer.PhysicalDevice, window);
-            if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(surface)) {
+            if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(surface)) {   //this check is apparently required by the validation layer
                 throw new WindowException("Could not create surface (Not supported by present queue)");
             }
             CreateSwapchain(engine.Renderer);
