@@ -45,7 +45,17 @@ namespace UnnamedEngine.Utilities {
         }
 
         public void Add(T item) {
-            throw new NotImplementedException();
+            if (count >= items.Length - 1) {
+                var old = items;
+                items = new T[old.Length];
+
+                for (int i = 0; i < count; i++) {
+                    items[i] = old[i];
+                }
+            }
+
+            items[count] = item;
+            count++;
         }
 
         public void Clear() {
