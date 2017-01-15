@@ -7,6 +7,12 @@ namespace UnnamedEngine.Utilities {
         T[] items;
         int count;
 
+        public T[] Items {
+            get {
+                return items;
+            }
+        }
+
         public OpenList(int count) {
             items = new T[count];
         }
