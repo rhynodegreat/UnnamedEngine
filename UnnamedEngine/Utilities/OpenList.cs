@@ -72,6 +72,16 @@ namespace UnnamedEngine.Utilities {
             count = 0;
         }
 
+        public void Shrink() {
+            if (items.Length > count) {
+                var old = items;
+                items = new T[count];
+                for (int i = 0; i < count; i++) {
+                    items[i] = old[i];
+                }
+            }
+        }
+
         public bool Contains(T item) {
             for (int i = 0; i < items.Length; i++) {
                 if (items[i].Equals(item)) {
