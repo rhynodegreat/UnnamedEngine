@@ -45,7 +45,7 @@ namespace UnnamedEngine.Utilities {
         }
 
         public void Add(T item) {
-            if (count >= items.Length - 1) {
+            if (count >= items.Length) {
                 var old = items;
                 items = new T[old.Length];
 
