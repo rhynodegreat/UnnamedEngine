@@ -5,6 +5,7 @@ using CSGL.GLFW;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
+using UnnamedEngine.Rendering;
 
 namespace Test {
     class Program {
@@ -28,6 +29,10 @@ namespace Test {
 
             Window window = new Window(engine, 800, 600, "Test");
             engine.Window = window;
+
+            RenderGraph graph = new RenderGraph(engine);
+            engine.RenderGraph = graph;
+            graph.End.AddInput(graph.Start);
 
             using (engine) {
                 engine.Run();

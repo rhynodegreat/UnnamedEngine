@@ -33,6 +33,7 @@ namespace UnnamedEngine.Core {
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
             info.queueFamilyIndex = GraphicsQueue.FamilyIndex;
+            info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
             InternalCommandPool = new CommandPool(Device, info);
         }
 

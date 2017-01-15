@@ -3,11 +3,14 @@ using System.Collections.Generic;
 
 using CSGL.GLFW;
 
+using UnnamedEngine.Rendering;
+
 namespace UnnamedEngine.Core {
     public class Engine : IDisposable {
         bool disposed;
 
         Window window;
+        RenderGraph renderGraph;
 
         public Renderer Renderer { get; private set; }
 
@@ -21,6 +24,16 @@ namespace UnnamedEngine.Core {
             }
         }
 
+        public RenderGraph RenderGraph {
+            get {
+                return renderGraph;
+            }
+            set {
+                if (value == null) throw new ArgumentNullException(nameof(RenderGraph));
+                renderGraph = value;
+            }
+        }
+
         public Engine(Renderer renderer) {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
 
@@ -28,14 +41,18 @@ namespace UnnamedEngine.Core {
         }
 
         public void Run() {
-            if (Renderer == null) throw new EngineException("Renderer not set");
             if (Window == null) throw new EngineException("Window not set");
+            if (RenderGraph == null) throw new EngineException("Render Graph not set");
 
             while (true) {
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
+
+                RenderGraph.Render();
             }
+
+            Renderer.Device.WaitIdle();
         }
 
         public void Dispose() {
@@ -47,6 +64,7 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
+                RenderGraph.Dispose();
                 Window.Dispose();
                 Renderer.Dispose();
             }
