@@ -28,4 +28,9 @@ namespace UnnamedEngine.Rendering {
             b.RemoveInput(a);
         }
     }
+
+    public class RenderNodeException : Exception {
+        public RenderNodeException(string message) : base(message) { }
+        public RenderNodeException(string format, params object[] args) : base(string.Format(format, args)) { }
+    }
 }
