@@ -16,7 +16,7 @@ namespace UnnamedEngine.Rendering {
         protected abstract void AddOutput(RenderNode node);
         protected abstract void RemoveOutput(RenderNode node);
 
-        public abstract CommandBuffer GetCommandbuffer();
+        public abstract CommandBuffer GetCommandBuffer();
 
         public static void Compose(RenderNode a, RenderNode b) {
             a.AddOutput(b);
