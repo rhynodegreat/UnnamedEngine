@@ -13,6 +13,10 @@ namespace UnnamedEngine.Utilities {
             }
         }
 
+        public OpenList() {
+            items = new T[0];
+        }
+
         public OpenList(int count) {
             items = new T[count];
         }
