@@ -14,11 +14,11 @@ namespace UnnamedEngine.Core {
         int width;
         int height;
 
-        Surface surface;
-        Swapchain swapchain;
-        List<Image> swapchainImages;
-        VkFormat swapchainImageFormat;
-        VkExtent2D swapchainExtent;
+        internal Surface Surface { get; private set; }
+        internal Swapchain Swapchain { get; private set; }
+        internal List<Image> SwapchainImages { get; private set; }
+        internal VkFormat SwapchainImageFormat { get; private set; }
+        internal VkExtent2D SwapchainExtent { get; private set; }
 
         public bool ShouldClose {
             get {
@@ -36,17 +36,17 @@ namespace UnnamedEngine.Core {
             GLFW.WindowHint(WindowHint.ClientAPI, (int)ClientAPI.NoAPI);
             window = GLFW.CreateWindow(width, height, title, MonitorPtr.Null, WindowPtr.Null);
 
-            surface = new Surface(engine.Renderer.PhysicalDevice, window);
-            if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(surface)) {   //this check is apparently required by the validation layer
+            Surface = new Surface(engine.Renderer.PhysicalDevice, window);
+            if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(Surface)) {   //this check is apparently required by the validation layer
                 throw new WindowException("Could not create surface (Not supported by present queue)");
             }
             CreateSwapchain(engine.Renderer);
         }
 
         void CreateSwapchain(Renderer renderer) {
-            var cap = surface.Capabilities;
-            var format = ChooseSwapSurfaceFormat(surface.Formats);
-            var mode = ChooseSwapPresentMode(surface.PresentModes);
+            var cap = Surface.Capabilities;
+            var format = ChooseSwapSurfaceFormat(Surface.Formats);
+            var mode = ChooseSwapPresentMode(Surface.PresentModes);
             var extent = ChooseSwapExtent(ref cap);
             
             uint imageCount = cap.minImageCount + 1;
@@ -54,8 +54,8 @@ namespace UnnamedEngine.Core {
                 imageCount = cap.maxImageCount;
             }
 
-            var oldSwapchain = swapchain;
-            var info = new SwapchainCreateInfo(surface, oldSwapchain);
+            var oldSwapchain = Swapchain;
+            var info = new SwapchainCreateInfo(Surface, oldSwapchain);
             info.minImageCount = imageCount;
             info.imageFormat = format.format;
             info.imageColorSpace = format.colorSpace;
@@ -77,13 +77,13 @@ namespace UnnamedEngine.Core {
             info.presentMode = mode;
             info.clipped = true;
 
-            swapchain = new Swapchain(renderer.Device, info);
+            Swapchain = new Swapchain(renderer.Device, info);
             oldSwapchain?.Dispose();
 
-            swapchainImages = new List<Image>(swapchain.Images);
+            SwapchainImages = new List<Image>(Swapchain.Images);
 
-            swapchainImageFormat = format.format;
-            swapchainExtent = extent;
+            SwapchainImageFormat = format.format;
+            SwapchainExtent = extent;
         }
 
 
@@ -138,8 +138,8 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
-                swapchain.Dispose();
-                surface.Dispose();
+                Swapchain.Dispose();
+                Surface.Dispose();
             }
 
             GLFW.DestroyWindow(window);
