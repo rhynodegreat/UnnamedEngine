@@ -30,9 +30,18 @@ namespace Test {
             Window window = new Window(engine, 800, 600, "Test");
             engine.Window = window;
 
+            AcquireImageNode acquireImageNode = new AcquireImageNode(engine);
+            ClearNode clearNode = new ClearNode(engine, acquireImageNode);
+            clearNode.AddInput(acquireImageNode);
+            PresentNode presentNode = new PresentNode(engine, acquireImageNode);
+            presentNode.AddInput(clearNode);
+
             RenderGraph graph = new RenderGraph(engine);
             engine.RenderGraph = graph;
-            graph.End.AddInput(graph.Start);
+            graph.Add(acquireImageNode);
+            graph.Add(presentNode);
+            graph.Add(clearNode);
+            graph.Bake();
 
             using (engine) {
                 engine.Run();

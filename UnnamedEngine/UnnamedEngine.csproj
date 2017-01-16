@@ -45,6 +45,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\Renderer.cs" />
     <Compile Include="Rendering\AcquireImageNode.cs" />
+    <Compile Include="Rendering\ClearNode.cs" />
     <Compile Include="Rendering\PresentNode.cs" />
     <Compile Include="Rendering\RenderGraph.cs" />
     <Compile Include="Rendering\RenderNode.cs" />

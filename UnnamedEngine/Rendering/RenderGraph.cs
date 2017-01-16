@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using CSGL.Vulkan;
 
@@ -10,29 +11,87 @@ namespace UnnamedEngine.Rendering {
     public class RenderGraph : IDisposable {
         bool disposed;
         Renderer renderer;
-        OpenList<SubmitInfo> submitInfos;
+        Dictionary<RenderNode, SubmitInfo> nodeMap;
+        SubmitInfo[] infos;
+        List<RenderNode> nodeList;
 
-        public AcquireImageNode Start { get; private set; }
-        public PresentNode End { get; private set; }
+        int coreCount;
 
         public RenderGraph(Engine engine) {
             renderer = engine.Renderer;
-            submitInfos = new OpenList<SubmitInfo>(2);
+            nodeMap = new Dictionary<RenderNode, SubmitInfo>();
+            nodeList = new List<RenderNode>();
+            coreCount = Environment.ProcessorCount;
+        }
 
-            Start = new AcquireImageNode(engine);
-            End = new PresentNode(engine);
+        public void Add(RenderNode node) {
+            if (nodeMap.ContainsKey(node)) return;
+
+            SubmitInfo info = new SubmitInfo();
+            nodeMap.Add(node, info);
+        }
+
+        public void Bake() {
+            infos = new SubmitInfo[nodeMap.Count];
+            Queue<RenderNode> eventQueue = new Queue<RenderNode>();
+            
+            foreach (var pair in nodeMap) {
+                if (pair.Key.Input.Count == 0) {    //find the nodes that have no input and queue them for later
+                    eventQueue.Enqueue(pair.Key);
+                }
+
+                var info = pair.Value;
+
+                Semaphore[] waitSemaphores = new Semaphore[pair.Key.Input.Count];
+                VkPipelineStageFlags[] waitFlags = new VkPipelineStageFlags[pair.Key.Input.Count];
+                for (int j = 0; j < waitSemaphores.Length; j++) {
+                    waitSemaphores[j] = pair.Key.Input[j].SignalSemaphore;
+                    waitFlags[j] = pair.Key.Input[j].SignalStage;
+                }
+
+                info.waitSemaphores = waitSemaphores;
+                info.waitDstStageMask = waitFlags;
+                info.signalSemaphores = new Semaphore[] { pair.Key.SignalSemaphore };
+            }
+
+            nodeList.Clear();
+
+            int i = 0;
+            while (eventQueue.Count > 0) {
+                RenderNode node = eventQueue.Dequeue();
+                nodeList.Add(node);
+                infos[i] = nodeMap[node];
+                for (int j = 0; j < node.Output.Count; j++) {
+                    eventQueue.Enqueue(node.Output[j]);
+                }
+                i++;
+            }
         }
 
         public void Render() {
-            submitInfos.Clear();
-            uint index = Start.AcquireImage();
-            submitInfos.Add(Start.GetSubmitInfo());
-            submitInfos.Add(End.GetSubmitInfo(index));
+            for (int i = 0; i < nodeList.Count; i++) {
+                nodeList[i].PreRender();
+            }
 
-            submitInfos.Shrink();
-            renderer.GraphicsQueue.Submit(submitInfos.Items);
+            //Parallel.For(0, nodeList.Count, Render);
+            for (int i = 0; i < nodeList.Count; i++) {
+                Render(i);
+            }
+            renderer.GraphicsQueue.Submit(infos);
 
-            End.Present(index);
+            for (int i = 0; i < nodeList.Count; i++) {
+                nodeList[i].PostRender();
+            }
+        }
+
+        void Render(int i) {
+            int count;
+            CommandBuffer[] commands = nodeList[i].GetCommands(out count);
+            infos[i].commandBuffers = commands;
+            infos[i].commandBufferCount = count;
+            if (count == -1 && commands == null) {
+                infos[i].signalCount = 0;
+            }
         }
 
         public void Dispose() {
@@ -44,8 +103,9 @@ namespace UnnamedEngine.Rendering {
             if (disposed) return;
 
             if (disposing) {
-                Start.Dispose();
-                End.Dispose();
+                foreach (var node in nodeList) {
+                    node.Dispose();
+                }
             }
 
             disposed = true;

@@ -6,37 +6,30 @@ using CSGL.Vulkan;
 using UnnamedEngine.Core;
 
 namespace UnnamedEngine.Rendering {
-    public class PresentNode : RenderNode, IDisposable {
-        bool disposed;
+    public class PresentNode : RenderNode {
         Renderer renderer;
-
-        List<RenderNode> input;
+        AcquireImageNode acquireImageNode;
+        
         List<CommandBuffer> commandBuffers;
-
-        SubmitInfo submitInfo;
-        List<Semaphore> waitSemaphores;
+        CommandBuffer[] submitBuffers;
 
         PresentInfo presentInfo;
-        Semaphore renderDoneSemaphore;
-        Semaphore[] renderDoneSemaphores;
 
-        internal PresentNode(Engine engine) {
+        uint index;
+
+        public PresentNode(Engine engine, AcquireImageNode acquireImageNode) : base(engine.Renderer.Device, VkPipelineStageFlags.BottomOfPipeBit) {
+            if (engine == null) throw new ArgumentNullException(nameof(engine));
+            if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
             renderer = engine.Renderer;
-
-            input = new List<RenderNode>();
+            this.acquireImageNode = acquireImageNode;
+            
             commandBuffers = new List<CommandBuffer>();
-            waitSemaphores = new List<Semaphore>();
-            renderDoneSemaphore = new Semaphore(engine.Renderer.Device);
-            renderDoneSemaphores = new Semaphore[] { renderDoneSemaphore };
-
-            submitInfo = new SubmitInfo();
-            submitInfo.commandBuffers = new CommandBuffer[1];
-            submitInfo.signalSemaphores = renderDoneSemaphores;
+            submitBuffers = new CommandBuffer[1];
 
             presentInfo = new PresentInfo();
             presentInfo.imageIndices = new uint[1];
             presentInfo.swapchains = new Swapchain[] { engine.Window.Swapchain };
-            presentInfo.waitSemaphores = renderDoneSemaphores;
+            presentInfo.waitSemaphores = new Semaphore[] { SignalSemaphore };;
 
             CreateCommandBuffers(renderer, engine.Window.SwapchainImages);
         }
@@ -80,60 +73,19 @@ namespace UnnamedEngine.Rendering {
             }
         }
 
-        internal void Present(uint i) {
-            presentInfo.imageIndices[0] = i;
+        public override void PreRender() {
+            index = acquireImageNode.ImageIndex;
+        }
+
+        public override CommandBuffer[] GetCommands(out int count) {
+            submitBuffers[0] = commandBuffers[(int)index];
+            count = 1;
+            return submitBuffers;
+        }
+
+        public override void PostRender() {
+            presentInfo.imageIndices[0] = index;
             renderer.PresentQueue.Present(presentInfo);
-        }
-
-        public override SubmitInfo GetSubmitInfo() {
-            throw new NotImplementedException();
-        }
-
-        void UpdateWaitSemaphores() {
-            submitInfo.waitSemaphores = waitSemaphores.ToArray();
-            var masks = new VkPipelineStageFlags[waitSemaphores.Count];
-            for (int i = 0; i < waitSemaphores.Count; i++) {
-                masks[i] = VkPipelineStageFlags.BottomOfPipeBit;
-            }
-            submitInfo.waitDstStageMask = masks;
-        }
-
-        public SubmitInfo GetSubmitInfo(uint index) {
-            submitInfo.commandBuffers[0] = commandBuffers[(int)index];
-            return submitInfo;
-        }
-
-        public override void AddInput(RenderNode node) {
-            if (input.Contains(node)) return;
-            input.Add(node);
-            waitSemaphores.Add(node.SignalSemaphore);
-            UpdateWaitSemaphores();
-        }
-
-        public override void RemoveInput(RenderNode node) {
-            if (input.Remove(node)) {
-                waitSemaphores.Remove(node.SignalSemaphore);
-                UpdateWaitSemaphores();
-            }
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        void Dispose(bool disposing) {
-            if (disposed) return;
-
-            if (disposing) {
-                renderDoneSemaphore.Dispose();
-            }
-
-            disposed = true;
-        }
-
-        ~PresentNode() {
-            Dispose(false);
         }
     }
 }
