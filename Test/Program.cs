@@ -31,16 +31,13 @@ namespace Test {
             engine.Window = window;
 
             AcquireImageNode acquireImageNode = new AcquireImageNode(engine);
-            ClearNode clearNode = new ClearNode(engine, acquireImageNode);
-            clearNode.AddInput(acquireImageNode);
             PresentNode presentNode = new PresentNode(engine, acquireImageNode);
-            presentNode.AddInput(clearNode);
+            presentNode.AddInput(acquireImageNode);
 
             RenderGraph graph = new RenderGraph(engine);
             engine.RenderGraph = graph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
-            graph.Add(clearNode);
             graph.Bake();
 
             using (engine) {

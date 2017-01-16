@@ -24,6 +24,7 @@ namespace UnnamedEngine.Rendering {
 
         public abstract CommandBuffer[] GetCommands(out int count);
 
+        public virtual void OnBake(RenderGraph graph) { }
         public virtual void PreRender() { }
         public virtual void PostRender() { }
 

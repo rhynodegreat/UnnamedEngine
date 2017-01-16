@@ -31,27 +31,35 @@ namespace UnnamedEngine.Rendering {
             nodeMap.Add(node, info);
         }
 
+        public SubmitInfo GetSubmitInfo(RenderNode node) {
+            return nodeMap[node];
+        }
+
+        public void ResetSubmitInfo(RenderNode node) {
+            SubmitInfo info = nodeMap[node];
+            Semaphore[] waitSemaphores = new Semaphore[node.Input.Count];
+            VkPipelineStageFlags[] waitFlags = new VkPipelineStageFlags[node.Input.Count];
+            for (int j = 0; j < waitSemaphores.Length; j++) {
+                waitSemaphores[j] = node.Input[j].SignalSemaphore;
+                waitFlags[j] = node.Input[j].SignalStage;
+            }
+
+            info.waitSemaphores = waitSemaphores;
+            info.waitDstStageMask = waitFlags;
+            info.signalSemaphores = new Semaphore[] { node.SignalSemaphore };
+        }
+
         public void Bake() {
             infos = new SubmitInfo[nodeMap.Count];
             Queue<RenderNode> eventQueue = new Queue<RenderNode>();
             
-            foreach (var pair in nodeMap) {
-                if (pair.Key.Input.Count == 0) {    //find the nodes that have no input and queue them for later
-                    eventQueue.Enqueue(pair.Key);
+            foreach (var node in nodeMap.Keys) {
+                if (node.Input.Count == 0) {    //find the nodes that have no input and queue them for later
+                    eventQueue.Enqueue(node);
                 }
 
-                var info = pair.Value;
-
-                Semaphore[] waitSemaphores = new Semaphore[pair.Key.Input.Count];
-                VkPipelineStageFlags[] waitFlags = new VkPipelineStageFlags[pair.Key.Input.Count];
-                for (int j = 0; j < waitSemaphores.Length; j++) {
-                    waitSemaphores[j] = pair.Key.Input[j].SignalSemaphore;
-                    waitFlags[j] = pair.Key.Input[j].SignalStage;
-                }
-
-                info.waitSemaphores = waitSemaphores;
-                info.waitDstStageMask = waitFlags;
-                info.signalSemaphores = new Semaphore[] { pair.Key.SignalSemaphore };
+                ResetSubmitInfo(node);
+                node.OnBake(this);
             }
 
             nodeList.Clear();
@@ -88,10 +96,6 @@ namespace UnnamedEngine.Rendering {
             int count;
             CommandBuffer[] commands = nodeList[i].GetCommands(out count);
             infos[i].commandBuffers = commands;
-            infos[i].commandBufferCount = count;
-            if (count == -1 && commands == null) {
-                infos[i].signalCount = 0;
-            }
         }
 
         public void Dispose() {
