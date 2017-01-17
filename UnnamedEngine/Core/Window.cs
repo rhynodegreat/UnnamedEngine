@@ -136,12 +136,9 @@ namespace UnnamedEngine.Core {
 
         void Dispose(bool disposing) {
             if (disposed) return;
-
-            if (disposing) {
-                Swapchain.Dispose();
-                Surface.Dispose();
-            }
-
+            
+            Swapchain.Dispose();
+            Surface.Dispose();
             GLFW.DestroyWindow(window);
 
             disposed = true;

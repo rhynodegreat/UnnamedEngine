@@ -69,8 +69,6 @@ namespace UnnamedEngine.Core {
                 Renderer.Dispose();
             }
 
-            Renderer = null;
-
             disposed = true;
         }
 

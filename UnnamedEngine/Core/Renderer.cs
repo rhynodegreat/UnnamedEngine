@@ -85,17 +85,12 @@ namespace UnnamedEngine.Core {
         void Dispose(bool disposing) {
             if (disposed) return;
 
+            InternalCommandPool.Dispose();
+
             if (disposing) {
-                InternalCommandPool.Dispose();
                 Device.Dispose();
                 Instance.Dispose();
             }
-
-            Instance = null;
-            PhysicalDevice = null;
-            Device = null;
-            GraphicsQueue = null;
-            PresentQueue = null;
 
             disposed = true;
         }
