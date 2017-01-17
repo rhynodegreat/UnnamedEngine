@@ -34,7 +34,7 @@ namespace UnnamedEngine.Rendering {
             presentInfo.swapchains = new List<Swapchain> { engine.Window.Swapchain };
             presentInfo.waitSemaphores = new List<Semaphore> { renderDoneSemaphore };
 
-            SubmitInfo.signalSemaphores.Add(renderDoneSemaphore);
+            AddOutput(renderDoneSemaphore);
 
             CreateCommandBuffers(renderer, engine.Window.SwapchainImages);
         }

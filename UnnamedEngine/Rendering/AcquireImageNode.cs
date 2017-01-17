@@ -30,8 +30,7 @@ namespace UnnamedEngine.Rendering {
             submitBuffers = new List<CommandBuffer> { null };
             CreateCommandBuffer(renderer, engine.Window.SwapchainImages);
 
-            SubmitInfo.waitSemaphores.Add(acquireImageSemaphore);
-            SubmitInfo.waitDstStageMask.Add(VkPipelineStageFlags.TopOfPipeBit);
+            AddInput(acquireImageSemaphore, VkPipelineStageFlags.TopOfPipeBit);
         }
 
         void CreateCommandBuffer(Renderer renderer, IList<Image> images) {

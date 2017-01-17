@@ -13,7 +13,7 @@ namespace UnnamedEngine.Rendering {
         public IList<RenderNode> Input { get; private set; }
         public IList<RenderNode> Output { get; private set; }
         public VkPipelineStageFlags SignalStage { get; protected set; }
-        public SubmitInfo SubmitInfo { get; private set; }
+        internal SubmitInfo SubmitInfo { get; private set; }
         public Dictionary<RenderNode, Semaphore> semaphoreMap;
 
         protected RenderNode(Device device, VkPipelineStageFlags stageFlags) {
@@ -44,8 +44,7 @@ namespace UnnamedEngine.Rendering {
 
             var sem = new Semaphore(device);
             other.SubmitInfo.signalSemaphores.Add(sem);
-            SubmitInfo.waitSemaphores.Add(sem);
-            SubmitInfo.waitDstStageMask.Add(other.SignalStage);
+            AddInput(sem, other.SignalStage);
             semaphoreMap.Add(other, sem);
         }
 
@@ -54,9 +53,32 @@ namespace UnnamedEngine.Rendering {
                 input.Remove(other);
                 int index = other.SubmitInfo.signalSemaphores.IndexOf(semaphoreMap[other]);
                 other.SubmitInfo.signalSemaphores.RemoveAt(index);
-                SubmitInfo.waitSemaphores.RemoveAt(index);
+                RemoveInput(semaphoreMap[other]);
                 semaphoreMap.Remove(other);
             }
+        }
+
+        public void AddInput(Semaphore semaphore, VkPipelineStageFlags waitFlags) {
+            if (SubmitInfo.waitSemaphores.Contains(semaphore)) return;
+            SubmitInfo.waitSemaphores.Add(semaphore);
+            SubmitInfo.waitDstStageMask.Add(waitFlags);
+        }
+
+        public void RemoveInput(Semaphore semaphore) {
+            if (SubmitInfo.waitSemaphores.Contains(semaphore)) {
+                int index = SubmitInfo.waitSemaphores.IndexOf(semaphore);
+                SubmitInfo.waitSemaphores.RemoveAt(index);
+                SubmitInfo.waitDstStageMask.RemoveAt(index);
+            }
+        }
+
+        public void AddOutput(Semaphore semaphore) {
+            if (SubmitInfo.signalSemaphores.Contains(semaphore)) return;
+            SubmitInfo.signalSemaphores.Add(semaphore);
+        }
+
+        public void RemoveOutput(Semaphore semaphore) {
+            SubmitInfo.signalSemaphores.Remove(semaphore);
         }
 
         public void Dispose() {
@@ -67,7 +89,7 @@ namespace UnnamedEngine.Rendering {
         protected virtual void Dispose(bool disposing) {
             if (disposed) return;
             
-            foreach (var sem in SubmitInfo.signalSemaphores) {
+            foreach (var sem in semaphoreMap.Values) {
                 sem.Dispose();
             }
 
