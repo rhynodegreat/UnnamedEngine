@@ -36,8 +36,6 @@ namespace UnnamedEngine.Rendering {
                 if (node.Input.Count == 0) {    //find the nodes that have no input and queue them for later
                     eventQueue.Enqueue(node);
                 }
-
-                node.OnBake(this);
             }
 
             nodeList.Clear();

@@ -33,8 +33,7 @@ namespace UnnamedEngine.Rendering {
         }
 
         public abstract List<CommandBuffer> GetCommands();
-
-        public virtual void OnBake(RenderGraph graph) { }
+        
         public virtual void PreRender() { }
         public virtual void PostRender() { }
 
