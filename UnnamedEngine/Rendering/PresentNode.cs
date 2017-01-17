@@ -6,12 +6,14 @@ using CSGL.Vulkan;
 using UnnamedEngine.Core;
 
 namespace UnnamedEngine.Rendering {
-    public class PresentNode : RenderNode {
+    public class PresentNode : RenderNode, IDisposable {
+        bool disposed;
         Renderer renderer;
         AcquireImageNode acquireImageNode;
         
         List<CommandBuffer> commandBuffers;
-        CommandBuffer[] submitBuffers;
+        List<CommandBuffer> submitBuffers;
+        Semaphore renderDoneSemaphore;
 
         PresentInfo presentInfo;
 
@@ -24,12 +26,15 @@ namespace UnnamedEngine.Rendering {
             this.acquireImageNode = acquireImageNode;
             
             commandBuffers = new List<CommandBuffer>();
-            submitBuffers = new CommandBuffer[1];
+            submitBuffers = new List<CommandBuffer> { null };
+            renderDoneSemaphore = new Semaphore(renderer.Device);
 
             presentInfo = new PresentInfo();
-            presentInfo.imageIndices = new uint[1];
-            presentInfo.swapchains = new Swapchain[] { engine.Window.Swapchain };
-            presentInfo.waitSemaphores = new Semaphore[] { SignalSemaphore };;
+            presentInfo.imageIndices = new List<uint> { 0 };
+            presentInfo.swapchains = new List<Swapchain> { engine.Window.Swapchain };
+            presentInfo.waitSemaphores = new List<Semaphore> { renderDoneSemaphore };
+
+            SubmitInfo.signalSemaphores.Add(renderDoneSemaphore);
 
             CreateCommandBuffers(renderer, engine.Window.SwapchainImages);
         }
@@ -77,15 +82,32 @@ namespace UnnamedEngine.Rendering {
             index = acquireImageNode.ImageIndex;
         }
 
-        public override CommandBuffer[] GetCommands(out int count) {
+        public override List<CommandBuffer> GetCommands() {
             submitBuffers[0] = commandBuffers[(int)index];
-            count = 1;
             return submitBuffers;
         }
 
         public override void PostRender() {
             presentInfo.imageIndices[0] = index;
             renderer.PresentQueue.Present(presentInfo);
+        }
+
+        public new void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected override void Dispose(bool disposing) {
+            if (disposed) return;
+
+            base.Dispose(disposing);
+            renderDoneSemaphore.Dispose();
+
+            disposed = true;
+        }
+
+        ~PresentNode() {
+            Dispose(false);
         }
     }
 }

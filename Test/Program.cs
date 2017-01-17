@@ -49,7 +49,7 @@ namespace Test {
 
         Instance CreateInstance() {
             ApplicationInfo appInfo = new ApplicationInfo(new VkVersion(1, 0, 0), new VkVersion(0, 0, 0), new VkVersion(0, 1, 0), "Test", "Unnamed Engine");
-            InstanceCreateInfo info = new InstanceCreateInfo(appInfo, GLFW_VK.GetRequiredInstanceExceptions(), layers);
+            InstanceCreateInfo info = new InstanceCreateInfo(appInfo, new List<string>(GLFW_VK.GetRequiredInstanceExceptions()), new List<string>(layers));
             return new Instance(info);
         }
 

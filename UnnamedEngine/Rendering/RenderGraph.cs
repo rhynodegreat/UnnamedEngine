@@ -5,60 +5,38 @@ using System.Threading.Tasks;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
-using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.Rendering {
     public class RenderGraph : IDisposable {
         bool disposed;
         Renderer renderer;
-        Dictionary<RenderNode, SubmitInfo> nodeMap;
-        SubmitInfo[] infos;
+        HashSet<RenderNode> nodes;
+        List<SubmitInfo> infos;
         List<RenderNode> nodeList;
 
         int coreCount;
 
         public RenderGraph(Engine engine) {
             renderer = engine.Renderer;
-            nodeMap = new Dictionary<RenderNode, SubmitInfo>();
+            nodes = new HashSet<RenderNode>();
             nodeList = new List<RenderNode>();
+            infos = new List<SubmitInfo>();
             coreCount = Environment.ProcessorCount;
         }
 
         public void Add(RenderNode node) {
-            if (nodeMap.ContainsKey(node)) return;
-
-            SubmitInfo info = new SubmitInfo();
-            nodeMap.Add(node, info);
-        }
-
-        public SubmitInfo GetSubmitInfo(RenderNode node) {
-            return nodeMap[node];
-        }
-
-        public void ResetSubmitInfo(RenderNode node) {
-            SubmitInfo info = nodeMap[node];
-            Semaphore[] waitSemaphores = new Semaphore[node.Input.Count];
-            VkPipelineStageFlags[] waitFlags = new VkPipelineStageFlags[node.Input.Count];
-            for (int j = 0; j < waitSemaphores.Length; j++) {
-                waitSemaphores[j] = node.Input[j].SignalSemaphore;
-                waitFlags[j] = node.Input[j].SignalStage;
-            }
-
-            info.waitSemaphores = waitSemaphores;
-            info.waitDstStageMask = waitFlags;
-            info.signalSemaphores = new Semaphore[] { node.SignalSemaphore };
+            nodes.Add(node);
         }
 
         public void Bake() {
-            infos = new SubmitInfo[nodeMap.Count];
+            infos.Clear();
             Queue<RenderNode> eventQueue = new Queue<RenderNode>();
             
-            foreach (var node in nodeMap.Keys) {
+            foreach (var node in nodes) {
                 if (node.Input.Count == 0) {    //find the nodes that have no input and queue them for later
                     eventQueue.Enqueue(node);
                 }
 
-                ResetSubmitInfo(node);
                 node.OnBake(this);
             }
 
@@ -68,7 +46,7 @@ namespace UnnamedEngine.Rendering {
             while (eventQueue.Count > 0) {
                 RenderNode node = eventQueue.Dequeue();
                 nodeList.Add(node);
-                infos[i] = nodeMap[node];
+                infos.Add(node.SubmitInfo);
                 for (int j = 0; j < node.Output.Count; j++) {
                     eventQueue.Enqueue(node.Output[j]);
                 }
@@ -81,10 +59,10 @@ namespace UnnamedEngine.Rendering {
                 nodeList[i].PreRender();
             }
 
-            //Parallel.For(0, nodeList.Count, Render);
-            for (int i = 0; i < nodeList.Count; i++) {
-                Render(i);
-            }
+            Parallel.For(0, nodeList.Count, Render);
+            //for (int i = 0; i < nodeList.Count; i++) {
+            //    Render(i);
+            //}
             renderer.GraphicsQueue.Submit(infos);
 
             for (int i = 0; i < nodeList.Count; i++) {
@@ -93,9 +71,28 @@ namespace UnnamedEngine.Rendering {
         }
 
         void Render(int i) {
-            int count;
-            CommandBuffer[] commands = nodeList[i].GetCommands(out count);
+            List<CommandBuffer> commands = nodeList[i].GetCommands();
             infos[i].commandBuffers = commands;
+        }
+
+        class Node : IDisposable {
+            public List<Semaphore> signalSemaphores;
+            public SubmitInfo info;
+
+            public Node(Device device, RenderNode node) {
+                signalSemaphores = new List<Semaphore>(node.Output.Count);
+                info = new SubmitInfo();
+
+                for (int i = 0; i < signalSemaphores.Count; i++) {
+                    signalSemaphores.Add(new Semaphore(device));
+                }
+            }
+
+            public void Dispose() {
+                for (int i = 0; i < signalSemaphores.Count; i++) {
+                    signalSemaphores[i].Dispose();
+                }
+            }
         }
 
         public void Dispose() {
@@ -107,7 +104,7 @@ namespace UnnamedEngine.Rendering {
             if (disposed) return;
 
             if (disposing) {
-                foreach (var node in nodeList) {
+                foreach (var node in nodes) {
                     node.Dispose();
                 }
             }

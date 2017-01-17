@@ -63,7 +63,7 @@ namespace UnnamedEngine.Core {
             info.imageArrayLayers = 1;
             info.imageUsage = VkImageUsageFlags.ColorAttachmentBit;
 
-            var queueFamilyIndices = new uint[] { renderer.GraphicsQueue.FamilyIndex,  renderer.PresentQueue.FamilyIndex };
+            var queueFamilyIndices = new List<uint> { renderer.GraphicsQueue.FamilyIndex,  renderer.PresentQueue.FamilyIndex };
 
             if (renderer.GraphicsQueue.FamilyIndex != renderer.PresentQueue.FamilyIndex) {
                 info.imageSharingMode = VkSharingMode.Concurrent;

@@ -11,8 +11,8 @@ namespace UnnamedEngine.Rendering {
         Swapchain swapchain;
 
         Semaphore acquireImageSemaphore;
-        CommandBuffer[] commandBuffers;
-        CommandBuffer[] submitBuffers;
+        List<CommandBuffer> commandBuffers;
+        List<CommandBuffer> submitBuffers;
 
         uint imageIndex;
         public uint ImageIndex {
@@ -27,12 +27,15 @@ namespace UnnamedEngine.Rendering {
             swapchain = engine.Window.Swapchain;
 
             acquireImageSemaphore = new Semaphore(engine.Renderer.Device);
-            submitBuffers = new CommandBuffer[1];
+            submitBuffers = new List<CommandBuffer> { null };
             CreateCommandBuffer(renderer, engine.Window.SwapchainImages);
+
+            SubmitInfo.waitSemaphores.Add(acquireImageSemaphore);
+            SubmitInfo.waitDstStageMask.Add(VkPipelineStageFlags.TopOfPipeBit);
         }
 
         void CreateCommandBuffer(Renderer renderer, IList<Image> images) {
-            commandBuffers = renderer.InternalCommandPool.Allocate(VkCommandBufferLevel.Primary, images.Count);
+            commandBuffers = new List<CommandBuffer>(renderer.InternalCommandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit;
@@ -97,31 +100,12 @@ namespace UnnamedEngine.Rendering {
             }
         }
 
-        public override void OnBake(RenderGraph graph) {
-            SubmitInfo info = graph.GetSubmitInfo(this);
-            int waitCount = info.waitSemaphores.Length;
-            Semaphore[] wait = new Semaphore[waitCount + 1];
-            VkPipelineStageFlags[] flags = new VkPipelineStageFlags[waitCount + 1];
-
-            for (int i = 0; i < waitCount; i++) {
-                wait[i] = info.waitSemaphores[i];
-                flags[i] = info.waitDstStageMask[i];
-            }
-
-            wait[waitCount] = acquireImageSemaphore;
-            flags[waitCount] = VkPipelineStageFlags.TopOfPipeBit;
-
-            info.waitSemaphores = wait;
-            info.waitDstStageMask = flags;
-        }
-
         public override void PreRender() {
             swapchain.AcquireNextImage(ulong.MaxValue, acquireImageSemaphore, out imageIndex);
         }
 
-        public override CommandBuffer[] GetCommands(out int count) {
-            count = 1;
-            submitBuffers[0] = commandBuffers[imageIndex];
+        public override List<CommandBuffer> GetCommands() {
+            submitBuffers[0] = commandBuffers[(int)imageIndex];
             return submitBuffers;
         }
 
@@ -133,10 +117,8 @@ namespace UnnamedEngine.Rendering {
         protected override void Dispose(bool disposing) {
             if (disposed) return;
 
-            if (disposing) {
-                base.Dispose(true);
-                acquireImageSemaphore.Dispose();
-            }
+            base.Dispose(disposing);
+            acquireImageSemaphore.Dispose();
 
             disposed = true;
         }

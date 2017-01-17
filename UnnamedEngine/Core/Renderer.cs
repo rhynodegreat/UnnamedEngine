@@ -60,17 +60,17 @@ namespace UnnamedEngine.Core {
             var features = PhysicalDevice.Features;
 
             HashSet<uint> uniqueIndices = new HashSet<uint> { graphicsIndex, presentIndex };
-            float[] priorities = new float[] { 1f };
-            DeviceQueueCreateInfo[] queueInfos = new DeviceQueueCreateInfo[uniqueIndices.Count];
+            List<float> priorities = new List<float> { 1f };
+            List<DeviceQueueCreateInfo> queueInfos = new List<DeviceQueueCreateInfo>(uniqueIndices.Count);
 
             int j = 0;
             foreach (var ind in uniqueIndices) {
                 var queueInfo = new DeviceQueueCreateInfo(ind, 1, priorities);
-                queueInfos[j] = queueInfo;
+                queueInfos.Add(queueInfo);
                 j++;
             }
 
-            var info = new DeviceCreateInfo(deviceExtensions, queueInfos, features);
+            var info = new DeviceCreateInfo(new List<string>(deviceExtensions), queueInfos, features);
             Device = new Device(PhysicalDevice, info);
 
             GraphicsQueue = Device.GetQueue(graphicsIndex, 0);
