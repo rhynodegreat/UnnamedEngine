@@ -14,6 +14,7 @@ namespace UnnamedEngine.Rendering {
         public IList<RenderNode> Output { get; private set; }
         public VkPipelineStageFlags SignalStage { get; protected set; }
         public SubmitInfo SubmitInfo { get; private set; }
+        public Dictionary<RenderNode, Semaphore> semaphoreMap;
 
         protected RenderNode(Device device, VkPipelineStageFlags stageFlags) {
             this.device = device;
@@ -22,6 +23,7 @@ namespace UnnamedEngine.Rendering {
             output = new List<RenderNode>();
             Input = input.AsReadOnly();
             Output = output.AsReadOnly();
+            semaphoreMap = new Dictionary<RenderNode, Semaphore>();
 
             SubmitInfo = new SubmitInfo();
             SubmitInfo.commandBuffers = new List<CommandBuffer>();
@@ -36,23 +38,25 @@ namespace UnnamedEngine.Rendering {
         public virtual void PreRender() { }
         public virtual void PostRender() { }
 
-        public void AddInput(RenderNode node) {
-            if (input.Contains(node)) return;
-            input.Add(node);
-            node.output.Add(this);
+        public void AddInput(RenderNode other) {
+            if (input.Contains(other)) return;
+            input.Add(other);
+            other.output.Add(this);
 
             var sem = new Semaphore(device);
-            node.SubmitInfo.signalSemaphores.Add(sem);
+            other.SubmitInfo.signalSemaphores.Add(sem);
             SubmitInfo.waitSemaphores.Add(sem);
-            SubmitInfo.waitDstStageMask.Add(node.SignalStage);
+            SubmitInfo.waitDstStageMask.Add(other.SignalStage);
+            semaphoreMap.Add(other, sem);
         }
 
-        public void RemoveInput(RenderNode node) {
-            if (input.Contains(node)) {
-                int index = node.Output.IndexOf(this);
-                input.RemoveAt(index);
-                node.SubmitInfo.signalSemaphores.RemoveAt(index);
+        public void RemoveInput(RenderNode other) {
+            if (input.Contains(other)) {
+                input.Remove(other);
+                int index = other.SubmitInfo.signalSemaphores.IndexOf(semaphoreMap[other]);
+                other.SubmitInfo.signalSemaphores.RemoveAt(index);
                 SubmitInfo.waitSemaphores.RemoveAt(index);
+                semaphoreMap.Remove(other);
             }
         }
 
