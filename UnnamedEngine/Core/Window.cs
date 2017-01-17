@@ -14,11 +14,11 @@ namespace UnnamedEngine.Core {
         int width;
         int height;
 
-        internal Surface Surface { get; private set; }
-        internal Swapchain Swapchain { get; private set; }
-        internal List<Image> SwapchainImages { get; private set; }
-        internal VkFormat SwapchainImageFormat { get; private set; }
-        internal VkExtent2D SwapchainExtent { get; private set; }
+        public Surface Surface { get; private set; }
+        public Swapchain Swapchain { get; private set; }
+        public List<Image> SwapchainImages { get; private set; }
+        public VkFormat SwapchainImageFormat { get; private set; }
+        public VkExtent2D SwapchainExtent { get; private set; }
 
         public bool ShouldClose {
             get {
