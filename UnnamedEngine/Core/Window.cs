@@ -14,11 +14,13 @@ namespace UnnamedEngine.Core {
         int width;
         int height;
 
+        List<Image> swapchainImages;
+
         public Surface Surface { get; private set; }
         public Swapchain Swapchain { get; private set; }
-        public List<Image> SwapchainImages { get; private set; }
         public VkFormat SwapchainImageFormat { get; private set; }
         public VkExtent2D SwapchainExtent { get; private set; }
+        public IList<Image> SwapchainImages { get; private set; }
 
         public bool ShouldClose {
             get {
@@ -80,7 +82,8 @@ namespace UnnamedEngine.Core {
             Swapchain = new Swapchain(renderer.Device, info);
             oldSwapchain?.Dispose();
 
-            SwapchainImages = new List<Image>(Swapchain.Images);
+            swapchainImages = new List<Image>(Swapchain.Images);
+            SwapchainImages = swapchainImages.AsReadOnly();
 
             SwapchainImageFormat = format.format;
             SwapchainExtent = extent;
