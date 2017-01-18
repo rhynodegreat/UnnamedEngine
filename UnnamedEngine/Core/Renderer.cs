@@ -49,7 +49,7 @@ namespace UnnamedEngine.Core {
                     g = i;
                 }
 
-                if (p == -1 && GLFW_VK.GetPhysicalDevicePresentationSupport(Instance.Native, PhysicalDevice.Native, (uint)i)) {
+                if (p == -1 && GLFW.GetPhysicalDevicePresentationSupport(Instance.Native.native, PhysicalDevice.Native.native, (uint)i)) {
                     p = i;
                 }
             }

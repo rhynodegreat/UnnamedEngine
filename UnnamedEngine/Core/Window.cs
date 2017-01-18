@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using CSGL.GLFW;
 using CSGL.Vulkan;
+using GWindow = CSGL.GLFW.Window;
 
 using Image = CSGL.Vulkan.Image;
 
@@ -10,7 +11,7 @@ namespace UnnamedEngine.Core {
     public class Window : IDisposable {
         bool disposed;
 
-        WindowPtr window;
+        GWindow window;
         int width;
         int height;
 
@@ -21,10 +22,11 @@ namespace UnnamedEngine.Core {
         public VkFormat SwapchainImageFormat { get; private set; }
         public VkExtent2D SwapchainExtent { get; private set; }
         public IList<Image> SwapchainImages { get; private set; }
+        public IList<Framebuffer> Framebuffers { get; private set; }
 
         public bool ShouldClose {
             get {
-                return GLFW.WindowShouldClose(window);
+                return window.ShouldClose;
             }
         }
 
@@ -36,7 +38,7 @@ namespace UnnamedEngine.Core {
             this.height = height;
 
             GLFW.WindowHint(WindowHint.ClientAPI, (int)ClientAPI.NoAPI);
-            window = GLFW.CreateWindow(width, height, title, MonitorPtr.Null, WindowPtr.Null);
+            window = new GWindow(width, height, title, null, null);
 
             Surface = new Surface(engine.Renderer.PhysicalDevice, window);
             if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(Surface)) {   //this check is apparently required by the validation layer
@@ -142,7 +144,7 @@ namespace UnnamedEngine.Core {
             
             Swapchain.Dispose();
             Surface.Dispose();
-            GLFW.DestroyWindow(window);
+            window.Dispose();
 
             disposed = true;
         }
