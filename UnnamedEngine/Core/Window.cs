@@ -14,15 +14,18 @@ namespace UnnamedEngine.Core {
         GWindow window;
         int width;
         int height;
-
-        List<Image> swapchainImages;
+        
 
         public Surface Surface { get; private set; }
         public Swapchain Swapchain { get; private set; }
         public VkFormat SwapchainImageFormat { get; private set; }
         public VkExtent2D SwapchainExtent { get; private set; }
-        public IList<Image> SwapchainImages { get; private set; }
-        public IList<Framebuffer> Framebuffers { get; private set; }
+
+        public IList<Image> SwapchainImages {
+            get {
+                return Swapchain?.Images;
+            }
+        }
 
         public bool ShouldClose {
             get {
@@ -44,6 +47,7 @@ namespace UnnamedEngine.Core {
             if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(Surface)) {   //this check is apparently required by the validation layer
                 throw new WindowException("Could not create surface (Not supported by present queue)");
             }
+
             CreateSwapchain(engine.Renderer);
         }
 
@@ -84,13 +88,9 @@ namespace UnnamedEngine.Core {
             Swapchain = new Swapchain(renderer.Device, info);
             oldSwapchain?.Dispose();
 
-            swapchainImages = new List<Image>(Swapchain.Images);
-            SwapchainImages = swapchainImages.AsReadOnly();
-
             SwapchainImageFormat = format.format;
             SwapchainExtent = extent;
         }
-
 
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(IList<VkSurfaceFormatKHR> formats) {
             if (formats.Count == 1 && formats[0].format == VkFormat.Undefined) {
