@@ -10,11 +10,11 @@ namespace UnnamedEngine.Rendering {
     public class RenderGraph : IDisposable {
         bool disposed;
         Renderer renderer;
+
         HashSet<RenderNode> nodes;
         List<SubmitInfo> infos;
         List<RenderNode> nodeList;
-
-        int coreCount;
+        ParallelOptions options;
 
         public RenderGraph(Engine engine) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -24,7 +24,8 @@ namespace UnnamedEngine.Rendering {
             nodes = new HashSet<RenderNode>();
             nodeList = new List<RenderNode>();
             infos = new List<SubmitInfo>();
-            coreCount = Environment.ProcessorCount;
+            options = new ParallelOptions();
+            options.MaxDegreeOfParallelism = Environment.ProcessorCount;
         }
 
         public void Add(RenderNode node) {
@@ -60,10 +61,7 @@ namespace UnnamedEngine.Rendering {
                 nodeList[i].PreRender();
             }
 
-            Parallel.For(0, nodeList.Count, Render);
-            //for (int i = 0; i < nodeList.Count; i++) {
-            //    Render(i);
-            //}
+            Parallel.For(0, nodeList.Count, options, Render);
             renderer.GraphicsQueue.Submit(infos);
 
             for (int i = 0; i < nodeList.Count; i++) {
