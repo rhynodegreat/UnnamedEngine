@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Core\Engine.cs" />
     <Compile Include="Core\Window.cs" />
+    <Compile Include="Input\Input.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\Renderer.cs" />
     <Compile Include="Rendering\RenderGraph.cs" />
