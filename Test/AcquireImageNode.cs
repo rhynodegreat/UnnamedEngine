@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 
 using CSGL.Vulkan;
-using UnnamedEngine.Core;
 
-namespace UnnamedEngine.Rendering {
+using UnnamedEngine.Core;
+using UnnamedEngine.Rendering;
+
+namespace Test {
     public class AcquireImageNode : RenderNode, IDisposable {
         bool disposed;
         Renderer renderer;
@@ -21,20 +23,20 @@ namespace UnnamedEngine.Rendering {
             }
         }
 
-        public AcquireImageNode(Engine engine) : base(engine.Renderer.Device, VkPipelineStageFlags.TopOfPipeBit) {
+        public AcquireImageNode(Engine engine, CommandPool commandPool) : base(engine.Renderer.Device, VkPipelineStageFlags.TopOfPipeBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             renderer = engine.Renderer;
             swapchain = engine.Window.Swapchain;
 
             acquireImageSemaphore = new Semaphore(engine.Renderer.Device);
             submitBuffers = new List<CommandBuffer> { null };
-            CreateCommandBuffer(renderer, engine.Window.SwapchainImages);
+            CreateCommandBuffer(renderer, engine.Window.SwapchainImages, commandPool);
 
             AddInput(acquireImageSemaphore, VkPipelineStageFlags.TopOfPipeBit);
         }
 
-        void CreateCommandBuffer(Renderer renderer, IList<Image> images) {
-            commandBuffers = new List<CommandBuffer>(renderer.InternalCommandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
+        void CreateCommandBuffer(Renderer renderer, IList<Image> images, CommandPool commandPool) {
+            commandBuffers = new List<CommandBuffer>(commandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit;

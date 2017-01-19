@@ -6,6 +6,7 @@ using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
+using UWindow = UnnamedEngine.Core.Window;
 
 namespace Test {
     class Program {
@@ -27,11 +28,15 @@ namespace Test {
             Renderer renderer = new Renderer(instance, physicalDevice);
             Engine engine = new Engine(renderer);
 
-            Window window = new Window(engine, 800, 600, "Test");
+            UWindow window = new UWindow(engine, 800, 600, "Test");
             engine.Window = window;
 
-            AcquireImageNode acquireImageNode = new AcquireImageNode(engine);
-            PresentNode presentNode = new PresentNode(engine, acquireImageNode);
+            CommandPoolCreateInfo info = new CommandPoolCreateInfo();
+            info.queueFamilyIndex = renderer.GraphicsQueue.FamilyIndex;
+            CommandPool commandPool = new CommandPool(renderer.Device, info);
+
+            AcquireImageNode acquireImageNode = new AcquireImageNode(engine, commandPool);
+            PresentNode presentNode = new PresentNode(engine, acquireImageNode, commandPool);
             presentNode.AddInput(acquireImageNode);
 
             RenderGraph graph = new RenderGraph(engine);
@@ -40,7 +45,8 @@ namespace Test {
             graph.Add(presentNode);
             graph.Bake();
 
-            using (engine) {
+            using (engine)
+            using (commandPool) {
                 engine.Run();
             }
 
@@ -49,7 +55,7 @@ namespace Test {
 
         Instance CreateInstance() {
             ApplicationInfo appInfo = new ApplicationInfo(new VkVersion(1, 0, 0), new VkVersion(0, 0, 0), new VkVersion(0, 1, 0), "Test", "Unnamed Engine");
-            InstanceCreateInfo info = new InstanceCreateInfo(appInfo, new List<string>(GLFW_VK.GetRequiredInstanceExceptions()), new List<string>(layers));
+            InstanceCreateInfo info = new InstanceCreateInfo(appInfo, new List<string>(GLFW.GetRequiredInstanceExceptions()), new List<string>(layers));
             return new Instance(info);
         }
 

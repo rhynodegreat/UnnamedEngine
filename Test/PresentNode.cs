@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
+using UnnamedEngine.Rendering;
 
-namespace UnnamedEngine.Rendering {
+namespace Test {
     public class PresentNode : RenderNode, IDisposable {
         bool disposed;
         Renderer renderer;
@@ -19,7 +20,7 @@ namespace UnnamedEngine.Rendering {
 
         uint index;
 
-        public PresentNode(Engine engine, AcquireImageNode acquireImageNode) : base(engine.Renderer.Device, VkPipelineStageFlags.BottomOfPipeBit) {
+        public PresentNode(Engine engine, AcquireImageNode acquireImageNode, CommandPool commandPool) : base(engine.Renderer.Device, VkPipelineStageFlags.BottomOfPipeBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
             renderer = engine.Renderer;
@@ -36,11 +37,11 @@ namespace UnnamedEngine.Rendering {
 
             AddOutput(renderDoneSemaphore);
 
-            CreateCommandBuffers(renderer, engine.Window.SwapchainImages);
+            CreateCommandBuffers(renderer, engine.Window.SwapchainImages, commandPool);
         }
 
-        void CreateCommandBuffers(Renderer renderer, IList<Image> images) {
-            commandBuffers = new List<CommandBuffer>(renderer.InternalCommandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
+        void CreateCommandBuffers(Renderer renderer, IList<Image> images, CommandPool commandPool) {
+            commandBuffers = new List<CommandBuffer>(commandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit;

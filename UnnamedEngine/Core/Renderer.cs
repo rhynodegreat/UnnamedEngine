@@ -20,8 +20,6 @@ namespace UnnamedEngine.Core {
         public Queue GraphicsQueue { get; private set; }
         public Queue PresentQueue { get; private set; }
 
-        internal CommandPool InternalCommandPool { get; set; }
-
         public Renderer(Instance instance, PhysicalDevice physicalDevice) {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             if (physicalDevice == null) throw new ArgumentNullException(nameof(physicalDevice));
@@ -34,7 +32,6 @@ namespace UnnamedEngine.Core {
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
             info.queueFamilyIndex = GraphicsQueue.FamilyIndex;
             info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
-            InternalCommandPool = new CommandPool(Device, info);
         }
 
         void CreateDevice() {
@@ -84,8 +81,6 @@ namespace UnnamedEngine.Core {
 
         void Dispose(bool disposing) {
             if (disposed) return;
-
-            InternalCommandPool.Dispose();
 
             if (disposing) {
                 Device.Dispose();
