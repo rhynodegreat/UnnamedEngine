@@ -10,7 +10,6 @@ namespace UnnamedEngine.Core {
         bool disposed;
 
         Window window;
-        RenderGraph renderGraph;
 
         public Renderer Renderer { get; private set; }
 
@@ -24,11 +23,7 @@ namespace UnnamedEngine.Core {
             }
         }
 
-        public RenderGraph RenderGraph {
-            get {
-                return renderGraph;
-            }
-        }
+        public RenderGraph RenderGraph { get; private set; }
 
         public Engine(Renderer renderer) {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
