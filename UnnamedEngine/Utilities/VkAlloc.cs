@@ -171,6 +171,8 @@ namespace UnnamedEngine.Utilities {
                             return result;
                         }
                     }
+
+                    current = current.next;
                 }
 
                 return default(VkaAllocation);
