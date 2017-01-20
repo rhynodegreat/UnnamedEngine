@@ -21,7 +21,7 @@ namespace UnnamedEngine.Utilities {
             pageMap = new Dictionary<DeviceMemory, Page>();
 
             for (int i = 0; i < device.PhysicalDevice.MemoryProperties.memoryHeapCount; i++) {
-                Heap heap = new Heap(device, i, device.PhysicalDevice.MemoryProperties, pageSize);
+                Heap heap = new Heap(device, i, device.PhysicalDevice.MemoryProperties, pageSize, pageMap);
                 heaps.Add(heap);
             }
         }
@@ -39,6 +39,12 @@ namespace UnnamedEngine.Utilities {
             }
 
             throw new VkAllocOutOfMemoryException("Could not allocate memory");
+        }
+
+        public void Free(VkaAllocation allocation) {
+            if (!pageMap.ContainsKey(allocation.memory)) return;
+            Page page = pageMap[allocation.memory];
+            page.Free(allocation);
         }
 
         public void Dispose() {
@@ -61,20 +67,22 @@ namespace UnnamedEngine.Utilities {
         }
 
         public class Heap : IDisposable {
-            public List<Page> pages;
+            List<Page> pages;
             object locker;
             Device device;
             List<VkMemoryPropertyFlags> heapFlags;
             HashSet<int> typeIndices;
             int numTypes;
             ulong pageSize;
+            Dictionary<DeviceMemory, Page> pageMap;
 
-            public Heap(Device device, int heapIndex, VkPhysicalDeviceMemoryProperties props, ulong pageSize) {
+            public Heap(Device device, int heapIndex, VkPhysicalDeviceMemoryProperties props, ulong pageSize, Dictionary<DeviceMemory, Page> pageMap) {
                 this.device = device;
                 pages = new List<Page>();
                 locker = new object();
                 numTypes = (int)props.memoryTypeCount;
                 this.pageSize = pageSize;
+                this.pageMap = pageMap;
 
                 heapFlags = new List<VkMemoryPropertyFlags>();
                 typeIndices = new HashSet<int>();
@@ -122,7 +130,7 @@ namespace UnnamedEngine.Utilities {
                     }
 
                     ulong size = Math.Max(requirements.size, pageSize);
-                    Page newPage = new Page(device, size, typeIndex);
+                    Page newPage = new Page(device, size, typeIndex, pageMap);
                     pages.Add(newPage);
 
                     return newPage.AttemptAlloc(requirements);
@@ -139,43 +147,48 @@ namespace UnnamedEngine.Utilities {
         public class Page : IDisposable {
             DeviceMemory memory;
             Node head;
+            object locker;
 
-            public Page(Device device, ulong size, int typeIndex) {
+            public Page(Device device, ulong size, int typeIndex, Dictionary<DeviceMemory, Page> pageMap) {
                 memory = new DeviceMemory(device, size, (uint)typeIndex);
+                pageMap.Add(memory, this);
+                locker = new object();
 
                 head = new Node(0, size);
             }
 
             public VkaAllocation AttemptAlloc(VkMemoryRequirements requirements) {
-                Node current = head;
-                while (current != null) {
-                    if (current.free && current.size >= requirements.size) {
-                        ulong start = current.offset;
-                        ulong available = current.size;
+                lock (locker) {
+                    Node current = head;
+                    while (current != null) {
+                        if (current.free && current.size >= requirements.size) {
+                            ulong start = current.offset;
+                            ulong available = current.size;
 
-                        ulong unalign = start % requirements.alignment;
-                        ulong align;
+                            ulong unalign = start % requirements.alignment;
+                            ulong align;
 
-                        if (unalign == 0) {
-                            align = 0;
-                        } else {
-                            align = requirements.alignment - unalign;
+                            if (unalign == 0) {
+                                align = 0;
+                            } else {
+                                align = requirements.alignment - unalign;
+                            }
+
+                            start += align;
+                            available -= align;
+
+                            if (available >= requirements.size) {
+                                current.Split(start, requirements.size);
+                                VkaAllocation result = new VkaAllocation(memory, start, requirements.size);
+                                return result;
+                            }
                         }
 
-                        start += align;
-                        available -= align;
-
-                        if (available >= requirements.size) {
-                            current.Split(start, requirements.size);
-                            VkaAllocation result = new VkaAllocation(memory, start, requirements.size);
-                            return result;
-                        }
+                        current = current.next;
                     }
 
-                    current = current.next;
+                    return default(VkaAllocation);
                 }
-
-                return default(VkaAllocation);
             }
 
             public void Dispose() {
