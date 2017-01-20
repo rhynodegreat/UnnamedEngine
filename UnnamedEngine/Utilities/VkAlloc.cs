@@ -191,6 +191,28 @@ namespace UnnamedEngine.Utilities {
                 }
             }
 
+            public void Free(VkaAllocation allocation) {
+                lock (locker) {
+                    Node current = head;
+
+                    while (current != null) {
+                        if (current.free && current.offset == allocation.offset && current.size == allocation.size) {
+                            current.free = true;
+                            break;
+                        }
+
+                        current = current.next;
+                    }
+
+                    current = head;
+
+                    while (current != null) {
+                        current.Merge();
+                        current = current.next;
+                    }
+                }
+            }
+
             public void Dispose() {
                 memory.Dispose();
             }
@@ -235,6 +257,17 @@ namespace UnnamedEngine.Utilities {
                     Node end = new Node(endOffset, endSpace);
                     end.next = next;
                     next = end;
+                }
+            }
+
+            public void Merge() {
+                if (free) {
+                    Node next = this.next;
+                    while (next != null && next.free) {
+                        size += next.size;
+                        this.next = next.next;
+                        next = next.next;
+                    }
                 }
             }
         }
