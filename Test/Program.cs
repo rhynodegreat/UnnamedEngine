@@ -67,9 +67,11 @@ namespace Test {
 
             using (engine)
             using (commandPool)
-            using (vkAlloc)
-            using (buffer) {
-                engine.Run();
+            using (vkAlloc) {
+                using (buffer) {
+                    engine.Run();
+                }
+                vkAlloc.Free(alloc);
             }
 
             GLFW.Terminate();
