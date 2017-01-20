@@ -3,10 +3,12 @@ using System.Collections.Generic;
 
 using CSGL.GLFW;
 using CSGL.Vulkan;
+using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 using UWindow = UnnamedEngine.Core.Window;
+using UnnamedEngine.Utilities;
 
 namespace Test {
     class Program {
@@ -17,6 +19,10 @@ namespace Test {
         string[] layers = {
             "VK_LAYER_LUNARG_standard_validation",
             //"VK_LAYER_LUNARG_api_dump"
+        };
+
+        float[] data = {
+            1, 2, 3
         };
 
         void Run() {
@@ -44,8 +50,25 @@ namespace Test {
             graph.Add(presentNode);
             graph.Bake();
 
+            VkAlloc vkAlloc = new VkAlloc(renderer.Device, 32 * 1024 * 1024);
+
+            BufferCreateInfo bufferInfo = new BufferCreateInfo();
+            bufferInfo.queueFamilyIndices = new List<uint> { renderer.GraphicsQueue.FamilyIndex };
+            bufferInfo.usage = VkBufferUsageFlags.VertexBufferBit;
+            bufferInfo.sharingMode = VkSharingMode.Exclusive;
+            bufferInfo.size = (ulong)CSGL.Interop.SizeOf(this.data);
+            Buffer buffer = new Buffer(renderer.Device, bufferInfo);
+            
+            var alloc = vkAlloc.Alloc(buffer.Requirements, VkMemoryPropertyFlags.HostCoherentBit | VkMemoryPropertyFlags.HostVisibleBit);
+            buffer.Bind(alloc.memory, alloc.offset);
+            IntPtr data = alloc.memory.Map(alloc.offset, alloc.size);
+            CSGL.Interop.Copy(this.data, data);
+            alloc.memory.Unmap();
+
             using (engine)
-            using (commandPool) {
+            using (commandPool)
+            using (vkAlloc)
+            using (buffer) {
                 engine.Run();
             }
 
