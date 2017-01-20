@@ -148,16 +148,19 @@ namespace UnnamedEngine.Utilities {
             DeviceMemory memory;
             Node head;
             object locker;
+            ulong size;
 
             public Page(Device device, ulong size, int typeIndex, Dictionary<DeviceMemory, Page> pageMap) {
                 memory = new DeviceMemory(device, size, (uint)typeIndex);
                 pageMap.Add(memory, this);
                 locker = new object();
+                this.size = size;
 
                 head = new Node(0, size);
             }
 
             public VkaAllocation AttemptAlloc(VkMemoryRequirements requirements) {
+                if (requirements.size > size) return default(VkaAllocation);
                 lock (locker) {
                     Node current = head;
                     while (current != null) {
