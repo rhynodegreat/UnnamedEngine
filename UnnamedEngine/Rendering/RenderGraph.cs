@@ -18,7 +18,6 @@ namespace UnnamedEngine.Rendering {
 
         public RenderGraph(Engine engine) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            if (engine.Renderer == null) throw new ArgumentNullException(nameof(engine.Renderer));
 
             renderer = engine.Renderer;
             nodes = new HashSet<RenderNode>();

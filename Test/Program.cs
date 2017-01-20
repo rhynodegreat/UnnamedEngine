@@ -39,8 +39,7 @@ namespace Test {
             PresentNode presentNode = new PresentNode(engine, acquireImageNode, commandPool);
             presentNode.AddInput(acquireImageNode);
 
-            RenderGraph graph = new RenderGraph(engine);
-            engine.RenderGraph = graph;
+            RenderGraph graph = engine.RenderGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Bake();

@@ -28,16 +28,13 @@ namespace UnnamedEngine.Core {
             get {
                 return renderGraph;
             }
-            set {
-                if (value == null) throw new ArgumentNullException(nameof(RenderGraph));
-                renderGraph = value;
-            }
         }
 
         public Engine(Renderer renderer) {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
 
             Renderer = renderer;
+            RenderGraph = new RenderGraph(this);
         }
 
         public void Run() {
