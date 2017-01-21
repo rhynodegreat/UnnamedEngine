@@ -44,7 +44,9 @@ namespace UnnamedEngine.Utilities {
             }
 
             public void Reset() {
-                used = 0;
+                lock (locker) {
+                    used = 0;
+                }
             }
         }
     }
