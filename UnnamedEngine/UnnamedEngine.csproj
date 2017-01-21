@@ -52,7 +52,7 @@
     <Compile Include="Rendering\RenderGraph.cs" />
     <Compile Include="Rendering\RenderNode.cs" />
     <Compile Include="Utilities\OpenList.cs" />
-    <Compile Include="Utilities\VkAlloc.cs" />
+    <Compile Include="Utilities\VkAlloc\VkAlloc.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CSharpGameLibrary\CSGL.Vulkan\CSGL.Vulkan.csproj">
