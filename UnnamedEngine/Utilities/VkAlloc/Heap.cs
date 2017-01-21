@@ -10,8 +10,7 @@ namespace UnnamedEngine.Utilities {
             object locker;
             Device device;
             List<VkMemoryPropertyFlags> heapFlags;
-            HashSet<int> typeIndices;
-            int numTypes;
+            List<int> typeIndices;
             ulong pageSize;
             Dictionary<DeviceMemory, Page> pageMap;
 
@@ -19,12 +18,11 @@ namespace UnnamedEngine.Utilities {
                 this.device = device;
                 pages = new List<Page>();
                 locker = new object();
-                numTypes = (int)props.memoryTypeCount;
                 this.pageSize = pageSize;
                 this.pageMap = pageMap;
 
                 heapFlags = new List<VkMemoryPropertyFlags>();
-                typeIndices = new HashSet<int>();
+                typeIndices = new List<int>();
 
                 for (int i = 0; i < props.memoryTypeCount; i++) {
                     var type = props.GetMemoryTypes(i);
@@ -39,8 +37,8 @@ namespace UnnamedEngine.Utilities {
                 bool typeMatch = false;
                 typeIndex = -1;
 
-                for (int i = 0; i < numTypes; i++) {
-                    if ((memoryBits & (1 << i)) != 0 && typeIndices.Contains(i)) {
+                for (int i = 0; i < typeIndices.Count; i++) {
+                    if ((memoryBits & (1 << typeIndices[i])) != 0) {
                         typeMatch = true;
                         typeIndex = i;
                         break;
