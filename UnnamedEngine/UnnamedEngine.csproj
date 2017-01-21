@@ -52,6 +52,9 @@
     <Compile Include="Rendering\RenderGraph.cs" />
     <Compile Include="Rendering\RenderNode.cs" />
     <Compile Include="Utilities\OpenList.cs" />
+    <Compile Include="Utilities\VkAlloc\Heap.cs" />
+    <Compile Include="Utilities\VkAlloc\Node.cs" />
+    <Compile Include="Utilities\VkAlloc\Page.cs" />
     <Compile Include="Utilities\VkAlloc\VkAlloc.cs" />
   </ItemGroup>
   <ItemGroup>
