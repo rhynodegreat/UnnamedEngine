@@ -241,7 +241,7 @@ namespace UnnamedEngine.Utilities {
                     //entire node was taken, so mark this a not free
                     free = false;
                 } else if (start > offset) {
-                    //some space was left in the beginning, so use this node for that and mark a new one a not free
+                    //some space was left in the beginning, so use this node for that and mark as new one a not free
                     ulong startSpace = start - offset;
                     this.size = startSpace;
 
