@@ -19,11 +19,15 @@ namespace UnnamedEngine.Utilities {
             this.device = device;
             this.pageSize = pageSize;
             heaps = new List<Heap>();
+            linearHeaps = new List<LinearHeap>();
             pageMap = new Dictionary<DeviceMemory, Page>();
 
             for (int i = 0; i < device.PhysicalDevice.MemoryProperties.memoryHeapCount; i++) {
                 Heap heap = new Heap(device, i, device.PhysicalDevice.MemoryProperties, pageSize, pageMap);
                 heaps.Add(heap);
+
+                LinearHeap lHeap = new LinearHeap(device, i, device.PhysicalDevice.MemoryProperties, pageSize);
+                linearHeaps.Add(lHeap);
             }
         }
 
