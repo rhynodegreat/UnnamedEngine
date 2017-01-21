@@ -6,7 +6,7 @@ using CSGL;
 using CSGL.Vulkan;
 
 namespace UnnamedEngine.Utilities {
-    public class VkAlloc : IDisposable {
+    public partial class VkAllocator : IDisposable {
         bool disposed;
         Device device;
 
@@ -14,7 +14,7 @@ namespace UnnamedEngine.Utilities {
         List<Heap> heaps;
         Dictionary<DeviceMemory, Page> pageMap;
 
-        public VkAlloc(Device device, ulong pageSize) {
+        public VkAllocator(Device device, ulong pageSize) {
             this.device = device;
             this.pageSize = pageSize;
             heaps = new List<Heap>();
@@ -62,7 +62,7 @@ namespace UnnamedEngine.Utilities {
             disposed = true;
         }
 
-        ~VkAlloc() {
+        ~VkAllocator() {
             Dispose(false);
         }
 

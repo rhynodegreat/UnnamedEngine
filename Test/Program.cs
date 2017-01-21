@@ -50,7 +50,7 @@ namespace Test {
             graph.Add(presentNode);
             graph.Bake();
 
-            VkAlloc vkAlloc = new VkAlloc(renderer.Device, 32 * 1024 * 1024);
+            VkAllocator vkAlloc = new VkAllocator(renderer.Device, 32 * 1024 * 1024);
 
             BufferCreateInfo bufferInfo = new BufferCreateInfo();
             bufferInfo.queueFamilyIndices = new List<uint> { renderer.GraphicsQueue.FamilyIndex };
