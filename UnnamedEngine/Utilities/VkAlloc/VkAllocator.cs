@@ -13,6 +13,7 @@ namespace UnnamedEngine.Utilities {
         ulong pageSize;
         List<Heap> heaps;
         Dictionary<DeviceMemory, Page> pageMap;
+        List<LinearHeap> linearHeaps;
 
         public VkAllocator(Device device, ulong pageSize) {
             this.device = device;
@@ -45,6 +46,27 @@ namespace UnnamedEngine.Utilities {
             if (!pageMap.ContainsKey(allocation.memory)) return;
             Page page = pageMap[allocation.memory];
             page.Free(allocation);
+        }
+
+        public VkaAllocation AllocTemp(VkMemoryRequirements requirements, VkMemoryPropertyFlags flags) {
+            if (requirements.size == 0) return default(VkaAllocation);
+            for (int i = 0; i < linearHeaps.Count; i++) {
+                int typeIndex;
+                if (linearHeaps[i].Match(requirements.memoryTypeBits, flags, out typeIndex)) {
+                    VkaAllocation result = linearHeaps[i].Alloc(requirements, typeIndex);
+                    if (result.memory != null) {
+                        return result;
+                    }
+                }
+            }
+
+            throw new VkAllocOutOfMemoryException("Could not allocate memory");
+        }
+
+        public void ResetTemp() {
+            for (int i = 0; i < linearHeaps.Count; i++) {
+                linearHeaps[i].Reset();
+            }
         }
 
         public void Dispose() {
