@@ -74,6 +74,14 @@ namespace UnnamedEngine.Utilities {
                     return newPage.AttemptAlloc(requirements);
                 }
             }
+
+            public void Reset() {
+                lock (locker) {
+                    for (int i = 0; i < pages.Count; i++) {
+                        pages[i].Reset();
+                    }
+                }
+            }
         }
     }
 }
