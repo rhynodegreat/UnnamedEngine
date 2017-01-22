@@ -45,7 +45,7 @@ namespace Test {
             PresentNode presentNode = new PresentNode(engine, acquireImageNode, commandPool);
             presentNode.AddInput(acquireImageNode);
 
-            RenderGraph graph = engine.RenderGraph;
+            CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Bake();
@@ -67,11 +67,9 @@ namespace Test {
 
             using (engine)
             using (commandPool)
-            using (vkAlloc) {
-                using (buffer) {
-                    engine.Run();
-                }
-                vkAlloc.Free(alloc);
+            using (vkAlloc)
+            using (buffer) {
+                engine.Run();
             }
 
             GLFW.Terminate();

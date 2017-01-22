@@ -7,7 +7,7 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class AcquireImageNode : RenderNode, IDisposable {
+    public class AcquireImageNode : CommandNode, IDisposable {
         bool disposed;
         Renderer renderer;
         Swapchain swapchain;
@@ -117,8 +117,7 @@ namespace Test {
 
         protected override void Dispose(bool disposing) {
             if (disposed) return;
-
-            base.Dispose(disposing);
+            
             acquireImageSemaphore.Dispose();
 
             disposed = true;

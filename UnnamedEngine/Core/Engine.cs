@@ -23,25 +23,25 @@ namespace UnnamedEngine.Core {
             }
         }
 
-        public RenderGraph RenderGraph { get; private set; }
+        public CommandGraph CommandGraph { get; private set; }
 
         public Engine(Renderer renderer) {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
 
             Renderer = renderer;
-            RenderGraph = new RenderGraph(this);
+            CommandGraph = new CommandGraph(this);
         }
 
         public void Run() {
             if (Window == null) throw new EngineException("Window not set");
-            if (RenderGraph == null) throw new EngineException("Render Graph not set");
+            if (CommandGraph == null) throw new EngineException("Render Graph not set");
 
             while (true) {
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
 
-                RenderGraph.Render();
+                CommandGraph.Render();
             }
 
             Renderer.Device.WaitIdle();
@@ -56,7 +56,7 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
-                RenderGraph.Dispose();
+                CommandGraph.Dispose();
                 Window.Dispose();
                 Renderer.Dispose();
             }

@@ -7,7 +7,7 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class PresentNode : RenderNode, IDisposable {
+    public class PresentNode : CommandNode, IDisposable {
         bool disposed;
         Renderer renderer;
         AcquireImageNode acquireImageNode;
@@ -100,8 +100,7 @@ namespace Test {
 
         protected override void Dispose(bool disposing) {
             if (disposed) return;
-
-            base.Dispose(disposing);
+            
             renderDoneSemaphore.Dispose();
 
             disposed = true;

@@ -49,8 +49,8 @@
     <Compile Include="Input\Input.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\Renderer.cs" />
-    <Compile Include="Rendering\RenderGraph.cs" />
-    <Compile Include="Rendering\RenderNode.cs" />
+    <Compile Include="Rendering\CommandGraph.cs" />
+    <Compile Include="Rendering\CommandNode.cs" />
     <Compile Include="Utilities\OpenList.cs" />
     <Compile Include="Utilities\Pool.cs" />
     <Compile Include="Utilities\VkAlloc\Heap.cs" />
