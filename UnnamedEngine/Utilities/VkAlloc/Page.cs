@@ -10,14 +10,20 @@ namespace UnnamedEngine.Utilities {
             Node head;
             object locker;
             ulong size;
+            int typeIndex;
 
             public Page(Device device, ulong size, int typeIndex, Dictionary<DeviceMemory, Page> pageMap) {
                 memory = new DeviceMemory(device, size, (uint)typeIndex);
                 pageMap.Add(memory, this);
                 locker = new object();
                 this.size = size;
+                this.typeIndex = typeIndex;
 
                 head = new Node(0, size);
+            }
+
+            public bool Match(int typeIndex) {
+                return this.typeIndex == typeIndex;
             }
 
             public VkaAllocation AttemptAlloc(VkMemoryRequirements requirements) {

@@ -60,9 +60,11 @@ namespace UnnamedEngine.Utilities {
             public VkaAllocation Alloc(VkMemoryRequirements requirements, int typeIndex) {
                 lock (locker) {
                     for (int i = 0; i < pages.Count; i++) {
-                        VkaAllocation result = pages[i].AttemptAlloc(requirements);
-                        if (result.memory != null) {
-                            return result;
+                        if (pages[i].Match(typeIndex)) {
+                            VkaAllocation result = pages[i].AttemptAlloc(requirements);
+                            if (result.memory != null) {
+                                return result;
+                            }
                         }
                     }
 
