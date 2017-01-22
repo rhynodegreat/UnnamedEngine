@@ -6,7 +6,6 @@ using CSGL.Vulkan;
 using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
-using UnnamedEngine.Rendering;
 using UWindow = UnnamedEngine.Core.Window;
 using UnnamedEngine.Utilities;
 

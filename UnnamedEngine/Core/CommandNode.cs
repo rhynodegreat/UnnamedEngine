@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using CSGL.Vulkan;
 
-namespace UnnamedEngine.Rendering {
+namespace UnnamedEngine.Core {
     public abstract class CommandNode : IDisposable {
         bool disposed;
         Device device;

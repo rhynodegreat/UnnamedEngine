@@ -7,7 +7,7 @@ using CSGL.Vulkan;
 using UnnamedEngine.Core;
 using UnnamedEngine.Utilities;
 
-namespace UnnamedEngine.Rendering {
+namespace UnnamedEngine.Core {
     public class CommandGraph : IDisposable {
         bool disposed;
         Renderer renderer;

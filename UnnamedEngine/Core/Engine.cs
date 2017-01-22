@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 using CSGL.GLFW;
 
-using UnnamedEngine.Rendering;
-
 namespace UnnamedEngine.Core {
     public class Engine : IDisposable {
         bool disposed;
