@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
-using UnnamedEngine.Rendering;
 
 namespace Test {
     public class PresentNode : CommandNode, IDisposable {
