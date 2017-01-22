@@ -40,7 +40,7 @@ namespace UnnamedEngine.Utilities {
                 for (int i = 0; i < typeIndices.Count; i++) {
                     if ((memoryBits & (1 << typeIndices[i])) != 0) {
                         typeMatch = true;
-                        typeIndex = i;
+                        typeIndex = typeIndices[i];
                         break;
                     }
                 }
