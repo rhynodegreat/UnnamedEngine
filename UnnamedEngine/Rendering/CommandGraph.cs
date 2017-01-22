@@ -72,7 +72,7 @@ namespace UnnamedEngine.Rendering {
             }
         }
 
-        void Clear() {
+        public void Clear() {
             foreach (var info in infos) {
                 Clear(info);
             }
