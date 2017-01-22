@@ -52,6 +52,7 @@
     <Compile Include="Rendering\RenderGraph.cs" />
     <Compile Include="Rendering\RenderNode.cs" />
     <Compile Include="Utilities\OpenList.cs" />
+    <Compile Include="Utilities\Pool.cs" />
     <Compile Include="Utilities\VkAlloc\Heap.cs" />
     <Compile Include="Utilities\VkAlloc\LinearHeap.cs" />
     <Compile Include="Utilities\VkAlloc\LinearPage.cs" />
