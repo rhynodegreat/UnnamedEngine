@@ -22,7 +22,7 @@ namespace Test {
             }
         }
 
-        public AcquireImageNode(Engine engine, CommandPool commandPool) : base(engine.Renderer.Device, VkPipelineStageFlags.TopOfPipeBit) {
+        public AcquireImageNode(Engine engine, CommandPool commandPool) : base(engine.Renderer.Device, VkPipelineStageFlags.TransferBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             renderer = engine.Renderer;
             swapchain = engine.Window.Swapchain;
