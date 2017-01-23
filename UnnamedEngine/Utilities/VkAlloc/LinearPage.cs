@@ -5,7 +5,7 @@ using CSGL.Vulkan;
 
 namespace UnnamedEngine.Utilities {
     public partial class VkAllocator {
-        class LinearPage {
+        class LinearPage : IDisposable {
             DeviceMemory memory;
             object locker;
             ulong size;
@@ -53,6 +53,10 @@ namespace UnnamedEngine.Utilities {
                 lock (locker) {
                     used = 0;
                 }
+            }
+
+            public void Dispose() {
+                memory.Dispose();
             }
         }
     }

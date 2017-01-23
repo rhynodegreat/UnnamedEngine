@@ -91,8 +91,12 @@ namespace UnnamedEngine.Utilities {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            for (int i = 0; i < heaps.Count; i++) {
-                heaps[i].Dispose();
+            foreach (var heap in heaps) {
+                heap.Dispose();
+            }
+
+            foreach (var heap in linearHeaps) {
+                heap.Dispose();
             }
 
             disposed = true;

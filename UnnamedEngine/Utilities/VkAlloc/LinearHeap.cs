@@ -5,7 +5,7 @@ using CSGL.Vulkan;
 
 namespace UnnamedEngine.Utilities {
     public partial class VkAllocator {
-        class LinearHeap {
+        class LinearHeap : IDisposable {
             Device device;
 
             List<LinearPage> pages;
@@ -70,6 +70,12 @@ namespace UnnamedEngine.Utilities {
                     for (int i = 0; i < pages.Count; i++) {
                         pages[i].Reset();
                     }
+                }
+            }
+
+            public void Dispose() {
+                foreach (var page in pages) {
+                    page.Dispose();
                 }
             }
         }
