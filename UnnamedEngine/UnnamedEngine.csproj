@@ -51,6 +51,7 @@
     <Compile Include="Core\Renderer.cs" />
     <Compile Include="Core\CommandGraph.cs" />
     <Compile Include="Core\CommandNode.cs" />
+    <Compile Include="Resources\TransferNode.cs" />
     <Compile Include="Utilities\OpenList.cs" />
     <Compile Include="Utilities\Pool.cs" />
     <Compile Include="Utilities\VkAlloc\Heap.cs" />
