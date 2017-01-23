@@ -10,8 +10,7 @@ namespace UnnamedEngine.Utilities {
 
             List<LinearPage> pages;
             object locker;
-            List<VkMemoryPropertyFlags> heapFlags;
-            List<int> typeIndices;
+            List<MemoryType> memoryTypes;
             int numTypes;
             ulong pageSize;
 
@@ -22,40 +21,29 @@ namespace UnnamedEngine.Utilities {
                 numTypes = (int)props.memoryTypeCount;
                 this.pageSize = pageSize;
 
-                heapFlags = new List<VkMemoryPropertyFlags>();
-                typeIndices = new List<int>();
+                memoryTypes = new List<MemoryType>();
 
                 for (int i = 0; i < props.memoryTypeCount; i++) {
                     var type = props.GetMemoryTypes(i);
                     if (type.heapIndex == heapIndex) {
-                        typeIndices.Add(i);
-                        heapFlags.Add(type.propertyFlags);
+                        memoryTypes.Add(new MemoryType(i, type.propertyFlags));
                     }
                 }
             }
 
             public bool Match(uint memoryBits, VkMemoryPropertyFlags flags, out int typeIndex) {
-                bool typeMatch = false;
                 typeIndex = -1;
 
-                for (int i = 0; i < typeIndices.Count; i++) {
-                    if ((memoryBits & (1 << typeIndices[i])) != 0) {
-                        typeMatch = true;
-                        typeIndex = i;
-                        break;
+                for (int i = 0; i < memoryTypes.Count; i++) {
+                    for (int j = 0; j < 32; i++) {
+                        if ((memoryTypes[i].typeIndex & (1 << j)) != 0 && memoryTypes[i].flags == flags) {
+                            typeIndex = memoryTypes[i].typeIndex;
+                            return true;
+                        }
                     }
                 }
 
-                bool flagMatch = false;
-
-                for (int i = 0; i < heapFlags.Count; i++) {
-                    if ((heapFlags[i] & flags) == flags) {
-                        flagMatch = true;
-                        break;
-                    }
-                }
-
-                return typeMatch && flagMatch;
+                return false;
             }
 
             public VkaAllocation Alloc(VkMemoryRequirements requirements, int typeIndex) {

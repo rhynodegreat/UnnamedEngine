@@ -15,6 +15,16 @@ namespace UnnamedEngine.Utilities {
         Dictionary<DeviceMemory, Page> pageMap;
         List<LinearHeap> linearHeaps;
 
+        struct MemoryType {
+            public int typeIndex;
+            public VkMemoryPropertyFlags flags;
+
+            public MemoryType(int typeIndex, VkMemoryPropertyFlags flags) {
+                this.typeIndex = typeIndex;
+                this.flags = flags;
+            }
+        }
+
         public VkAllocator(Device device, ulong pageSize) {
             this.device = device;
             this.pageSize = pageSize;
