@@ -29,9 +29,6 @@ namespace UnnamedEngine.Core {
 
             CreateDevice();
 
-            CommandPoolCreateInfo info = new CommandPoolCreateInfo();
-            info.queueFamilyIndex = GraphicsQueue.FamilyIndex;
-            info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
         }
 
         void CreateDevice() {
