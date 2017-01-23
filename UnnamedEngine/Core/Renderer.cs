@@ -85,6 +85,7 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
+                Allocator.Dispose();
                 Device.Dispose();
                 Instance.Dispose();
             }
