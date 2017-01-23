@@ -14,6 +14,6 @@ namespace UnnamedEngine.Resources {
 
         }
 
-        public abstract void Transfer<T>(T[] data, Buffer buffer, VkBufferUsageFlags usage) where T : struct;
+        public abstract void Transfer<T>(T[] data, Buffer buffer) where T : struct;
     }
 }
