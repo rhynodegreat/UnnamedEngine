@@ -35,6 +35,7 @@ namespace UnnamedEngine.Core {
             if (CommandGraph == null) throw new EngineException("Render Graph not set");
 
             while (true) {
+                Renderer.Allocator.ResetTemp();
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
