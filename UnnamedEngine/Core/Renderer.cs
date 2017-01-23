@@ -5,6 +5,8 @@ using CSGL;
 using CSGL.GLFW;
 using CSGL.Vulkan;
 
+using UnnamedEngine.Utilities;
+
 namespace UnnamedEngine.Core {
     public class Renderer : IDisposable {
         bool disposed;
@@ -20,6 +22,8 @@ namespace UnnamedEngine.Core {
         public Queue GraphicsQueue { get; private set; }
         public Queue PresentQueue { get; private set; }
 
+        public VkAllocator Allocator { get; private set; }
+
         public Renderer(Instance instance, PhysicalDevice physicalDevice) {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             if (physicalDevice == null) throw new ArgumentNullException(nameof(physicalDevice));
@@ -29,6 +33,7 @@ namespace UnnamedEngine.Core {
 
             CreateDevice();
 
+            Allocator = new VkAllocator(Device, 16 * 1024 * 1024);
         }
 
         void CreateDevice() {
