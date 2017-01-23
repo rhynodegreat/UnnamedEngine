@@ -6,7 +6,7 @@ using CSGL.Vulkan;
 namespace UnnamedEngine.Core {
     public abstract class CommandNode : IDisposable {
         bool disposed;
-        Device device;
+        protected Device device;
         List<CommandNode> input;
         List<CommandNode> output;
 
