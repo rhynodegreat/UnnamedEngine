@@ -46,12 +46,15 @@ namespace Test {
             presentNode.AddInput(acquireImageNode);
 
             StagingNode staging = new StagingNode(engine);
-            presentNode.AddInput(staging);
+
+            TriangleNode triangle = new TriangleNode(engine, acquireImageNode, staging);
+            presentNode.AddInput(triangle);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Add(staging);
+            graph.Add(triangle);
             graph.Bake();
 
             using (engine)
