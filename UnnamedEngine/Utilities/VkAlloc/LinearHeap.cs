@@ -11,6 +11,7 @@ namespace UnnamedEngine.Utilities {
             List<LinearPage> pages;
             object locker;
             List<MemoryType> memoryTypes;
+            int totalMemoryTypes;
             int numTypes;
             ulong pageSize;
 
@@ -20,6 +21,7 @@ namespace UnnamedEngine.Utilities {
                 locker = new object();
                 numTypes = (int)props.memoryTypeCount;
                 this.pageSize = pageSize;
+                totalMemoryTypes = (int)props.memoryTypeCount;
 
                 memoryTypes = new List<MemoryType>();
 
@@ -36,7 +38,7 @@ namespace UnnamedEngine.Utilities {
 
                 for (int i = 0; i < memoryTypes.Count; i++) {
                     for (int j = 0; j < 32; j++) {
-                        if ((memoryTypes[i].typeIndex & (1 << j)) != 0 && memoryTypes[i].flags == flags) {
+                        if ((memoryBits & (1 << j)) != 0 && memoryTypes[i].typeIndex == j && memoryTypes[i].flags == flags) {
                             typeIndex = memoryTypes[i].typeIndex;
                             return true;
                         }

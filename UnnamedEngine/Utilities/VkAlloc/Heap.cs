@@ -10,6 +10,7 @@ namespace UnnamedEngine.Utilities {
             object locker;
             Device device;
             List<MemoryType> memoryTypes;
+            int totalMemoryTypes;
             ulong pageSize;
             Dictionary<DeviceMemory, Page> pageMap;
 
@@ -19,6 +20,7 @@ namespace UnnamedEngine.Utilities {
                 locker = new object();
                 this.pageSize = pageSize;
                 this.pageMap = pageMap;
+                totalMemoryTypes = (int)props.memoryTypeCount;
 
                 memoryTypes = new List<MemoryType>();
 
@@ -34,8 +36,8 @@ namespace UnnamedEngine.Utilities {
                 typeIndex = -1;
 
                 for (int i = 0; i < memoryTypes.Count; i++) {
-                    for (int j = 0; j < 32; i++) {
-                        if ((memoryTypes[i].typeIndex & (1 << j)) != 0 && memoryTypes[i].flags == flags) {
+                    for (int j = 0; j < totalMemoryTypes; j++) {
+                        if ((memoryBits & (1 << j)) != 0 && memoryTypes[i].typeIndex == j && memoryTypes[i].flags == flags) {
                             typeIndex = memoryTypes[i].typeIndex;
                             return true;
                         }
