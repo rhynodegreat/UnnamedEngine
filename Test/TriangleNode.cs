@@ -14,6 +14,7 @@ using UnnamedEngine.Utilities;
 namespace Test {
     public class TriangleNode : CommandNode, IDisposable {
         bool disposed;
+        Engine engine;
         AcquireImageNode acquireImageNode;
         TransferNode transferNode;
 
@@ -42,6 +43,7 @@ namespace Test {
             if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
             if (transferNode == null) throw new ArgumentNullException(nameof(transferNode));
 
+            this.engine = engine;
             this.acquireImageNode = acquireImageNode;
             this.transferNode = transferNode;
             
@@ -303,6 +305,7 @@ namespace Test {
             foreach (var fb in framebuffers) fb.Dispose();
             foreach (var iv in imageViews) iv.Dispose();
             renderPass.Dispose();
+            engine.Renderer.Allocator.Free(vertexAllocation);
 
             disposed = true;
         }
