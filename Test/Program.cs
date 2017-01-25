@@ -7,6 +7,7 @@ using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
 using UWindow = UnnamedEngine.Core.Window;
+using UnnamedEngine.Resources;
 using UnnamedEngine.Utilities;
 
 namespace Test {
@@ -44,29 +45,27 @@ namespace Test {
             PresentNode presentNode = new PresentNode(engine, acquireImageNode, commandPool);
             presentNode.AddInput(acquireImageNode);
 
+            StagingNode staging = new StagingNode(engine);
+
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
-            graph.Bake();
-
-            VkAllocator vkAlloc = new VkAllocator(renderer.Device, 32 * 1024 * 1024);
+            graph.Add(staging);
+            graph.Bake();            
 
             BufferCreateInfo bufferInfo = new BufferCreateInfo();
-            bufferInfo.queueFamilyIndices = new List<uint> { renderer.GraphicsQueue.FamilyIndex };
-            bufferInfo.usage = VkBufferUsageFlags.VertexBufferBit;
+            bufferInfo.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
             bufferInfo.sharingMode = VkSharingMode.Exclusive;
-            bufferInfo.size = (ulong)CSGL.Interop.SizeOf(this.data);
+            bufferInfo.size = (ulong)CSGL.Interop.SizeOf(data);
             Buffer buffer = new Buffer(renderer.Device, bufferInfo);
-            
-            var alloc = vkAlloc.Alloc(buffer.Requirements, VkMemoryPropertyFlags.HostCoherentBit | VkMemoryPropertyFlags.HostVisibleBit);
+
+            VkaAllocation alloc = engine.Renderer.Allocator.Alloc(buffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
             buffer.Bind(alloc.memory, alloc.offset);
-            IntPtr data = alloc.memory.Map(alloc.offset, alloc.size);
-            CSGL.Interop.Copy(this.data, data);
-            alloc.memory.Unmap();
+
+            staging.Transfer(data, buffer);
 
             using (engine)
             using (commandPool)
-            using (vkAlloc)
             using (buffer) {
                 engine.Run();
             }
