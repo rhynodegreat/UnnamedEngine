@@ -88,6 +88,7 @@ namespace UnnamedEngine.Resources {
             if (buffer == null) throw new ArgumentNullException(nameof(buffer));
 
             if ((buffer.Usage & VkBufferUsageFlags.TransferDstBit) == 0) throw new TransferException("Buffer.Usage must include TransferDstBit");
+            if (!buffer.Bound) throw new TransferException("Buffer must be bound to a VkDeviceMemory object");
 
             var info = new BufferCreateInfo();
             info.size = (uint)Interop.SizeOf(data);
