@@ -194,8 +194,8 @@ namespace UnnamedEngine.Core {
         }
     }
 
-    public class RenderGraphException : Exception {
-        public RenderGraphException(string message) : base(message) { }
-        public RenderGraphException(string format, params object[] args) : base(string.Format(format, args)) { }
+    public class CommandGraphException : Exception {
+        public CommandGraphException(string message) : base(message) { }
+        public CommandGraphException(string format, params object[] args) : base(string.Format(format, args)) { }
     }
 }
