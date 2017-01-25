@@ -49,11 +49,26 @@ namespace UnnamedEngine.Utilities {
 
             public VkaAllocation Alloc(VkMemoryRequirements requirements, int typeIndex) {
                 lock (locker) {
+                    //look for pages with matching default size first
                     for (int i = 0; i < pages.Count; i++) {
-                        if (pages[i].Match(typeIndex)) {
-                            VkaAllocation result = pages[i].AttemptAlloc(requirements);
-                            if (result.memory != null) {
-                                return result;
+                        if (pages[i].Size == pageSize) {
+                            if (pages[i].Match(typeIndex)) {
+                                VkaAllocation result = pages[i].AttemptAlloc(requirements);
+                                if (result.memory != null) {
+                                    return result;
+                                }
+                            }
+                        }
+                    }
+
+                    //then try to use the larger pages
+                    for (int i = 0; i < pages.Count; i++) {
+                        if (pages[i].Size != pageSize) {
+                            if (pages[i].Match(typeIndex)) {
+                                VkaAllocation result = pages[i].AttemptAlloc(requirements);
+                                if (result.memory != null) {
+                                    return result;
+                                }
                             }
                         }
                     }

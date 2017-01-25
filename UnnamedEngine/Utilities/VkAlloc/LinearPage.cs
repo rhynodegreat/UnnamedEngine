@@ -12,6 +12,12 @@ namespace UnnamedEngine.Utilities {
             ulong used;
             int typeIndex;
 
+            public ulong Size {
+                get {
+                    return size;
+                }
+            }
+
             public LinearPage(Device device, ulong size, int typeIndex) {
                 memory = new DeviceMemory(device, size, (uint)typeIndex);
                 locker = new object();
