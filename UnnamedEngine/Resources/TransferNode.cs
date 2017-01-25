@@ -14,4 +14,9 @@ namespace UnnamedEngine.Resources {
 
         public abstract void Transfer<T>(T[] data, Buffer buffer) where T : struct;
     }
+
+    public class TransferException : Exception {
+        public TransferException(string message) : base(message) { }
+        public TransferException(string format, params object[] args) : base(string.Format(format, args)) { }
+    }
 }
