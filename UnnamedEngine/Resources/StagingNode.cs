@@ -65,8 +65,6 @@ namespace UnnamedEngine.Resources {
 
             buffer.Begin(beginInfo);
 
-            VkBufferCopy[] regions = new VkBufferCopy[1];
-
             lock (transfers) {
                 for (int i = 0; i < transfers.Count; i++) {
                     VkBufferCopy region = new VkBufferCopy();
@@ -74,9 +72,7 @@ namespace UnnamedEngine.Resources {
                     region.dstOffset = 0;
                     region.size = transfers[i].dest.Size;
 
-                    regions[0] = region;
-
-                    buffer.Copy(transfers[i].staging, transfers[i].dest, regions);
+                    buffer.Copy(transfers[i].staging, transfers[i].dest);
                     completed.Add(transfers[i]);
                 }
                 transfers.Clear();
