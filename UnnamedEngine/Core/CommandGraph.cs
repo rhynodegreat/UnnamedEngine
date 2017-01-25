@@ -18,6 +18,7 @@ namespace UnnamedEngine.Core {
         List<CommandNode> nodeList;
         Dictionary<CommandNode, SubmitInfo> nodeMap;
         ParallelOptions options;
+        Fence fence;
 
         public CommandGraph(Engine engine) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -34,6 +35,10 @@ namespace UnnamedEngine.Core {
             options = new ParallelOptions();
             options.MaxDegreeOfParallelism = Environment.ProcessorCount;
             nodeMap = new Dictionary<CommandNode, SubmitInfo>();
+
+            FenceCreateInfo info = new FenceCreateInfo();
+            info.Flags = VkFenceCreateFlags.SignaledBit;
+            fence = new Fence(renderer.Device, info);
         }
 
         public void Add(CommandNode node) {
@@ -117,12 +122,15 @@ namespace UnnamedEngine.Core {
         }
         
         public void Render() {
+            fence.Wait();
+            fence.Reset();
+
             for (int i = 0; i < nodeList.Count; i++) {
                 nodeList[i].PreRender();
             }
 
             Parallel.For(0, nodeList.Count, options, Render);
-            renderer.GraphicsQueue.Submit(infos);
+            renderer.GraphicsQueue.Submit(infos, fence);
 
             for (int i = 0; i < nodeList.Count; i++) {
                 nodeList[i].PostRender();
@@ -171,6 +179,8 @@ namespace UnnamedEngine.Core {
             foreach (var sem in semaphores) {
                 sem.Dispose();
             }
+
+            fence.Dispose();
             
             disposed = true;
         }
