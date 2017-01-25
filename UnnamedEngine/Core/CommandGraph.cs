@@ -53,31 +53,51 @@ namespace UnnamedEngine.Core {
             nodeMap.Remove(node);
         }
 
+        struct SortState {
+            public bool open;
+            public bool finished;
+        }
+
         public void Bake() {
-            Queue<CommandNode> eventQueue = new Queue<CommandNode>();
-            HashSet<CommandNode> traversed = new HashSet<CommandNode>();
-            
-            foreach (var pair in nodeMap) {
-                if (pair.Key.Input.Count == 0) {    //find the nodes that have no input and queue them for later
-                    eventQueue.Enqueue(pair.Key);
-                }
+            //https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
+            Stack<CommandNode> stack = new Stack<CommandNode>();
+            Dictionary<CommandNode, SortState> sortState = new Dictionary<CommandNode, SortState>();
+
+            foreach (var node in nodeMap.Keys) {
+                sortState.Add(node, new SortState());
             }
 
-            infos.Clear();
+            foreach (var node in nodeMap.Keys) {
+                Visit(stack, sortState, node);
+            }
+
             nodeList.Clear();
-            
-            while (eventQueue.Count > 0) {
-                CommandNode node = eventQueue.Dequeue();
+            infos.Clear();
+
+            while (stack.Count > 0) {
+                var node = stack.Pop();
                 nodeList.Add(node);
                 infos.Add(nodeMap[node]);
-                Clear(nodeMap[node]);
                 Bake(node);
-                for (int i = 0; i < node.Output.Count; i++) {
-                    if (!traversed.Contains(node.Output[i])) {
-                        eventQueue.Enqueue(node.Output[i]);
-                        traversed.Add(node.Output[i]);
-                    }
+            }
+        }
+
+        void Visit(Stack<CommandNode> stack, Dictionary<CommandNode, SortState> sortState, CommandNode node) {
+            if (sortState[node].open) throw new CommandGraphException("Nodes do not form Direct Acyclic Graph");
+            if (!sortState[node].finished) {
+                var state = sortState[node];
+                state.open = true;
+                sortState[node] = state;
+
+                foreach (var output in node.Output) {
+                    Visit(stack, sortState, output);
                 }
+
+                state.open = false;
+                state.finished = true;
+                sortState[node] = state;
+
+                stack.Push(node);
             }
         }
 
@@ -142,8 +162,13 @@ namespace UnnamedEngine.Core {
         }
 
         void Render(int i) {
-            List<CommandBuffer> commands = nodeList[i].GetCommands();
-            infos[i].commandBuffers = commands;
+            infos[i].commandBuffers = null;
+            try {
+                infos[i].commandBuffers = nodeList[i].GetCommands();
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+            }
         }
 
         class Node : IDisposable {
