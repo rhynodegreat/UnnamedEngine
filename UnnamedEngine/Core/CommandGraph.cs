@@ -55,6 +55,7 @@ namespace UnnamedEngine.Core {
 
         public void Bake() {
             Queue<CommandNode> eventQueue = new Queue<CommandNode>();
+            HashSet<CommandNode> traversed = new HashSet<CommandNode>();
             
             foreach (var pair in nodeMap) {
                 if (pair.Key.Input.Count == 0) {    //find the nodes that have no input and queue them for later
@@ -71,8 +72,11 @@ namespace UnnamedEngine.Core {
                 infos.Add(nodeMap[node]);
                 Clear(nodeMap[node]);
                 Bake(node);
-                for (int j = 0; j < node.Output.Count; j++) {
-                    eventQueue.Enqueue(node.Output[j]);
+                for (int i = 0; i < node.Output.Count; i++) {
+                    if (!traversed.Contains(node.Output[i])) {
+                        eventQueue.Enqueue(node.Output[i]);
+                        traversed.Add(node.Output[i]);
+                    }
                 }
             }
         }
