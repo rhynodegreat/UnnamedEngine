@@ -36,11 +36,9 @@ namespace UnnamedEngine.Utilities {
                 typeIndex = -1;
 
                 for (int i = 0; i < memoryTypes.Count; i++) {
-                    for (int j = 0; j < totalMemoryTypes; j++) {
-                        if ((memoryBits & (1 << j)) != 0 && memoryTypes[i].typeIndex == j && memoryTypes[i].flags == flags) {
-                            typeIndex = memoryTypes[i].typeIndex;
-                            return true;
-                        }
+                    if ((memoryBits & (1 << memoryTypes[i].typeIndex)) != 0 && (memoryTypes[i].flags & flags) == flags) {
+                        typeIndex = memoryTypes[i].typeIndex;
+                        return true;
                     }
                 }
 
