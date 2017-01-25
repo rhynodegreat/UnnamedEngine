@@ -46,27 +46,16 @@ namespace Test {
             presentNode.AddInput(acquireImageNode);
 
             StagingNode staging = new StagingNode(engine);
+            presentNode.AddInput(staging);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Add(staging);
-            graph.Bake();            
-
-            BufferCreateInfo bufferInfo = new BufferCreateInfo();
-            bufferInfo.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
-            bufferInfo.sharingMode = VkSharingMode.Exclusive;
-            bufferInfo.size = (ulong)CSGL.Interop.SizeOf(data);
-            Buffer buffer = new Buffer(renderer.Device, bufferInfo);
-
-            VkaAllocation alloc = engine.Renderer.Allocator.Alloc(buffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            buffer.Bind(alloc.memory, alloc.offset);
-
-            staging.Transfer(data, buffer);
+            graph.Bake();
 
             using (engine)
-            using (commandPool)
-            using (buffer) {
+            using (commandPool) {
                 engine.Run();
             }
 
