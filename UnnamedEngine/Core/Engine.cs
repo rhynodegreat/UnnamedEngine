@@ -3,11 +3,14 @@ using System.Collections.Generic;
 
 using CSGL.GLFW;
 
+using UnnamedEngine.Rendering;
+
 namespace UnnamedEngine.Core {
     public class Engine : IDisposable {
         bool disposed;
 
         Window window;
+        Camera camera;
 
         public Renderer Renderer { get; private set; }
 
@@ -18,6 +21,16 @@ namespace UnnamedEngine.Core {
             set {
                 if (value == null) throw new ArgumentNullException(nameof(Window));
                 window = value;
+            }
+        }
+
+        public Camera Camera {
+            get {
+                return camera;
+            }
+            set {
+                if (value == null) throw new ArgumentNullException(nameof(Camera));
+                camera = value;
             }
         }
 
@@ -32,12 +45,15 @@ namespace UnnamedEngine.Core {
 
         public void Run() {
             if (Window == null) throw new EngineException("Window not set");
+            if (Camera == null) throw new EngineException("Camera not set");
 
             while (true) {
                 Renderer.Allocator.ResetTemp();
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
+
+                Camera.Update();
 
                 CommandGraph.Render();
             }

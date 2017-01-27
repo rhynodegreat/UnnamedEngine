@@ -8,7 +8,7 @@ using Buffer = CSGL.Vulkan.Buffer;
 using UnnamedEngine.Core;
 using UWindow = UnnamedEngine.Core.Window;
 using UnnamedEngine.Resources;
-using UnnamedEngine.Utilities;
+using UnnamedEngine.Rendering;
 
 namespace Test {
     class Program {
@@ -57,8 +57,13 @@ namespace Test {
             graph.Add(triangle);
             graph.Bake();
 
+            Camera camera = new Camera(engine, window, 90, 1, 100);
+
+            engine.Camera = camera;
+
             using (engine)
-            using (commandPool) {
+            using (commandPool)
+            using (camera) {
                 engine.Run();
             }
 
