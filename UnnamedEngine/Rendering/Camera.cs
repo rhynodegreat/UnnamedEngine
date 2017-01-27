@@ -10,7 +10,7 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.Rendering {
-    public class Camera :IDisposable {
+    public class Camera : IDisposable {
         bool disposed;
         Engine engine;
         Device device;
@@ -29,6 +29,18 @@ namespace UnnamedEngine.Rendering {
         public float FOV { get; set; }
         public float Near { get; set; }
         public float Far { get; set; }
+
+        public DescriptorSetLayout Layout {
+            get {
+                return layout;
+            }
+        }
+
+        public DescriptorSet Desciptor {
+            get {
+                return set;
+            }
+        }
 
         public Camera(Engine engine, Window window, float fov, float near, float far) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
