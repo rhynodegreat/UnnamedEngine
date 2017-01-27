@@ -72,7 +72,7 @@ namespace UnnamedEngine.Resources {
                     region.dstOffset = 0;
                     region.size = transfers[i].dest.Size;
 
-                    buffer.Copy(transfers[i].staging, transfers[i].dest);
+                    buffer.CopyBuffer(transfers[i].staging, transfers[i].dest);
                     completed.Add(transfers[i]);
                 }
                 transfers.Clear();
