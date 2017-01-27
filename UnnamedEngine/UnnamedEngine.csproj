@@ -51,6 +51,7 @@
     <Compile Include="Core\Renderer.cs" />
     <Compile Include="Core\CommandGraph.cs" />
     <Compile Include="Core\CommandNode.cs" />
+    <Compile Include="Rendering\Transform.cs" />
     <Compile Include="Resources\StagingNode.cs" />
     <Compile Include="Resources\TransferNode.cs" />
     <Compile Include="Utilities\OpenList.cs" />
@@ -75,9 +76,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Rendering\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
