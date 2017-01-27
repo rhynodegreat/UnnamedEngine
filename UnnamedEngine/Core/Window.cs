@@ -15,7 +15,6 @@ namespace UnnamedEngine.Core {
         int width;
         int height;
         
-
         public Surface Surface { get; private set; }
         public Swapchain Swapchain { get; private set; }
         public VkFormat SwapchainImageFormat { get; private set; }
@@ -30,6 +29,18 @@ namespace UnnamedEngine.Core {
         public bool ShouldClose {
             get {
                 return window.ShouldClose;
+            }
+        }
+
+        public int Width {
+            get {
+                return width;
+            }
+        }
+
+        public int Height {
+            get {
+                return height;
             }
         }
 
