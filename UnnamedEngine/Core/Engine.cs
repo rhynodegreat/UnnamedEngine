@@ -32,7 +32,6 @@ namespace UnnamedEngine.Core {
 
         public void Run() {
             if (Window == null) throw new EngineException("Window not set");
-            if (CommandGraph == null) throw new EngineException("Render Graph not set");
 
             while (true) {
                 Renderer.Allocator.ResetTemp();
