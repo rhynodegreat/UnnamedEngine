@@ -34,9 +34,9 @@ namespace Test {
         uint index;
 
         Vertex[] vertices = {
-            new Vertex(new Vector3(0, -1, 0), new Vector3(1, 0, 0)),
-            new Vertex(new Vector3(1, 1, 0), new Vector3(0, 1, 0)),
-            new Vertex(new Vector3(-1, 1, 0), new Vector3(0, 0, 1)),
+            new Vertex(new Vector3(0, 1, 0), new Vector3(1, 0, 0)),
+            new Vertex(new Vector3(1, -1, 0), new Vector3(0, 1, 0)),
+            new Vertex(new Vector3(-1, -1, 0), new Vector3(0, 0, 1)),
         };
 
         public TriangleNode(Engine engine, AcquireImageNode acquireImageNode, TransferNode transferNode, Camera camera) : base(engine.Renderer.Device, VkPipelineStageFlags.TopOfPipeBit) {
