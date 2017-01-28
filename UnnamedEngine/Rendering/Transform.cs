@@ -10,6 +10,7 @@ namespace UnnamedEngine.Rendering {
 
         public Transform() {
             children = new List<Transform>();
+            worldTransform = Matrix4x4.Identity;
         }
 
         public Transform Parent {
