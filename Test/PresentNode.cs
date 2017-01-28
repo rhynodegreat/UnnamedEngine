@@ -62,7 +62,7 @@ namespace Test {
             //clearToPresentBarrier.image set in loop
             colorToPresent.subresourceRange = subresourceRange;
 
-            ImageMemoryBarrier[] colorToPresentBarriers = new ImageMemoryBarrier[] { colorToPresent };
+            List<ImageMemoryBarrier> colorToPresentBarriers = new List<ImageMemoryBarrier> { colorToPresent };
 
             for (int i = 0; i < images.Count; i++) {
                 var commandBuffer = commandBuffers[i];

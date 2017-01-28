@@ -65,7 +65,7 @@ namespace Test {
             //presentToClear.image set in loop
             presentToClear.subresourceRange = subresourceRange;
 
-            ImageMemoryBarrier[] presentToClearBarriers = new ImageMemoryBarrier[] { presentToClear };
+            List<ImageMemoryBarrier> presentToClearBarriers = new List<ImageMemoryBarrier> { presentToClear };
 
             ImageMemoryBarrier clearToFB = new ImageMemoryBarrier();
             clearToFB.srcAccessMask = VkAccessFlags.TransferWriteBit;
@@ -77,7 +77,7 @@ namespace Test {
             //clearToPresentBarrier.image set in loop
             clearToFB.subresourceRange = subresourceRange;
 
-            ImageMemoryBarrier[] clearToFBBarriers = new ImageMemoryBarrier[] { clearToFB };
+            List<ImageMemoryBarrier> clearToFBBarriers = new List<ImageMemoryBarrier> { clearToFB };
 
             for (int i = 0; i < images.Count; i++) {
                 var commandBuffer = commandBuffers[i];
