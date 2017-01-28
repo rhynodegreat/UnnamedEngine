@@ -33,12 +33,7 @@ namespace Test {
         List<CommandBuffer> submitCommands;
         uint index;
 
-        //Star[] stars = {
-        //    new Star(new Vector3(0, -0.5f, 0), new Vector3(1, 0, 0)),
-        //    new Star(new Vector3(0.5f, 0.5f, 0), new Vector3(0, 1, 0)),
-        //    new Star(new Vector3(-0.5f, 0.5f, 0), new Vector3(0, 0, 1)),
-        //};
-        Star[] stars;
+        List<Star> stars;
 
         public StarNode(Engine engine, AcquireImageNode acquireImageNode, TransferNode transferNode, Camera camera) : base(engine.Renderer.Device, VkPipelineStageFlags.TopOfPipeBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -52,14 +47,12 @@ namespace Test {
             this.camera = camera;
 
             Random rand = new Random(0);
-            List<Star> stars = new List<Star>();
+            stars = new List<Star>();
             for (int i = 0; i < 1000; i++) {
                 Vector3 pos = new Vector3((float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 2) - 1);
                 Vector3 col = new Vector3(1, 1, 1);
                 stars.Add(new Star(pos, col));
             }
-
-            this.stars = stars.ToArray();
 
             submitCommands = new List<CommandBuffer> { null };
 
@@ -291,7 +284,7 @@ namespace Test {
                 buffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
                 buffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
                 buffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
-                buffer.Draw(stars.Length, 1, 0, 0);
+                buffer.Draw(stars.Count, 1, 0, 0);
                 buffer.EndRenderPass();
                 buffer.End();
             }

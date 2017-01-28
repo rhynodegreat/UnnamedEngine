@@ -13,6 +13,7 @@ namespace UnnamedEngine.Resources {
         }
 
         public abstract void Transfer<T>(T[] data, Buffer buffer) where T : struct;
+        public abstract void Transfer<T>(List<T> data, Buffer buffer) where T : struct;
     }
 
     public class TransferException : Exception {
