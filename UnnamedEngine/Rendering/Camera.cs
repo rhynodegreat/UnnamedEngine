@@ -21,9 +21,13 @@ namespace UnnamedEngine.Rendering {
         DescriptorSet set;
         Buffer buffer;
         VkaAllocation alloc;
+        
+        UBO ubo;
 
-        Matrix4x4 projection;
-        Matrix4x4 viewMatrix;
+        struct UBO {
+            public Matrix4x4 projection;
+            public Matrix4x4 view;
+        }
 
         public Transform Transform { get; private set; }
         public float FOV { get; set; }
@@ -63,11 +67,12 @@ namespace UnnamedEngine.Rendering {
         }
 
         internal void Update() {
-            projection = Matrix4x4.CreatePerspectiveFieldOfView(FOV * (float)(Math.PI / 180), (float)window.Width / window.Height, Near, Far);
-            viewMatrix = Matrix4x4.CreateLookAt(Transform.Position, Transform.Position + Transform.Forward, Transform.Up);
+            ubo.projection = Matrix4x4.CreatePerspectiveFieldOfView(FOV * (float)(Math.PI / 180), window.Width / (float)window.Height, Near, Far);
+            ubo.projection.M22 *= -1;
+            ubo.view = Matrix4x4.CreateLookAt(Transform.Position, Transform.Position + Transform.Forward, Transform.Up);
 
             IntPtr ptr = alloc.memory.Map(alloc.offset, alloc.size);
-            Interop.Copy(projection * viewMatrix, ptr);
+            Interop.Copy(ubo, ptr);
             alloc.memory.Unmap();
         }
 
@@ -116,7 +121,7 @@ namespace UnnamedEngine.Rendering {
 
         void CreateBuffer() {
             BufferCreateInfo info = new BufferCreateInfo();
-            info.size = (uint)Interop.SizeOf<Matrix4x4>();
+            info.size = (uint)Interop.SizeOf<UBO>();
             info.usage = VkBufferUsageFlags.UniformBufferBit;
             info.sharingMode = VkSharingMode.Exclusive;
             info.queueFamilyIndices = new List<uint> { engine.Renderer.GraphicsQueue.FamilyIndex };
