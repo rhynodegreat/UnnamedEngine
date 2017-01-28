@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Numerics;
 
-using CSGL.GLFW;
 using CSGL.Input;
 
-namespace UnnamedEngine.Input {
+namespace UnnamedEngine.Core {
     public class Input {
-        Window window;
+        CSGL.GLFW.Window window;
         Queue<KeyEvent> keyEvents;
         HashSet<KeyCode> keyHold;
         HashSet<KeyCode> keyFirstDown;
@@ -65,7 +64,7 @@ namespace UnnamedEngine.Input {
             }
         }
 
-        public Input(Window window) {
+        public Input(CSGL.GLFW.Window window) {
             if (window == null) throw new ArgumentNullException(nameof(window));
 
             this.window = window;
@@ -82,6 +81,7 @@ namespace UnnamedEngine.Input {
 
             moveEvents = new Queue<MouseEvent>();
             scrollEvents = new Queue<MouseEvent>();
+            textEvents = new Queue<TextEvent>();
 
             window.OnKey += Key;
             window.OnTextMod += Text;
