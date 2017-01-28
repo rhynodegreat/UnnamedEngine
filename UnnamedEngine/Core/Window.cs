@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using CSGL.GLFW;
 using CSGL.Vulkan;
 using GWindow = CSGL.GLFW.Window;
-
 using Image = CSGL.Vulkan.Image;
 
 namespace UnnamedEngine.Core {
@@ -14,6 +13,8 @@ namespace UnnamedEngine.Core {
         GWindow window;
         int width;
         int height;
+
+        public Input Input { get; private set; }
         
         public Surface Surface { get; private set; }
         public Swapchain Swapchain { get; private set; }
@@ -53,6 +54,8 @@ namespace UnnamedEngine.Core {
 
             GLFW.WindowHint(WindowHint.ClientAPI, (int)ClientAPI.NoAPI);
             window = new GWindow(width, height, title, null, null);
+
+            Input = new Input(window);
 
             Surface = new Surface(engine.Renderer.PhysicalDevice, window);
             if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(Surface)) {   //this check is apparently required by the validation layer
