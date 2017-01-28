@@ -61,11 +61,11 @@ namespace UnnamedEngine.Core {
                 Window.Input.Update();
 
                 if (Window.Input.Hold(KeyCode.W)) {
-                    z += 1 / 60f;
+                    z -= 1 / 60f;
                 }
 
                 if (Window.Input.Hold(KeyCode.S)) {
-                    z -= 1 / 60f;
+                    z += 1 / 60f;
                 }
 
                 if (Window.Input.Hold(KeyCode.A)) {
