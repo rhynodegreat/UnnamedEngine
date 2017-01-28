@@ -78,7 +78,7 @@ namespace Test {
             var colorAttachment = new VkAttachmentDescription();
             colorAttachment.format = window.SwapchainImageFormat;
             colorAttachment.samples = VkSampleCountFlags._1Bit;
-            colorAttachment.loadOp = VkAttachmentLoadOp.Clear;
+            colorAttachment.loadOp = VkAttachmentLoadOp.Load;
             colorAttachment.storeOp = VkAttachmentStoreOp.Store;
             colorAttachment.stencilLoadOp = VkAttachmentLoadOp.DontCare;
             colorAttachment.stencilStoreOp = VkAttachmentStoreOp.DontCare;

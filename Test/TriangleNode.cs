@@ -10,6 +10,7 @@ using Buffer = CSGL.Vulkan.Buffer;
 using UnnamedEngine.Core;
 using UnnamedEngine.Resources;
 using UnnamedEngine.Utilities;
+using UnnamedEngine.Rendering;
 
 namespace Test {
     public class TriangleNode : CommandNode, IDisposable {
@@ -17,6 +18,7 @@ namespace Test {
         Engine engine;
         AcquireImageNode acquireImageNode;
         TransferNode transferNode;
+        Camera camera;
 
         RenderPass renderPass;
         List<ImageView> imageViews;
@@ -37,7 +39,7 @@ namespace Test {
             new Vertex(new Vector3(-1, 1, 0), new Vector3(0, 0, 1)),
         };
 
-        public TriangleNode(Engine engine, AcquireImageNode acquireImageNode, TransferNode transferNode) : base(engine.Renderer.Device, VkPipelineStageFlags.TopOfPipeBit) {
+        public TriangleNode(Engine engine, AcquireImageNode acquireImageNode, TransferNode transferNode, Camera camera) : base(engine.Renderer.Device, VkPipelineStageFlags.TopOfPipeBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (engine.Window == null) throw new ArgumentNullException(nameof(engine.Window));
             if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
@@ -46,6 +48,7 @@ namespace Test {
             this.engine = engine;
             this.acquireImageNode = acquireImageNode;
             this.transferNode = transferNode;
+            this.camera = camera;
             
             submitCommands = new List<CommandBuffer> { null };
 
@@ -64,7 +67,7 @@ namespace Test {
             var colorAttachment = new VkAttachmentDescription();
             colorAttachment.format = window.SwapchainImageFormat;
             colorAttachment.samples = VkSampleCountFlags._1Bit;
-            colorAttachment.loadOp = VkAttachmentLoadOp.Clear;
+            colorAttachment.loadOp = VkAttachmentLoadOp.Load;
             colorAttachment.storeOp = VkAttachmentStoreOp.Store;
             colorAttachment.stencilLoadOp = VkAttachmentLoadOp.DontCare;
             colorAttachment.stencilStoreOp = VkAttachmentStoreOp.DontCare;
@@ -183,7 +186,7 @@ namespace Test {
             var rasterizer = new PipelineRasterizationStateCreateInfo();
             rasterizer.polygonMode = VkPolygonMode.Fill;
             rasterizer.lineWidth = 1f;
-            rasterizer.cullMode = VkCullModeFlags.BackBit;
+            rasterizer.cullMode = VkCullModeFlags.None;
             rasterizer.frontFace = VkFrontFace.Clockwise;
 
             var multisampling = new PipelineMultisampleStateCreateInfo();
@@ -207,6 +210,7 @@ namespace Test {
             colorBlending.attachments = new PipelineColorBlendAttachmentState[] { colorBlendAttachment };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
+            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { camera.Layout };
 
             pipelineLayout?.Dispose();
 
@@ -274,6 +278,7 @@ namespace Test {
 
                 buffer.BeginRenderPass(renderPassInfo, VkSubpassContents.Inline);
                 buffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
+                buffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
                 buffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
                 buffer.Draw(3, 1, 0, 0);
                 buffer.EndRenderPass();

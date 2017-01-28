@@ -52,17 +52,19 @@ namespace Test {
             StagingNode staging = new StagingNode(engine);
 
             StarNode stars = new StarNode(engine, acquireImageNode, staging, camera);
-            stars.AddInput(staging);
             presentNode.AddInput(stars);
+
+            TriangleNode triangle = new TriangleNode(engine, acquireImageNode, staging, camera);
+            presentNode.AddInput(triangle);
+            triangle.AddInput(stars);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Add(staging);
             graph.Add(stars);
+            graph.Add(triangle);
             graph.Bake();
-
-            camera.Transform.Position = new Vector3(0, 0, -1);
 
             using (engine)
             using (commandPool)
