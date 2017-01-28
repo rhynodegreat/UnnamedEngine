@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 using CSGL.GLFW;
 using CSGL.Vulkan;
@@ -37,6 +38,9 @@ namespace Test {
             UWindow window = new UWindow(engine, 800, 600, "Test");
             engine.Window = window;
 
+            Camera camera = new Camera(engine, window, 90, .1f, 100);
+            engine.Camera = camera;
+
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
             info.queueFamilyIndex = renderer.GraphicsQueue.FamilyIndex;
             CommandPool commandPool = new CommandPool(renderer.Device, info);
@@ -47,19 +51,18 @@ namespace Test {
 
             StagingNode staging = new StagingNode(engine);
 
-            TriangleNode triangle = new TriangleNode(engine, acquireImageNode, staging);
-            presentNode.AddInput(triangle);
+            StarNode stars = new StarNode(engine, acquireImageNode, staging, camera);
+            stars.AddInput(staging);
+            presentNode.AddInput(stars);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Add(staging);
-            graph.Add(triangle);
+            graph.Add(stars);
             graph.Bake();
 
-            Camera camera = new Camera(engine, window, 90, 1, 100);
-
-            engine.Camera = camera;
+            camera.Transform.Position = new Vector3(0, 0, -1);
 
             using (engine)
             using (commandPool)
