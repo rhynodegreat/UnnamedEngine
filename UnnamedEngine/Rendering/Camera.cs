@@ -120,7 +120,6 @@ namespace UnnamedEngine.Rendering {
             info.size = (uint)Interop.SizeOf<Matrix4x4>();
             info.usage = VkBufferUsageFlags.UniformBufferBit;
             info.sharingMode = VkSharingMode.Exclusive;
-            info.queueFamilyIndices = new List<uint> { engine.Renderer.GraphicsQueue.FamilyIndex };
 
             buffer = new Buffer(device, info);
 

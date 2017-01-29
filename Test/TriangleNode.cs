@@ -129,7 +129,6 @@ namespace Test {
 
         void CreateVertexBuffer(Renderer renderer) {
             BufferCreateInfo info = new BufferCreateInfo();
-            info.queueFamilyIndices = new List<uint> { renderer.GraphicsQueue.FamilyIndex };
             info.sharingMode = VkSharingMode.Exclusive;
             info.size = (uint)Interop.SizeOf(vertices);
             info.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
