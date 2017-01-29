@@ -19,6 +19,11 @@ namespace UnnamedEngine.Rendering {
         VkaAllocation depthAlloc;
         VkaAllocation lightAlloc;
 
+        public VkFormat AlbedoFormat { get; private set; } = VkFormat.R8g8b8a8Uint;
+        public VkFormat NormFormat { get; private set; } = VkFormat.R16g16b16a16Sfloat;
+        public VkFormat DepthFormat { get; private set; }
+        public VkFormat LightFormat { get; private set; } = VkFormat.R16g16b16a16Sfloat;
+
         public Image Albedo { get; private set; }
         public Image Norm { get; private set; }
         public Image Depth { get; private set; }
@@ -28,8 +33,6 @@ namespace UnnamedEngine.Rendering {
         public ImageView NormView { get; private set; }
         public ImageView DepthView { get; private set; }
         public ImageView LightView { get; private set; }
-
-        public VkFormat DepthFormat { get; private set; }
 
         public GBuffer(Engine engine, Window window) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -66,7 +69,7 @@ namespace UnnamedEngine.Rendering {
             albedoInfo.extent.width = (uint)width;
             albedoInfo.extent.height = (uint)height;
             albedoInfo.extent.depth = 1;
-            albedoInfo.format = VkFormat.R8g8b8a8Uint;
+            albedoInfo.format = AlbedoFormat;
 
             Albedo = new Image(engine.Renderer.Device, albedoInfo);
             albedoAlloc = engine.Renderer.Allocator.Alloc(Albedo.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
@@ -77,7 +80,7 @@ namespace UnnamedEngine.Rendering {
             albedoViewInfo.components.g = VkComponentSwizzle.Identity;
             albedoViewInfo.components.b = VkComponentSwizzle.Identity;
             albedoViewInfo.components.a = VkComponentSwizzle.Identity;
-            albedoViewInfo.format = VkFormat.R8g8b8a8Uint;
+            albedoViewInfo.format = AlbedoFormat;
             albedoViewInfo.viewType = VkImageViewType._2d;
             albedoViewInfo.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
             albedoViewInfo.subresourceRange.levelCount = 1;
@@ -100,7 +103,7 @@ namespace UnnamedEngine.Rendering {
             normInfo.extent.width = (uint)width;
             normInfo.extent.height = (uint)height;
             normInfo.extent.depth = 1;
-            normInfo.format = VkFormat.R16g16b16a16Sfloat;
+            normInfo.format = NormFormat;
 
             Norm = new Image(engine.Renderer.Device, normInfo);
             normAlloc = engine.Renderer.Allocator.Alloc(Norm.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
@@ -111,7 +114,7 @@ namespace UnnamedEngine.Rendering {
             normViewInfo.components.g = VkComponentSwizzle.Identity;
             normViewInfo.components.b = VkComponentSwizzle.Identity;
             normViewInfo.components.a = VkComponentSwizzle.Identity;
-            normViewInfo.format = VkFormat.R16g16b16a16Sfloat;
+            normViewInfo.format = NormFormat;
             normViewInfo.viewType = VkImageViewType._2d;
             normViewInfo.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
             normViewInfo.subresourceRange.levelCount = 1;
@@ -176,7 +179,7 @@ namespace UnnamedEngine.Rendering {
 
         void CreateLight(int width, int height) {
             ImageCreateInfo lightInfo = new ImageCreateInfo();
-            lightInfo.usage = VkImageUsageFlags.ColorAttachmentBit | VkImageUsageFlags.InputAttachmentBit;
+            lightInfo.usage = VkImageUsageFlags.ColorAttachmentBit | VkImageUsageFlags.SampledBit;
             lightInfo.tiling = VkImageTiling.Optimal;
             lightInfo.sharingMode = VkSharingMode.Exclusive;
             lightInfo.samples = VkSampleCountFlags._1Bit;
@@ -187,7 +190,7 @@ namespace UnnamedEngine.Rendering {
             lightInfo.extent.width = (uint)width;
             lightInfo.extent.height = (uint)height;
             lightInfo.extent.depth = 1;
-            lightInfo.format = VkFormat.R16g16b16a16Sfloat;
+            lightInfo.format = LightFormat;
 
             Light = new Image(engine.Renderer.Device, lightInfo);
             lightAlloc = engine.Renderer.Allocator.Alloc(Light.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
@@ -198,7 +201,7 @@ namespace UnnamedEngine.Rendering {
             lightViewInfo.components.g = VkComponentSwizzle.Identity;
             lightViewInfo.components.b = VkComponentSwizzle.Identity;
             lightViewInfo.components.a = VkComponentSwizzle.Identity;
-            lightViewInfo.format = VkFormat.R16g16b16a16Sfloat;
+            lightViewInfo.format = LightFormat;
             lightViewInfo.viewType = VkImageViewType._2d;
             lightViewInfo.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
             lightViewInfo.subresourceRange.levelCount = 1;
