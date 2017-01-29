@@ -49,42 +49,12 @@ namespace UnnamedEngine.Core {
             if (Window == null) throw new EngineException("Window not set");
             if (Camera == null) throw new EngineException("Camera not set");
 
-            float x = 0;
-            float y = 0;
-            float z = 0;
-
             while (true) {
                 Graphics.Allocator.ResetTemp();
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
                 Window.Update();
-
-                if (Window.Input.Hold(KeyCode.W)) {
-                    z -= 1 / 60f;
-                }
-
-                if (Window.Input.Hold(KeyCode.S)) {
-                    z += 1 / 60f;
-                }
-
-                if (Window.Input.Hold(KeyCode.A)) {
-                    x -= 1 / 60f;
-                }
-
-                if (Window.Input.Hold(KeyCode.D)) {
-                    x += 1 / 60f;
-                }
-
-                if (Window.Input.Hold(KeyCode.Q)) {
-                    y -= 1 / 60f;
-                }
-
-                if (Window.Input.Hold(KeyCode.E)) {
-                    y += 1 / 60f;
-                }
-                
-                Camera.Transform.Position = new Vector3(x, y, z);
                 Camera.Update();
 
                 CommandGraph.Render();
