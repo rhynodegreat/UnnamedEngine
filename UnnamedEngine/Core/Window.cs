@@ -68,13 +68,13 @@ namespace UnnamedEngine.Core {
             Input = new Input(window);
 
             CreateSurface();
-            CreateSwapchain(engine.Renderer);
+            CreateSwapchain(engine.Graphics);
         }
 
        internal void Update() {
             if (sizeChanged) {
                 CreateSurface();
-                CreateSwapchain(engine.Renderer);
+                CreateSwapchain(engine.Graphics);
 
                 width = newWidth;
                 height = newHeight;
@@ -92,8 +92,8 @@ namespace UnnamedEngine.Core {
         }
 
         void CreateSurface() {
-            Surface = new Surface(engine.Renderer.PhysicalDevice, window);
-            if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(Surface)) {   //this check is apparently required by the validation layer
+            Surface = new Surface(engine.Graphics.PhysicalDevice, window);
+            if (!engine.Graphics.PresentQueue.Family.SurfaceSupported(Surface)) {   //this check is apparently required by the validation layer
                 throw new WindowException("Could not create surface (Not supported by present queue)");
             }
         }

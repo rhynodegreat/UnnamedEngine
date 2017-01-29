@@ -22,12 +22,12 @@ namespace Test {
             }
         }
 
-        public AcquireImageNode(Engine engine, CommandPool commandPool) : base(engine.Renderer.Device, VkPipelineStageFlags.TransferBit) {
+        public AcquireImageNode(Engine engine, CommandPool commandPool) : base(engine.Graphics.Device, VkPipelineStageFlags.TransferBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            renderer = engine.Renderer;
+            renderer = engine.Graphics;
             swapchain = engine.Window.Swapchain;
 
-            acquireImageSemaphore = new Semaphore(engine.Renderer.Device);
+            acquireImageSemaphore = new Semaphore(engine.Graphics.Device);
             submitBuffers = new List<CommandBuffer> { null };
             CreateCommandBuffer(renderer, engine.Window.SwapchainImages, commandPool);
 

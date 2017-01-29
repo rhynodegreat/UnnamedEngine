@@ -23,10 +23,10 @@ namespace UnnamedEngine.Core {
         public CommandGraph(Engine engine) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
-            renderer = engine.Renderer;
+            renderer = engine.Graphics;
             semaphores = new HashSet<Semaphore>();
             pool = new Pool<Semaphore>(() => {
-                var sem = new Semaphore(engine.Renderer.Device);
+                var sem = new Semaphore(engine.Graphics.Device);
                 semaphores.Add(sem);
                 return sem;
             });

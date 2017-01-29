@@ -19,10 +19,10 @@ namespace Test {
 
         uint index;
 
-        public PresentNode(Engine engine, AcquireImageNode acquireImageNode, CommandPool commandPool) : base(engine.Renderer.Device, VkPipelineStageFlags.BottomOfPipeBit) {
+        public PresentNode(Engine engine, AcquireImageNode acquireImageNode, CommandPool commandPool) : base(engine.Graphics.Device, VkPipelineStageFlags.BottomOfPipeBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
-            renderer = engine.Renderer;
+            renderer = engine.Graphics;
             this.acquireImageNode = acquireImageNode;
             
             commandBuffers = new List<CommandBuffer>();

@@ -31,17 +31,17 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        public StagingNode(Engine engine) : base(engine.Renderer.Device, VkPipelineStageFlags.TransferBit) {
+        public StagingNode(Engine engine) : base(engine.Graphics.Device, VkPipelineStageFlags.TransferBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            allocator = engine.Renderer.Allocator;
+            allocator = engine.Graphics.Allocator;
 
             this.engine = engine;
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
-            info.queueFamilyIndex = engine.Renderer.GraphicsQueue.FamilyIndex;
+            info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
             info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
 
-            pool = new CommandPool(engine.Renderer.Device, info);
+            pool = new CommandPool(engine.Graphics.Device, info);
             buffer = pool.Allocate(VkCommandBufferLevel.Primary);
 
             transfers = new List<TransferOp>();

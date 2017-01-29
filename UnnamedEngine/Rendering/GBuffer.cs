@@ -71,8 +71,8 @@ namespace UnnamedEngine.Rendering {
             albedoInfo.extent.depth = 1;
             albedoInfo.format = AlbedoFormat;
 
-            Albedo = new Image(engine.Renderer.Device, albedoInfo);
-            albedoAlloc = engine.Renderer.Allocator.Alloc(Albedo.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Albedo = new Image(engine.Graphics.Device, albedoInfo);
+            albedoAlloc = engine.Graphics.Allocator.Alloc(Albedo.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
             Albedo.Bind(albedoAlloc.memory, albedoAlloc.offset);
 
             ImageViewCreateInfo albedoViewInfo = new ImageViewCreateInfo(Albedo);
@@ -87,7 +87,7 @@ namespace UnnamedEngine.Rendering {
             albedoViewInfo.subresourceRange.baseMipLevel = 0;
             albedoViewInfo.subresourceRange.layerCount = 1;
             albedoViewInfo.subresourceRange.baseArrayLayer = 0;
-            AlbedoView = new ImageView(engine.Renderer.Device, albedoViewInfo);
+            AlbedoView = new ImageView(engine.Graphics.Device, albedoViewInfo);
         }
 
         void CreateNorm(int width, int height) {
@@ -105,8 +105,8 @@ namespace UnnamedEngine.Rendering {
             normInfo.extent.depth = 1;
             normInfo.format = NormFormat;
 
-            Norm = new Image(engine.Renderer.Device, normInfo);
-            normAlloc = engine.Renderer.Allocator.Alloc(Norm.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Norm = new Image(engine.Graphics.Device, normInfo);
+            normAlloc = engine.Graphics.Allocator.Alloc(Norm.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
             Norm.Bind(normAlloc.memory, normAlloc.offset);
 
             ImageViewCreateInfo normViewInfo = new ImageViewCreateInfo(Norm);
@@ -121,14 +121,14 @@ namespace UnnamedEngine.Rendering {
             normViewInfo.subresourceRange.baseMipLevel = 0;
             normViewInfo.subresourceRange.layerCount = 1;
             normViewInfo.subresourceRange.baseArrayLayer = 0;
-            NormView = new ImageView(engine.Renderer.Device, normViewInfo);
+            NormView = new ImageView(engine.Graphics.Device, normViewInfo);
         }
 
         VkFormat FindDepthFormat() {
             VkFormat[] candidates = new VkFormat[] { VkFormat.D32Sfloat, VkFormat.D32SfloatS8Uint, VkFormat.D24UnormS8Uint };
 
             for (int i = 0; i < candidates.Length; i++) {
-                var props = engine.Renderer.PhysicalDevice.GetFormatProperties(candidates[i]);
+                var props = engine.Graphics.PhysicalDevice.GetFormatProperties(candidates[i]);
 
                 if ((props.optimalTilingFeatures & VkFormatFeatureFlags.DepthStencilAttachmentBit) == VkFormatFeatureFlags.DepthStencilAttachmentBit) {
                     return candidates[i];
@@ -153,8 +153,8 @@ namespace UnnamedEngine.Rendering {
             depthInfo.extent.depth = 1;
             depthInfo.format = DepthFormat;
 
-            Depth = new Image(engine.Renderer.Device, depthInfo);
-            depthAlloc = engine.Renderer.Allocator.Alloc(Depth.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Depth = new Image(engine.Graphics.Device, depthInfo);
+            depthAlloc = engine.Graphics.Allocator.Alloc(Depth.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
             Depth.Bind(depthAlloc.memory, depthAlloc.offset);
 
             ImageViewCreateInfo depthViewInfo = new ImageViewCreateInfo(Depth);
@@ -174,7 +174,7 @@ namespace UnnamedEngine.Rendering {
             depthViewInfo.subresourceRange.baseMipLevel = 0;
             depthViewInfo.subresourceRange.layerCount = 1;
             depthViewInfo.subresourceRange.baseArrayLayer = 0;
-            DepthView = new ImageView(engine.Renderer.Device, depthViewInfo);
+            DepthView = new ImageView(engine.Graphics.Device, depthViewInfo);
         }
 
         void CreateLight(int width, int height) {
@@ -192,8 +192,8 @@ namespace UnnamedEngine.Rendering {
             lightInfo.extent.depth = 1;
             lightInfo.format = LightFormat;
 
-            Light = new Image(engine.Renderer.Device, lightInfo);
-            lightAlloc = engine.Renderer.Allocator.Alloc(Light.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Light = new Image(engine.Graphics.Device, lightInfo);
+            lightAlloc = engine.Graphics.Allocator.Alloc(Light.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
             Light.Bind(lightAlloc.memory, lightAlloc.offset);
 
             ImageViewCreateInfo lightViewInfo = new ImageViewCreateInfo(Light);
@@ -208,7 +208,7 @@ namespace UnnamedEngine.Rendering {
             lightViewInfo.subresourceRange.baseMipLevel = 0;
             lightViewInfo.subresourceRange.layerCount = 1;
             lightViewInfo.subresourceRange.baseArrayLayer = 0;
-            LightView = new ImageView(engine.Renderer.Device, lightViewInfo);
+            LightView = new ImageView(engine.Graphics.Device, lightViewInfo);
         }
 
         void Free() {
@@ -220,10 +220,10 @@ namespace UnnamedEngine.Rendering {
             Norm?.Dispose();
             Depth?.Dispose();
             Light?.Dispose();
-            engine.Renderer.Allocator.Free(albedoAlloc);
-            engine.Renderer.Allocator.Free(normAlloc);
-            engine.Renderer.Allocator.Free(depthAlloc);
-            engine.Renderer.Allocator.Free(lightAlloc);
+            engine.Graphics.Allocator.Free(albedoAlloc);
+            engine.Graphics.Allocator.Free(normAlloc);
+            engine.Graphics.Allocator.Free(depthAlloc);
+            engine.Graphics.Allocator.Free(lightAlloc);
             albedoAlloc = default(VkaAllocation);
             normAlloc = default(VkaAllocation);
             depthAlloc = default(VkaAllocation);

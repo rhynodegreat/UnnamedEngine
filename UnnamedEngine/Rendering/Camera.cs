@@ -47,7 +47,7 @@ namespace UnnamedEngine.Rendering {
             if (window == null) throw new ArgumentNullException(nameof(window));
 
             this.engine = engine;
-            device = engine.Renderer.Device;
+            device = engine.Graphics.Device;
             this.window = window;
 
             FOV = fov;
@@ -123,7 +123,7 @@ namespace UnnamedEngine.Rendering {
 
             buffer = new Buffer(device, info);
 
-            alloc = engine.Renderer.Allocator.Alloc(buffer.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
+            alloc = engine.Graphics.Allocator.Alloc(buffer.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
             buffer.Bind(alloc.memory, alloc.offset);
         }
 
@@ -140,7 +140,7 @@ namespace UnnamedEngine.Rendering {
             layout.Dispose();
             buffer.Dispose();
 
-            engine.Renderer.Allocator.Free(alloc);
+            engine.Graphics.Allocator.Free(alloc);
 
             disposed = true;
         }

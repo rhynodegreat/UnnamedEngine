@@ -14,7 +14,7 @@ namespace UnnamedEngine.Core {
         Window window;
         Camera camera;
 
-        public Graphics Renderer { get; private set; }
+        public Graphics Graphics { get; private set; }
 
         public Window Window {
             get {
@@ -38,10 +38,10 @@ namespace UnnamedEngine.Core {
 
         public CommandGraph CommandGraph { get; private set; }
 
-        public Engine(Graphics renderer) {
-            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+        public Engine(Graphics graphics) {
+            if (graphics == null) throw new ArgumentNullException(nameof(graphics));
 
-            Renderer = renderer;
+            Graphics = graphics;
             CommandGraph = new CommandGraph(this);
         }
 
@@ -54,7 +54,7 @@ namespace UnnamedEngine.Core {
             float z = 0;
 
             while (true) {
-                Renderer.Allocator.ResetTemp();
+                Graphics.Allocator.ResetTemp();
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
@@ -90,7 +90,7 @@ namespace UnnamedEngine.Core {
                 CommandGraph.Render();
             }
 
-            Renderer.Device.WaitIdle();
+            Graphics.Device.WaitIdle();
         }
 
         public void Dispose() {
@@ -104,7 +104,7 @@ namespace UnnamedEngine.Core {
             if (disposing) {
                 CommandGraph.Dispose();
                 Window.Dispose();
-                Renderer.Dispose();
+                Graphics.Dispose();
             }
 
             disposed = true;

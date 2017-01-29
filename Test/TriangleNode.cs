@@ -39,7 +39,7 @@ namespace Test {
             new Vertex(new Vector3(-1, -1, 0), new Vector3(0, 0, 1)),
         };
 
-        public TriangleNode(Engine engine, AcquireImageNode acquireImageNode, TransferNode transferNode, Camera camera) : base(engine.Renderer.Device, VkPipelineStageFlags.TopOfPipeBit) {
+        public TriangleNode(Engine engine, AcquireImageNode acquireImageNode, TransferNode transferNode, Camera camera) : base(engine.Graphics.Device, VkPipelineStageFlags.TopOfPipeBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (engine.Window == null) throw new ArgumentNullException(nameof(engine.Window));
             if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
@@ -52,12 +52,12 @@ namespace Test {
             
             submitCommands = new List<CommandBuffer> { null };
 
-            CreateRenderPass(engine.Renderer.Device, engine.Window);
+            CreateRenderPass(engine.Graphics.Device, engine.Window);
             CreateFramebuffers(engine.Window);
-            CreatePipeline(engine.Renderer.Device, engine.Window);
-            CreateVertexBuffer(engine.Renderer);
+            CreatePipeline(engine.Graphics.Device, engine.Window);
+            CreateVertexBuffer(engine.Graphics);
             CreateCommandPool(engine);
-            CreateCommandBuffers(engine.Renderer.Device, engine.Window);
+            CreateCommandBuffers(engine.Graphics.Device, engine.Window);
 
             AddInput(transferNode);
             AddInput(acquireImageNode);
@@ -239,9 +239,9 @@ namespace Test {
 
         void CreateCommandPool(Engine engine) {
             var info = new CommandPoolCreateInfo();
-            info.queueFamilyIndex = engine.Renderer.GraphicsQueue.FamilyIndex;
+            info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
 
-            commandPool = new CommandPool(engine.Renderer.Device, info);
+            commandPool = new CommandPool(engine.Graphics.Device, info);
         }
 
         void CreateCommandBuffers(Device device, Window window) {
@@ -309,7 +309,7 @@ namespace Test {
             foreach (var fb in framebuffers) fb.Dispose();
             foreach (var iv in imageViews) iv.Dispose();
             renderPass.Dispose();
-            engine.Renderer.Allocator.Free(vertexAllocation);
+            engine.Graphics.Allocator.Free(vertexAllocation);
 
             disposed = true;
         }
