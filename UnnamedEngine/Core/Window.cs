@@ -9,10 +9,15 @@ using Image = CSGL.Vulkan.Image;
 namespace UnnamedEngine.Core {
     public class Window : IDisposable {
         bool disposed;
+        Engine engine;
 
         GWindow window;
         int width;
         int height;
+
+        bool sizeChanged;
+        int newWidth;
+        int newHeight;
 
         public Input Input { get; private set; }
         
@@ -45,24 +50,52 @@ namespace UnnamedEngine.Core {
             }
         }
 
+        public event Action<int, int> OnSizeChanged = delegate { };
+
         public Window(Engine engine, int width, int height, string title) {
             if (width < 0) throw new ArgumentOutOfRangeException(nameof(width));
             if (height < 0) throw new ArgumentOutOfRangeException(nameof(height));
 
+            this.engine = engine;
             this.width = width;
             this.height = height;
 
             GLFW.WindowHint(WindowHint.ClientAPI, (int)ClientAPI.NoAPI);
             window = new GWindow(width, height, title, null, null);
 
+            window.OnSizeChanged += SizeChanged;
+
             Input = new Input(window);
 
+            CreateSurface();
+            CreateSwapchain(engine.Renderer);
+        }
+
+       internal void Update() {
+            if (sizeChanged) {
+                CreateSurface();
+                CreateSwapchain(engine.Renderer);
+
+                width = newWidth;
+                height = newHeight;
+                OnSizeChanged(newWidth, newHeight);
+                sizeChanged = false;
+            }
+
+            Input.Update();
+        }
+
+        void SizeChanged(int x, int y) {
+            sizeChanged = true;
+            newWidth = x;
+            newHeight = y;
+        }
+
+        void CreateSurface() {
             Surface = new Surface(engine.Renderer.PhysicalDevice, window);
             if (!engine.Renderer.PresentQueue.Family.SurfaceSupported(Surface)) {   //this check is apparently required by the validation layer
                 throw new WindowException("Could not create surface (Not supported by present queue)");
             }
-
-            CreateSwapchain(engine.Renderer);
         }
 
         void CreateSwapchain(Renderer renderer) {

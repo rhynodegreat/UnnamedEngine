@@ -58,7 +58,7 @@ namespace UnnamedEngine.Core {
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
-                Window.Input.Update();
+                Window.Update();
 
                 if (Window.Input.Hold(KeyCode.W)) {
                     z -= 1 / 60f;
