@@ -66,9 +66,12 @@ namespace Test {
             graph.Add(triangle);
             graph.Bake();
 
+            GBuffer gbuffer = new GBuffer(engine, window);
+
             using (engine)
             using (commandPool)
-            using (camera) {
+            using (camera)
+            using (gbuffer) {
                 engine.Run();
             }
 
