@@ -152,7 +152,7 @@ namespace UnnamedEngine.Rendering {
 
         public Vector3 Forward {
             get {
-                return new Vector3(worldTransform.M13, worldTransform.M23, worldTransform.M33);
+                return new Vector3(-worldTransform.M13, -worldTransform.M23, -worldTransform.M33);
             }
         }
 
