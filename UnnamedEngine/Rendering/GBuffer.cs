@@ -19,15 +19,15 @@ namespace UnnamedEngine.Rendering {
         VkaAllocation depthAlloc;
         VkaAllocation lightAlloc;
 
-        Image albedo;
-        Image norm;
-        Image depth;
-        Image light;
+        public Image Albedo { get; private set; }
+        public Image Norm { get; private set; }
+        public Image Depth { get; private set; }
+        public Image Light { get; private set; }
 
-        ImageView albedoView;
-        ImageView normView;
-        ImageView depthView;
-        ImageView lightView;
+        public ImageView AlbedoView { get; private set; }
+        public ImageView NormView { get; private set; }
+        public ImageView DepthView { get; private set; }
+        public ImageView LightView { get; private set; }
 
         public VkFormat DepthFormat { get; private set; }
 
@@ -68,11 +68,11 @@ namespace UnnamedEngine.Rendering {
             albedoInfo.extent.depth = 1;
             albedoInfo.format = VkFormat.R8g8b8a8Uint;
 
-            albedo = new Image(engine.Renderer.Device, albedoInfo);
-            albedoAlloc = engine.Renderer.Allocator.Alloc(albedo.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            albedo.Bind(albedoAlloc.memory, albedoAlloc.offset);
+            Albedo = new Image(engine.Renderer.Device, albedoInfo);
+            albedoAlloc = engine.Renderer.Allocator.Alloc(Albedo.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Albedo.Bind(albedoAlloc.memory, albedoAlloc.offset);
 
-            ImageViewCreateInfo albedoViewInfo = new ImageViewCreateInfo(albedo);
+            ImageViewCreateInfo albedoViewInfo = new ImageViewCreateInfo(Albedo);
             albedoViewInfo.components.r = VkComponentSwizzle.Identity;
             albedoViewInfo.components.g = VkComponentSwizzle.Identity;
             albedoViewInfo.components.b = VkComponentSwizzle.Identity;
@@ -84,7 +84,7 @@ namespace UnnamedEngine.Rendering {
             albedoViewInfo.subresourceRange.baseMipLevel = 0;
             albedoViewInfo.subresourceRange.layerCount = 1;
             albedoViewInfo.subresourceRange.baseArrayLayer = 0;
-            albedoView = new ImageView(engine.Renderer.Device, albedoViewInfo);
+            AlbedoView = new ImageView(engine.Renderer.Device, albedoViewInfo);
         }
 
         void CreateNorm(int width, int height) {
@@ -102,11 +102,11 @@ namespace UnnamedEngine.Rendering {
             normInfo.extent.depth = 1;
             normInfo.format = VkFormat.R16g16b16a16Sfloat;
 
-            norm = new Image(engine.Renderer.Device, normInfo);
-            normAlloc = engine.Renderer.Allocator.Alloc(norm.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            norm.Bind(normAlloc.memory, normAlloc.offset);
+            Norm = new Image(engine.Renderer.Device, normInfo);
+            normAlloc = engine.Renderer.Allocator.Alloc(Norm.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Norm.Bind(normAlloc.memory, normAlloc.offset);
 
-            ImageViewCreateInfo normViewInfo = new ImageViewCreateInfo(norm);
+            ImageViewCreateInfo normViewInfo = new ImageViewCreateInfo(Norm);
             normViewInfo.components.r = VkComponentSwizzle.Identity;
             normViewInfo.components.g = VkComponentSwizzle.Identity;
             normViewInfo.components.b = VkComponentSwizzle.Identity;
@@ -118,7 +118,7 @@ namespace UnnamedEngine.Rendering {
             normViewInfo.subresourceRange.baseMipLevel = 0;
             normViewInfo.subresourceRange.layerCount = 1;
             normViewInfo.subresourceRange.baseArrayLayer = 0;
-            normView = new ImageView(engine.Renderer.Device, normViewInfo);
+            NormView = new ImageView(engine.Renderer.Device, normViewInfo);
         }
 
         VkFormat FindDepthFormat() {
@@ -150,11 +150,11 @@ namespace UnnamedEngine.Rendering {
             depthInfo.extent.depth = 1;
             depthInfo.format = DepthFormat;
 
-            depth = new Image(engine.Renderer.Device, depthInfo);
-            depthAlloc = engine.Renderer.Allocator.Alloc(depth.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            depth.Bind(depthAlloc.memory, depthAlloc.offset);
+            Depth = new Image(engine.Renderer.Device, depthInfo);
+            depthAlloc = engine.Renderer.Allocator.Alloc(Depth.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Depth.Bind(depthAlloc.memory, depthAlloc.offset);
 
-            ImageViewCreateInfo depthViewInfo = new ImageViewCreateInfo(depth);
+            ImageViewCreateInfo depthViewInfo = new ImageViewCreateInfo(Depth);
             depthViewInfo.components.r = VkComponentSwizzle.Identity;
             depthViewInfo.components.g = VkComponentSwizzle.Identity;
             depthViewInfo.components.b = VkComponentSwizzle.Identity;
@@ -171,7 +171,7 @@ namespace UnnamedEngine.Rendering {
             depthViewInfo.subresourceRange.baseMipLevel = 0;
             depthViewInfo.subresourceRange.layerCount = 1;
             depthViewInfo.subresourceRange.baseArrayLayer = 0;
-            depthView = new ImageView(engine.Renderer.Device, depthViewInfo);
+            DepthView = new ImageView(engine.Renderer.Device, depthViewInfo);
         }
 
         void CreateLight(int width, int height) {
@@ -189,11 +189,11 @@ namespace UnnamedEngine.Rendering {
             lightInfo.extent.depth = 1;
             lightInfo.format = VkFormat.R16g16b16a16Sfloat;
 
-            light = new Image(engine.Renderer.Device, lightInfo);
-            lightAlloc = engine.Renderer.Allocator.Alloc(light.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            light.Bind(lightAlloc.memory, lightAlloc.offset);
+            Light = new Image(engine.Renderer.Device, lightInfo);
+            lightAlloc = engine.Renderer.Allocator.Alloc(Light.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Light.Bind(lightAlloc.memory, lightAlloc.offset);
 
-            ImageViewCreateInfo lightViewInfo = new ImageViewCreateInfo(light);
+            ImageViewCreateInfo lightViewInfo = new ImageViewCreateInfo(Light);
             lightViewInfo.components.r = VkComponentSwizzle.Identity;
             lightViewInfo.components.g = VkComponentSwizzle.Identity;
             lightViewInfo.components.b = VkComponentSwizzle.Identity;
@@ -205,18 +205,18 @@ namespace UnnamedEngine.Rendering {
             lightViewInfo.subresourceRange.baseMipLevel = 0;
             lightViewInfo.subresourceRange.layerCount = 1;
             lightViewInfo.subresourceRange.baseArrayLayer = 0;
-            lightView = new ImageView(engine.Renderer.Device, lightViewInfo);
+            LightView = new ImageView(engine.Renderer.Device, lightViewInfo);
         }
 
         void Free() {
-            albedoView?.Dispose();
-            normView?.Dispose();
-            depthView?.Dispose();
-            lightView?.Dispose();
-            albedo?.Dispose();
-            norm?.Dispose();
-            depth?.Dispose();
-            light?.Dispose();
+            AlbedoView?.Dispose();
+            NormView?.Dispose();
+            DepthView?.Dispose();
+            LightView?.Dispose();
+            Albedo?.Dispose();
+            Norm?.Dispose();
+            Depth?.Dispose();
+            Light?.Dispose();
             engine.Renderer.Allocator.Free(albedoAlloc);
             engine.Renderer.Allocator.Free(normAlloc);
             engine.Renderer.Allocator.Free(depthAlloc);
