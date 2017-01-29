@@ -57,6 +57,7 @@ namespace UnnamedEngine.Utilities {
         }
 
         public void Free(VkaAllocation allocation) {
+            if (allocation.memory == null) return;
             if (!pageMap.ContainsKey(allocation.memory)) return;
             Page page = pageMap[allocation.memory];
             page.Free(allocation);
