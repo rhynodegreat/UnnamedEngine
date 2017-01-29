@@ -8,7 +8,7 @@ using UnnamedEngine.Core;
 namespace Test {
     public class AcquireImageNode : CommandNode, IDisposable {
         bool disposed;
-        Renderer renderer;
+        Graphics renderer;
         Swapchain swapchain;
 
         Semaphore acquireImageSemaphore;
@@ -34,7 +34,7 @@ namespace Test {
             AddInput(acquireImageSemaphore, VkPipelineStageFlags.TopOfPipeBit);
         }
 
-        void CreateCommandBuffer(Renderer renderer, IList<Image> images, CommandPool commandPool) {
+        void CreateCommandBuffer(Graphics renderer, IList<Image> images, CommandPool commandPool) {
             commandBuffers = new List<CommandBuffer>(commandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();

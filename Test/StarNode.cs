@@ -131,7 +131,7 @@ namespace Test {
             }
         }
 
-        void CreateVertexBuffer(Renderer renderer) {
+        void CreateVertexBuffer(Graphics renderer) {
             BufferCreateInfo info = new BufferCreateInfo();
             info.sharingMode = VkSharingMode.Exclusive;
             info.size = (uint)Interop.SizeOf(stars);

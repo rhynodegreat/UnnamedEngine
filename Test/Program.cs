@@ -32,7 +32,7 @@ namespace Test {
             Instance instance = CreateInstance();
             PhysicalDevice physicalDevice = PickPhysicalDevice(instance);
 
-            Renderer renderer = new Renderer(instance, physicalDevice);
+            Graphics renderer = new Graphics(instance, physicalDevice);
             Engine engine = new Engine(renderer);
 
             UWindow window = new UWindow(engine, 800, 600, "Test");

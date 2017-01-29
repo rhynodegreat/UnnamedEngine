@@ -8,7 +8,7 @@ using UnnamedEngine.Core;
 namespace Test {
     public class PresentNode : CommandNode, IDisposable {
         bool disposed;
-        Renderer renderer;
+        Graphics renderer;
         AcquireImageNode acquireImageNode;
         
         List<CommandBuffer> commandBuffers;
@@ -39,7 +39,7 @@ namespace Test {
             CreateCommandBuffers(renderer, engine.Window.SwapchainImages, commandPool);
         }
 
-        void CreateCommandBuffers(Renderer renderer, IList<Image> images, CommandPool commandPool) {
+        void CreateCommandBuffers(Graphics renderer, IList<Image> images, CommandPool commandPool) {
             commandBuffers = new List<CommandBuffer>(commandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();

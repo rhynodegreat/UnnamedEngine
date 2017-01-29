@@ -10,7 +10,7 @@ using UnnamedEngine.Utilities;
 namespace UnnamedEngine.Core {
     public class CommandGraph : IDisposable {
         bool disposed;
-        Renderer renderer;
+        Graphics renderer;
 
         Pool<Semaphore> pool;
         HashSet<Semaphore> semaphores;

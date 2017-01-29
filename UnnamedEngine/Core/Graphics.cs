@@ -8,7 +8,7 @@ using CSGL.Vulkan;
 using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.Core {
-    public class Renderer : IDisposable {
+    public class Graphics : IDisposable {
         bool disposed;
         
         string[] deviceExtensions = {
@@ -24,7 +24,7 @@ namespace UnnamedEngine.Core {
 
         public VkAllocator Allocator { get; private set; }
 
-        public Renderer(Instance instance, PhysicalDevice physicalDevice) {
+        public Graphics(Instance instance, PhysicalDevice physicalDevice) {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             if (physicalDevice == null) throw new ArgumentNullException(nameof(physicalDevice));
 
@@ -93,7 +93,7 @@ namespace UnnamedEngine.Core {
             disposed = true;
         }
 
-        ~Renderer() {
+        ~Graphics() {
             Dispose(false);
         }
     }

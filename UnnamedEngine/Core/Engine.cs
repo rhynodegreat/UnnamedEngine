@@ -14,7 +14,7 @@ namespace UnnamedEngine.Core {
         Window window;
         Camera camera;
 
-        public Renderer Renderer { get; private set; }
+        public Graphics Renderer { get; private set; }
 
         public Window Window {
             get {
@@ -38,7 +38,7 @@ namespace UnnamedEngine.Core {
 
         public CommandGraph CommandGraph { get; private set; }
 
-        public Engine(Renderer renderer) {
+        public Engine(Graphics renderer) {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
 
             Renderer = renderer;

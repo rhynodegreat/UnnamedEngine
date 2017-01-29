@@ -98,7 +98,7 @@ namespace UnnamedEngine.Core {
             }
         }
 
-        void CreateSwapchain(Renderer renderer) {
+        void CreateSwapchain(Graphics renderer) {
             var cap = Surface.Capabilities;
             var format = ChooseSwapSurfaceFormat(Surface.Formats);
             var mode = ChooseSwapPresentMode(Surface.PresentModes);
