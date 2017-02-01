@@ -42,6 +42,8 @@ namespace UnnamedEngine.Rendering {
         public int Width { get; private set; }
         public int Height { get; private set; }
 
+        public event Action<int, int> OnSizeChanged = delegate { };
+
         public GBuffer(Engine engine, Window window) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (window == null) throw new ArgumentNullException(nameof(window));
@@ -69,6 +71,8 @@ namespace UnnamedEngine.Rendering {
             CreateLight();
 
             UpdateInputSet();
+
+            OnSizeChanged(width, height);
         }
 
         void CreateDescriptors() {

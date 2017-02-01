@@ -22,8 +22,10 @@ namespace Test {
             this.engine = engine;
             this.gbuffer = gbuffer;
 
+            gbuffer.OnSizeChanged += CreateFramebuffer;
+
             CreateRenderpass();
-            CreateFramebuffer();
+            CreateFramebuffer(gbuffer.Width, gbuffer.Height);
         }
 
         void CreateRenderpass() {
@@ -110,14 +112,15 @@ namespace Test {
             renderPass = new RenderPass(engine.Graphics.Device, info);
         }
 
-        void CreateFramebuffer() {
+        void CreateFramebuffer(int width, int height) {
             FramebufferCreateInfo info = new FramebufferCreateInfo();
             info.attachments = new List<ImageView> { gbuffer.AlbedoView, gbuffer.NormView, gbuffer.DepthView, gbuffer.LightView };
-            info.width = (uint)gbuffer.Width;
-            info.height = (uint)gbuffer.Height;
+            info.width = (uint)width;
+            info.height = (uint)height;
             info.layers = 1;
             info.renderPass = renderPass;
 
+            framebuffer?.Dispose();
             framebuffer = new Framebuffer(engine.Graphics.Device, info);
         }
 
@@ -137,6 +140,8 @@ namespace Test {
 
             framebuffer.Dispose();
             renderPass.Dispose();
+
+            gbuffer.OnSizeChanged -= CreateFramebuffer;
 
             disposed = true;
         }
