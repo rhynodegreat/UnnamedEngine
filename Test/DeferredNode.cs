@@ -14,6 +14,7 @@ namespace Test {
 
         RenderPass renderPass;
         Framebuffer framebuffer;
+        Pipeline lightingPipeline;
         CommandPool pool;
         CommandBuffer commandBuffer;
         List<CommandBuffer> submitBuffers;
@@ -30,6 +31,7 @@ namespace Test {
             CreateRenderpass();
             CreateFramebuffer(gbuffer.Width, gbuffer.Height);
             CreateCommandBuffer();
+            CreateLightingPipeline();
         }
 
         void CreateRenderpass() {
@@ -68,25 +70,25 @@ namespace Test {
             light.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
             SubpassDescription opaque = new SubpassDescription();
-            opaque.PipelineBindPoint = VkPipelineBindPoint.Graphics;
-            opaque.ColorAttachments = new List<VkAttachmentReference> {
-                new VkAttachmentReference { attachment = 0, layout = VkImageLayout.ColorAttachmentOptimal },
-                new VkAttachmentReference { attachment = 1, layout = VkImageLayout.ColorAttachmentOptimal },
-                new VkAttachmentReference { attachment = 3, layout = VkImageLayout.ColorAttachmentOptimal }
+            opaque.pipelineBindPoint = VkPipelineBindPoint.Graphics;
+            opaque.colorAttachments = new List<AttachmentReference> {
+                new AttachmentReference { attachment = 0, layout = VkImageLayout.ColorAttachmentOptimal },
+                new AttachmentReference { attachment = 1, layout = VkImageLayout.ColorAttachmentOptimal },
+                new AttachmentReference { attachment = 3, layout = VkImageLayout.ColorAttachmentOptimal }
             };
-            opaque.DepthStencilAttachment = new VkAttachmentReference { attachment = 2, layout = VkImageLayout.DepthStencilAttachmentOptimal };
+            opaque.depthStencilAttachment = new AttachmentReference { attachment = 2, layout = VkImageLayout.DepthStencilAttachmentOptimal };
 
             SubpassDescription lighting = new SubpassDescription();
-            lighting.PipelineBindPoint = VkPipelineBindPoint.Graphics;
-            lighting.InputAttachments = new List<VkAttachmentReference> {
-                new VkAttachmentReference { attachment = 0, layout = VkImageLayout.ShaderReadOnlyOptimal },
-                new VkAttachmentReference { attachment = 1, layout = VkImageLayout.ShaderReadOnlyOptimal },
-                new VkAttachmentReference { attachment = 3, layout = VkImageLayout.General }
+            lighting.pipelineBindPoint = VkPipelineBindPoint.Graphics;
+            lighting.inputAttachments = new List<AttachmentReference> {
+                new AttachmentReference { attachment = 0, layout = VkImageLayout.ShaderReadOnlyOptimal },
+                new AttachmentReference { attachment = 1, layout = VkImageLayout.ShaderReadOnlyOptimal },
+                new AttachmentReference { attachment = 3, layout = VkImageLayout.General }
             };
-            lighting.ColorAttachments = new List<VkAttachmentReference> {
-                new VkAttachmentReference { attachment = 3, layout = VkImageLayout.General }
+            lighting.colorAttachments = new List<AttachmentReference> {
+                new AttachmentReference { attachment = 3, layout = VkImageLayout.General }
             };
-            lighting.DepthStencilAttachment = new VkAttachmentReference { attachment = 2, layout = VkImageLayout.DepthStencilReadOnlyOptimal };
+            lighting.depthStencilAttachment = new AttachmentReference { attachment = 2, layout = VkImageLayout.DepthStencilReadOnlyOptimal };
 
             VkSubpassDependency toOpaque = new VkSubpassDependency();
             toOpaque.srcSubpass = uint.MaxValue;
@@ -126,6 +128,10 @@ namespace Test {
 
             framebuffer?.Dispose();
             framebuffer = new Framebuffer(engine.Graphics.Device, info);
+        }
+
+        void CreateLightingPipeline() {
+
         }
 
         void CreateCommandBuffer() {
@@ -181,7 +187,9 @@ namespace Test {
 
             commandBuffer.Begin(beginInfo);
             commandBuffer.BeginRenderPass(renderPassInfo, VkSubpassContents.Inline);
+
             commandBuffer.NextSubpass(VkSubpassContents.Inline);
+
             commandBuffer.EndRenderPass();
             commandBuffer.End();
             

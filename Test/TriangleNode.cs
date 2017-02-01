@@ -74,13 +74,13 @@ namespace Test {
             colorAttachment.initialLayout = VkImageLayout.Undefined;
             colorAttachment.finalLayout = VkImageLayout.ColorAttachmentOptimal;
 
-            var colorAttachmentRef = new VkAttachmentReference();
+            var colorAttachmentRef = new AttachmentReference();
             colorAttachmentRef.attachment = 0;
             colorAttachmentRef.layout = VkImageLayout.ColorAttachmentOptimal;
 
             var subpass = new SubpassDescription();
-            subpass.PipelineBindPoint = VkPipelineBindPoint.Graphics;
-            subpass.ColorAttachments = new List<VkAttachmentReference> { colorAttachmentRef };
+            subpass.pipelineBindPoint = VkPipelineBindPoint.Graphics;
+            subpass.colorAttachments = new List<AttachmentReference> { colorAttachmentRef };
 
             var dependency = new VkSubpassDependency();
             dependency.srcSubpass = uint.MaxValue;  //VK_SUBPASS_EXTERNAL
