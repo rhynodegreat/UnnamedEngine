@@ -14,6 +14,9 @@ namespace Test {
 
         RenderPass renderPass;
         Framebuffer framebuffer;
+        CommandPool pool;
+        CommandBuffer commandBuffer;
+        List<CommandBuffer> submitBuffers;
 
         public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -26,6 +29,7 @@ namespace Test {
 
             CreateRenderpass();
             CreateFramebuffer(gbuffer.Width, gbuffer.Height);
+            CreateCommandBuffer();
         }
 
         void CreateRenderpass() {
@@ -124,8 +128,67 @@ namespace Test {
             framebuffer = new Framebuffer(engine.Graphics.Device, info);
         }
 
+        void CreateCommandBuffer() {
+            CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
+            poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+
+            pool = new CommandPool(engine.Graphics.Device, poolInfo);
+
+            commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
+
+            submitBuffers = new List<CommandBuffer> { commandBuffer };
+
+            CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
+            RenderPassBeginInfo renderPassInfo = new RenderPassBeginInfo();
+            renderPassInfo.renderPass = renderPass;
+            renderPassInfo.framebuffer = framebuffer;
+            renderPassInfo.clearValues = new List<VkClearValue> {
+                new VkClearValue {
+                    color = new VkClearColorValue { //albedo
+                        uint32_0 = 255,
+                        uint32_1 = 0,
+                        uint32_2 = 0,
+                        uint32_3 = 0
+                    }
+                },
+                new VkClearValue {
+                    color = new VkClearColorValue { //norm
+                        float32_0 = 0,
+                        float32_1 = 0,
+                        float32_2 = 0,
+                        float32_3 = 0
+                    }
+                },
+                new VkClearValue {
+                    depthStencil = new VkClearDepthStencilValue {   //depth
+                        depth = 0,
+                        stencil = 0
+                    }
+                },
+                new VkClearValue {
+                    color = new VkClearColorValue { //light
+                        float32_0 = 0,
+                        float32_1 = 0,
+                        float32_2 = 0,
+                        float32_3 = 0
+                    }
+                },
+            };
+            renderPassInfo.renderArea.offset.x = 0;
+            renderPassInfo.renderArea.offset.y = 0;
+            renderPassInfo.renderArea.extent.width = (uint)gbuffer.Width;
+            renderPassInfo.renderArea.extent.height = (uint)gbuffer.Height;
+
+            commandBuffer.Begin(beginInfo);
+            commandBuffer.BeginRenderPass(renderPassInfo, VkSubpassContents.Inline);
+            commandBuffer.NextSubpass(VkSubpassContents.Inline);
+            commandBuffer.EndRenderPass();
+            commandBuffer.End();
+            
+        }
+
         public override List<CommandBuffer> GetCommands() {
-            return null;
+            return submitBuffers;
         }
 
         public new void Dispose() {
@@ -140,6 +203,7 @@ namespace Test {
 
             framebuffer.Dispose();
             renderPass.Dispose();
+            pool.Dispose();
 
             gbuffer.OnSizeChanged -= CreateFramebuffer;
 
