@@ -15,6 +15,8 @@ namespace UnnamedEngine.Core {
         Camera camera;
 
         public Graphics Graphics { get; private set; }
+        public CommandGraph CommandGraph { get; private set; }
+        public FrameLoop FrameLoop { get; private set; }
 
         public Window Window {
             get {
@@ -36,13 +38,13 @@ namespace UnnamedEngine.Core {
             }
         }
 
-        public CommandGraph CommandGraph { get; private set; }
 
         public Engine(Graphics graphics) {
             if (graphics == null) throw new ArgumentNullException(nameof(graphics));
 
             Graphics = graphics;
             CommandGraph = new CommandGraph(this);
+            FrameLoop = new FrameLoop();
         }
 
         public void Run() {
