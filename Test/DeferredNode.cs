@@ -13,6 +13,7 @@ namespace Test {
         GBuffer gbuffer;
 
         RenderPass renderPass;
+        Framebuffer framebuffer;
 
         public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -22,6 +23,7 @@ namespace Test {
             this.gbuffer = gbuffer;
 
             CreateRenderpass();
+            CreateFramebuffer();
         }
 
         void CreateRenderpass() {
@@ -108,6 +110,17 @@ namespace Test {
             renderPass = new RenderPass(engine.Graphics.Device, info);
         }
 
+        void CreateFramebuffer() {
+            FramebufferCreateInfo info = new FramebufferCreateInfo();
+            info.attachments = new List<ImageView> { gbuffer.AlbedoView, gbuffer.NormView, gbuffer.DepthView, gbuffer.LightView };
+            info.width = (uint)gbuffer.Width;
+            info.height = (uint)gbuffer.Height;
+            info.layers = 1;
+            info.renderPass = renderPass;
+
+            framebuffer = new Framebuffer(engine.Graphics.Device, info);
+        }
+
         public override List<CommandBuffer> GetCommands() {
             return null;
         }
@@ -122,6 +135,7 @@ namespace Test {
             
             base.Dispose(disposing);
 
+            framebuffer.Dispose();
             renderPass.Dispose();
 
             disposed = true;
