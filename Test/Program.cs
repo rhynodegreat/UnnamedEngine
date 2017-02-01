@@ -38,6 +38,8 @@ namespace Test {
             UWindow window = new UWindow(engine, 800, 600, "Test");
             engine.Window = window;
 
+            GBuffer gbuffer = new GBuffer(engine, window);
+
             Camera camera = new Camera(engine, window, 90, .1f, 100);
             engine.Camera = camera;
 
@@ -58,15 +60,17 @@ namespace Test {
             presentNode.AddInput(triangle);
             triangle.AddInput(stars);
 
+            DeferredNode deferred = new DeferredNode(engine, gbuffer);
+
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Add(staging);
             graph.Add(stars);
             graph.Add(triangle);
+            graph.Add(deferred);
             graph.Bake();
 
-            GBuffer gbuffer = new GBuffer(engine, window);
 
             using (engine)
             using (commandPool)
