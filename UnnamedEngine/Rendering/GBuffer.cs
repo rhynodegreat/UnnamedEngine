@@ -39,6 +39,9 @@ namespace UnnamedEngine.Rendering {
         public ImageView DepthView { get; private set; }
         public ImageView LightView { get; private set; }
 
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
         public GBuffer(Engine engine, Window window) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (window == null) throw new ArgumentNullException(nameof(window));
@@ -57,10 +60,13 @@ namespace UnnamedEngine.Rendering {
         void CreateGBuffer(int width, int height) {
             Free();
 
-            CreateAlbedo(width, height);
-            CreateNorm(width, height);
-            CreateDepth(width, height);
-            CreateLight(width, height);
+            Width = width;
+            Height = height;
+
+            CreateAlbedo();
+            CreateNorm();
+            CreateDepth();
+            CreateLight();
 
             UpdateInputSet();
         }
@@ -149,7 +155,7 @@ namespace UnnamedEngine.Rendering {
             });
         }
 
-        void CreateAlbedo(int width, int height) {
+        void CreateAlbedo() {
             ImageCreateInfo albedoInfo = new ImageCreateInfo();
             albedoInfo.usage = VkImageUsageFlags.ColorAttachmentBit | VkImageUsageFlags.InputAttachmentBit;
             albedoInfo.tiling = VkImageTiling.Optimal;
@@ -159,8 +165,8 @@ namespace UnnamedEngine.Rendering {
             albedoInfo.initialLayout = VkImageLayout.Undefined;
             albedoInfo.mipLevels = 1;
             albedoInfo.arrayLayers = 1;
-            albedoInfo.extent.width = (uint)width;
-            albedoInfo.extent.height = (uint)height;
+            albedoInfo.extent.width = (uint)Width;
+            albedoInfo.extent.height = (uint)Height;
             albedoInfo.extent.depth = 1;
             albedoInfo.format = AlbedoFormat;
 
@@ -183,7 +189,7 @@ namespace UnnamedEngine.Rendering {
             AlbedoView = new ImageView(engine.Graphics.Device, albedoViewInfo);
         }
 
-        void CreateNorm(int width, int height) {
+        void CreateNorm() {
             ImageCreateInfo normInfo = new ImageCreateInfo();
             normInfo.usage = VkImageUsageFlags.ColorAttachmentBit | VkImageUsageFlags.InputAttachmentBit;
             normInfo.tiling = VkImageTiling.Optimal;
@@ -193,8 +199,8 @@ namespace UnnamedEngine.Rendering {
             normInfo.initialLayout = VkImageLayout.Undefined;
             normInfo.mipLevels = 1;
             normInfo.arrayLayers = 1;
-            normInfo.extent.width = (uint)width;
-            normInfo.extent.height = (uint)height;
+            normInfo.extent.width = (uint)Width;
+            normInfo.extent.height = (uint)Height;
             normInfo.extent.depth = 1;
             normInfo.format = NormFormat;
 
@@ -231,7 +237,7 @@ namespace UnnamedEngine.Rendering {
             throw new GBufferException("Could not find good depth buffer format");
         }
 
-        void CreateDepth(int width, int height) {
+        void CreateDepth() {
             ImageCreateInfo depthInfo = new ImageCreateInfo();
             depthInfo.usage = VkImageUsageFlags.DepthStencilAttachmentBit | VkImageUsageFlags.InputAttachmentBit;
             depthInfo.tiling = VkImageTiling.Optimal;
@@ -241,8 +247,8 @@ namespace UnnamedEngine.Rendering {
             depthInfo.initialLayout = VkImageLayout.Undefined;
             depthInfo.mipLevels = 1;
             depthInfo.arrayLayers = 1;
-            depthInfo.extent.width = (uint)width;
-            depthInfo.extent.height = (uint)height;
+            depthInfo.extent.width = (uint)Width;
+            depthInfo.extent.height = (uint)Height;
             depthInfo.extent.depth = 1;
             depthInfo.format = DepthFormat;
 
@@ -270,7 +276,7 @@ namespace UnnamedEngine.Rendering {
             DepthView = new ImageView(engine.Graphics.Device, depthViewInfo);
         }
 
-        void CreateLight(int width, int height) {
+        void CreateLight() {
             ImageCreateInfo lightInfo = new ImageCreateInfo();
             lightInfo.usage = VkImageUsageFlags.ColorAttachmentBit | VkImageUsageFlags.SampledBit;
             lightInfo.tiling = VkImageTiling.Optimal;
@@ -280,8 +286,8 @@ namespace UnnamedEngine.Rendering {
             lightInfo.initialLayout = VkImageLayout.Undefined;
             lightInfo.mipLevels = 1;
             lightInfo.arrayLayers = 1;
-            lightInfo.extent.width = (uint)width;
-            lightInfo.extent.height = (uint)height;
+            lightInfo.extent.width = (uint)Width;
+            lightInfo.extent.height = (uint)Height;
             lightInfo.extent.depth = 1;
             lightInfo.format = LightFormat;
 
