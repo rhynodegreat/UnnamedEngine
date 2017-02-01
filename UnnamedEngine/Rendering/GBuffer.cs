@@ -24,9 +24,9 @@ namespace UnnamedEngine.Rendering {
         Sampler lightSampler;
 
         public DescriptorSetLayout InputLayout { get; private set; }
-        public DescriptorSet InputSet { get; private set; }
+        public DescriptorSet InputDescriptor { get; private set; }
         public DescriptorSetLayout LightLayout { get; private set; }
-        public DescriptorSet LightSet { get; private set; }
+        public DescriptorSet LightDescriptor { get; private set; }
 
         public VkFormat AlbedoFormat { get; private set; } = VkFormat.R8g8b8a8Uint;
         public VkFormat NormFormat { get; private set; } = VkFormat.R16g16b16a16Sfloat;
@@ -149,19 +149,19 @@ namespace UnnamedEngine.Rendering {
             inputAllocInfo.descriptorSetCount = 1;
             inputAllocInfo.setLayouts = new List<DescriptorSetLayout> { InputLayout };
 
-            InputSet = pool.Allocate(inputAllocInfo)[0];
+            InputDescriptor = pool.Allocate(inputAllocInfo)[0];
 
             DescriptorSetAllocateInfo lightAllocInfo = new DescriptorSetAllocateInfo();
             lightAllocInfo.descriptorSetCount = 1;
             lightAllocInfo.setLayouts = new List<DescriptorSetLayout> { LightLayout };
 
-            LightSet = pool.Allocate(lightAllocInfo)[0];
+            LightDescriptor = pool.Allocate(lightAllocInfo)[0];
         }
 
         void UpdateInputSet() {
-            InputSet.Update(new List<WriteDescriptorSet> {
+            InputDescriptor.Update(new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {    //albedo
-                    dstSet = InputSet,
+                    dstSet = InputDescriptor,
                     descriptorType = VkDescriptorType.InputAttachment,
                     dstArrayElement = 0,
                     dstBinding = 0,
@@ -173,7 +173,7 @@ namespace UnnamedEngine.Rendering {
                     }
                 },
                 new WriteDescriptorSet {    //norm
-                    dstSet = InputSet,
+                    dstSet = InputDescriptor,
                     descriptorType = VkDescriptorType.InputAttachment,
                     dstArrayElement = 0,
                     dstBinding = 1,
@@ -185,7 +185,7 @@ namespace UnnamedEngine.Rendering {
                     }
                 },
                 new WriteDescriptorSet {    //depth
-                    dstSet = InputSet,
+                    dstSet = InputDescriptor,
                     descriptorType = VkDescriptorType.InputAttachment,
                     dstArrayElement = 0,
                     dstBinding = 2,
@@ -197,7 +197,7 @@ namespace UnnamedEngine.Rendering {
                     }
                 },
                 new WriteDescriptorSet {
-                    dstSet = LightSet,
+                    dstSet = LightDescriptor,
                     descriptorType = VkDescriptorType.CombinedImageSampler,
                     dstArrayElement = 0,
                     dstBinding = 0,
