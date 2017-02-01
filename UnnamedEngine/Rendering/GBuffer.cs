@@ -278,7 +278,7 @@ namespace UnnamedEngine.Rendering {
 
         void CreateLight() {
             ImageCreateInfo lightInfo = new ImageCreateInfo();
-            lightInfo.usage = VkImageUsageFlags.ColorAttachmentBit | VkImageUsageFlags.SampledBit;
+            lightInfo.usage = VkImageUsageFlags.ColorAttachmentBit | VkImageUsageFlags.SampledBit | VkImageUsageFlags.InputAttachmentBit;
             lightInfo.tiling = VkImageTiling.Optimal;
             lightInfo.sharingMode = VkSharingMode.Exclusive;
             lightInfo.samples = VkSampleCountFlags._1Bit;
