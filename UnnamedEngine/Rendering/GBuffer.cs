@@ -14,10 +14,15 @@ namespace UnnamedEngine.Rendering {
         Engine engine;
         Window window;
 
+        DescriptorPool pool;
+
         VkaAllocation albedoAlloc;
         VkaAllocation normAlloc;
         VkaAllocation depthAlloc;
         VkaAllocation lightAlloc;
+
+        public DescriptorSetLayout InputLayout { get; private set; }
+        public DescriptorSet InputSet { get; private set; }
 
         public VkFormat AlbedoFormat { get; private set; } = VkFormat.R8g8b8a8Uint;
         public VkFormat NormFormat { get; private set; } = VkFormat.R16g16b16a16Sfloat;
@@ -54,6 +59,90 @@ namespace UnnamedEngine.Rendering {
             CreateNorm(width, height);
             CreateDepth(width, height);
             CreateLight(width, height);
+
+            CreateDescriptors();
+        }
+
+        void CreateDescriptors() {
+            DescriptorSetLayoutCreateInfo layoutInfo = new DescriptorSetLayoutCreateInfo();
+            layoutInfo.bindings = new List<VkDescriptorSetLayoutBinding> {
+                new VkDescriptorSetLayoutBinding {  //albedo
+                    binding = 0,
+                    descriptorCount = 1,
+                    descriptorType = VkDescriptorType.InputAttachment,
+                    stageFlags = VkShaderStageFlags.FragmentBit
+                },
+                new VkDescriptorSetLayoutBinding {  //norm
+                    binding = 1,
+                    descriptorCount = 1,
+                    descriptorType = VkDescriptorType.InputAttachment,
+                    stageFlags = VkShaderStageFlags.FragmentBit
+                },
+                new VkDescriptorSetLayoutBinding {
+                    binding = 2,
+                    descriptorCount = 1,
+                    descriptorType = VkDescriptorType.InputAttachment,
+                    stageFlags = VkShaderStageFlags.FragmentBit
+                }
+            };
+
+            InputLayout = new DescriptorSetLayout(engine.Graphics.Device, layoutInfo);
+
+            DescriptorPoolCreateInfo poolInfo = new DescriptorPoolCreateInfo();
+            poolInfo.maxSets = 1;
+            poolInfo.poolSizes = new List<VkDescriptorPoolSize> {
+                new VkDescriptorPoolSize {
+                    descriptorCount = 3,
+                    type = VkDescriptorType.InputAttachment
+                }
+            };
+
+            pool = new DescriptorPool(engine.Graphics.Device, poolInfo);
+
+            DescriptorSetAllocateInfo info = new DescriptorSetAllocateInfo();
+            info.descriptorSetCount = 1;
+            info.setLayouts = new List<DescriptorSetLayout> { InputLayout };
+
+            InputSet = pool.Allocate(info)[0];
+
+            InputSet.Update(new List<WriteDescriptorSet> {
+                new WriteDescriptorSet {    //albedo
+                    dstSet = InputSet,
+                    descriptorType = VkDescriptorType.InputAttachment,
+                    dstArrayElement = 0,
+                    dstBinding = 0,
+                    imageInfo = new List<DescriptorImageInfo> {
+                        new DescriptorImageInfo {
+                            imageLayout = VkImageLayout.ColorAttachmentOptimal,
+                            imageView = AlbedoView
+                        }
+                    }
+                },
+                new WriteDescriptorSet {    //norm
+                    dstSet = InputSet,
+                    descriptorType = VkDescriptorType.InputAttachment,
+                    dstArrayElement = 0,
+                    dstBinding = 1,
+                    imageInfo = new List<DescriptorImageInfo> {
+                        new DescriptorImageInfo {
+                            imageLayout = VkImageLayout.ColorAttachmentOptimal,
+                            imageView = NormView
+                        }
+                    }
+                },
+                new WriteDescriptorSet {    //depth
+                    dstSet = InputSet,
+                    descriptorType = VkDescriptorType.InputAttachment,
+                    dstArrayElement = 0,
+                    dstBinding = 2,
+                    imageInfo = new List<DescriptorImageInfo> {
+                        new DescriptorImageInfo {
+                            imageLayout = VkImageLayout.DepthStencilReadOnlyOptimal,
+                            imageView = DepthView
+                        }
+                    }
+                },
+            });
         }
 
         void CreateAlbedo(int width, int height) {
@@ -241,6 +330,8 @@ namespace UnnamedEngine.Rendering {
             window.OnSizeChanged -= CreateGBuffer;
 
             Free();
+            pool.Dispose();
+            InputLayout.Dispose();
 
             disposed = true;
         }
