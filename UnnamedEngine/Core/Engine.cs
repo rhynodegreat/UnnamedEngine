@@ -56,6 +56,8 @@ namespace UnnamedEngine.Core {
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
+
+                FrameLoop.Update(1/60f);
                 Window.Update();
                 Camera.Update();
 
