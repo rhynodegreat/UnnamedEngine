@@ -86,7 +86,7 @@ namespace Test {
             lighting.ColorAttachments = new List<VkAttachmentReference> {
                 new VkAttachmentReference { attachment = 3, layout = VkImageLayout.General }
             };
-            lighting.PreserveAttachments = new List<uint> { 2 };
+            lighting.DepthStencilAttachment = new VkAttachmentReference { attachment = 2, layout = VkImageLayout.DepthStencilReadOnlyOptimal };
 
             VkSubpassDependency toOpaque = new VkSubpassDependency();
             toOpaque.srcSubpass = uint.MaxValue;
