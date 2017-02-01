@@ -39,7 +39,7 @@ namespace Test {
             albedo.loadOp = VkAttachmentLoadOp.Clear;
             albedo.storeOp = VkAttachmentStoreOp.DontCare;
             albedo.initialLayout = VkImageLayout.Undefined;
-            albedo.finalLayout = VkImageLayout.ColorAttachmentOptimal;
+            albedo.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
             VkAttachmentDescription norm = new VkAttachmentDescription();
             norm.format = gbuffer.NormFormat;
@@ -47,7 +47,7 @@ namespace Test {
             norm.loadOp = VkAttachmentLoadOp.Clear;
             norm.storeOp = VkAttachmentStoreOp.DontCare;
             norm.initialLayout = VkImageLayout.Undefined;
-            norm.finalLayout = VkImageLayout.ColorAttachmentOptimal;
+            norm.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
             VkAttachmentDescription depth = new VkAttachmentDescription();
             depth.format = gbuffer.DepthFormat;
@@ -65,7 +65,7 @@ namespace Test {
             light.loadOp = VkAttachmentLoadOp.Clear;
             light.storeOp = VkAttachmentStoreOp.Store;
             light.initialLayout = VkImageLayout.Undefined;
-            light.finalLayout = VkImageLayout.ColorAttachmentOptimal;
+            light.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
             SubpassDescription opaque = new SubpassDescription();
             opaque.PipelineBindPoint = VkPipelineBindPoint.Graphics;
