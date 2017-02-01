@@ -43,6 +43,8 @@ namespace Test {
             Camera camera = new Camera(engine, window, 90, .1f, 100);
             engine.Camera = camera;
 
+            FreeCam freeCam = new FreeCam(engine);
+
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
             info.queueFamilyIndex = renderer.GraphicsQueue.FamilyIndex;
             CommandPool commandPool = new CommandPool(renderer.Device, info);

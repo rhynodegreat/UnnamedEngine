@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="AcquireImageNode.cs" />
     <Compile Include="DeferredNode.cs" />
+    <Compile Include="FreeCam.cs" />
     <Compile Include="PresentNode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
