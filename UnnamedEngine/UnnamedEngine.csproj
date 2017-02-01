@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Clock.cs" />
     <Compile Include="Core\Engine.cs" />
     <Compile Include="Core\FrameLoop.cs" />
     <Compile Include="Core\ISystem.cs" />

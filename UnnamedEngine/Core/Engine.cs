@@ -17,6 +17,7 @@ namespace UnnamedEngine.Core {
         public Graphics Graphics { get; private set; }
         public CommandGraph CommandGraph { get; private set; }
         public FrameLoop FrameLoop { get; private set; }
+        public Clock Clock { get; private set; }
 
         public Window Window {
             get {
@@ -45,6 +46,7 @@ namespace UnnamedEngine.Core {
             Graphics = graphics;
             CommandGraph = new CommandGraph(this);
             FrameLoop = new FrameLoop();
+            Clock = new Clock();
         }
 
         public void Run() {
@@ -57,7 +59,8 @@ namespace UnnamedEngine.Core {
 
                 if (Window.ShouldClose) break;
 
-                FrameLoop.Update(1/60f);
+                Clock.FrameUpdate();
+                FrameLoop.Update(Clock.FrameDelta);
                 Window.Update();
                 Camera.Update();
 
