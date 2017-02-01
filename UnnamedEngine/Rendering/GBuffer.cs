@@ -48,19 +48,21 @@ namespace UnnamedEngine.Rendering {
 
             window.OnSizeChanged += CreateGBuffer;
 
+            DepthFormat = FindDepthFormat();
+
+            CreateDescriptors();
             CreateGBuffer(window.Width, window.Height);
         }
 
         void CreateGBuffer(int width, int height) {
             Free();
-            DepthFormat = FindDepthFormat();
 
             CreateAlbedo(width, height);
             CreateNorm(width, height);
             CreateDepth(width, height);
             CreateLight(width, height);
 
-            CreateDescriptors();
+            UpdateInputSet();
         }
 
         void CreateDescriptors() {
@@ -104,7 +106,9 @@ namespace UnnamedEngine.Rendering {
             info.setLayouts = new List<DescriptorSetLayout> { InputLayout };
 
             InputSet = pool.Allocate(info)[0];
+        }
 
+        void UpdateInputSet() {
             InputSet.Update(new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {    //albedo
                     dstSet = InputSet,
