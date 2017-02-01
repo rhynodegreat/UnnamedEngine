@@ -21,8 +21,12 @@ namespace UnnamedEngine.Rendering {
         VkaAllocation depthAlloc;
         VkaAllocation lightAlloc;
 
+        Sampler lightSampler;
+
         public DescriptorSetLayout InputLayout { get; private set; }
         public DescriptorSet InputSet { get; private set; }
+        public DescriptorSetLayout LightLayout { get; private set; }
+        public DescriptorSet LightSet { get; private set; }
 
         public VkFormat AlbedoFormat { get; private set; } = VkFormat.R8g8b8a8Uint;
         public VkFormat NormFormat { get; private set; } = VkFormat.R16g16b16a16Sfloat;
@@ -55,6 +59,7 @@ namespace UnnamedEngine.Rendering {
 
             DepthFormat = FindDepthFormat();
 
+            CreateSampler();
             CreateDescriptors();
             CreateGBuffer(window.Width, window.Height);
         }
@@ -75,9 +80,22 @@ namespace UnnamedEngine.Rendering {
             OnSizeChanged(width, height);
         }
 
+        void CreateSampler() {
+            SamplerCreateInfo info = new SamplerCreateInfo();
+            info.magFilter = VkFilter.Linear;
+            info.minFilter = VkFilter.Linear;
+            info.mipmapMode = VkSamplerMipmapMode.Nearest;
+            info.addressModeU = VkSamplerAddressMode.MirroredRepeat;
+            info.addressModeV = VkSamplerAddressMode.MirroredRepeat;
+            info.addressModeW = VkSamplerAddressMode.MirroredRepeat;
+            info.unnormalizedCoordinates = true;
+
+            lightSampler = new Sampler(engine.Graphics.Device, info);
+        }
+
         void CreateDescriptors() {
-            DescriptorSetLayoutCreateInfo layoutInfo = new DescriptorSetLayoutCreateInfo();
-            layoutInfo.bindings = new List<VkDescriptorSetLayoutBinding> {
+            DescriptorSetLayoutCreateInfo inputLayoutInfo = new DescriptorSetLayoutCreateInfo();
+            inputLayoutInfo.bindings = new List<VkDescriptorSetLayoutBinding> {
                 new VkDescriptorSetLayoutBinding {  //albedo
                     binding = 0,
                     descriptorCount = 1,
@@ -98,24 +116,46 @@ namespace UnnamedEngine.Rendering {
                 }
             };
 
-            InputLayout = new DescriptorSetLayout(engine.Graphics.Device, layoutInfo);
+            InputLayout = new DescriptorSetLayout(engine.Graphics.Device, inputLayoutInfo);
+
+            DescriptorSetLayoutCreateInfo lightLayoutInfo = new DescriptorSetLayoutCreateInfo();
+            lightLayoutInfo.bindings = new List<VkDescriptorSetLayoutBinding> {
+                new VkDescriptorSetLayoutBinding {
+                    binding = 0,
+                    descriptorCount = 1,
+                    descriptorType = VkDescriptorType.CombinedImageSampler,
+                    stageFlags = VkShaderStageFlags.FragmentBit
+                }
+            };
+
+            LightLayout = new DescriptorSetLayout(engine.Graphics.Device, lightLayoutInfo);
 
             DescriptorPoolCreateInfo poolInfo = new DescriptorPoolCreateInfo();
-            poolInfo.maxSets = 1;
+            poolInfo.maxSets = 2;
             poolInfo.poolSizes = new List<VkDescriptorPoolSize> {
                 new VkDescriptorPoolSize {
                     descriptorCount = 3,
                     type = VkDescriptorType.InputAttachment
+                },
+                new VkDescriptorPoolSize {
+                    descriptorCount = 1,
+                    type = VkDescriptorType.CombinedImageSampler
                 }
             };
 
             pool = new DescriptorPool(engine.Graphics.Device, poolInfo);
 
-            DescriptorSetAllocateInfo info = new DescriptorSetAllocateInfo();
-            info.descriptorSetCount = 1;
-            info.setLayouts = new List<DescriptorSetLayout> { InputLayout };
+            DescriptorSetAllocateInfo inputAllocInfo = new DescriptorSetAllocateInfo();
+            inputAllocInfo.descriptorSetCount = 1;
+            inputAllocInfo.setLayouts = new List<DescriptorSetLayout> { InputLayout };
 
-            InputSet = pool.Allocate(info)[0];
+            InputSet = pool.Allocate(inputAllocInfo)[0];
+
+            DescriptorSetAllocateInfo lightAllocInfo = new DescriptorSetAllocateInfo();
+            lightAllocInfo.descriptorSetCount = 1;
+            lightAllocInfo.setLayouts = new List<DescriptorSetLayout> { LightLayout };
+
+            LightSet = pool.Allocate(lightAllocInfo)[0];
         }
 
         void UpdateInputSet() {
@@ -156,6 +196,19 @@ namespace UnnamedEngine.Rendering {
                         }
                     }
                 },
+                new WriteDescriptorSet {
+                    dstSet = LightSet,
+                    descriptorType = VkDescriptorType.CombinedImageSampler,
+                    dstArrayElement = 0,
+                    dstBinding = 0,
+                    imageInfo = new List<DescriptorImageInfo> {
+                        new DescriptorImageInfo {
+                            imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
+                            imageView = LightView,
+                            sampler = lightSampler
+                        }
+                    }
+                }
             });
         }
 
@@ -346,6 +399,8 @@ namespace UnnamedEngine.Rendering {
             Free();
             pool.Dispose();
             InputLayout.Dispose();
+            LightLayout.Dispose();
+            lightSampler.Dispose();
 
             disposed = true;
         }
