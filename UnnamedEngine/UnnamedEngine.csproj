@@ -45,6 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Engine.cs" />
+    <Compile Include="Core\FrameLoop.cs" />
+    <Compile Include="Core\ISystem.cs" />
     <Compile Include="Core\Window.cs" />
     <Compile Include="Core\Input.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
