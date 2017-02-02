@@ -123,7 +123,7 @@ namespace UnnamedEngine.Rendering {
         public void AddNode(RenderNode node) {
             if (node == null) throw new ArgumentNullException(nameof(node));
             
-            nodeMap.Add(node, new SubpassDescription());
+            nodeMap.Add(node, new SubpassDescription { pipelineBindPoint = VkPipelineBindPoint.Graphics });
         }
 
         public void RemoveNode(RenderNode node) {
