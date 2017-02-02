@@ -64,7 +64,7 @@ namespace UnnamedEngine.Core {
                 Window.Update();
                 Camera.Update();
 
-                CommandGraph.Render();
+                CommandGraph.Submit();
             }
 
             Graphics.Device.WaitIdle();

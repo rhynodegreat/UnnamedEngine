@@ -145,7 +145,7 @@ namespace UnnamedEngine.Core {
             }
         }
         
-        public void Render() {
+        public void Submit() {
             fence.Wait();
             fence.Reset();
 
