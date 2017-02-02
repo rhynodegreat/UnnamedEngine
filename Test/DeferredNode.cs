@@ -12,9 +12,10 @@ namespace Test {
         Engine engine;
         GBuffer gbuffer;
 
-        RenderPass renderPass;
+        RenderGraph renderGraph;
+        OpaqueNode opaque;
+        LightingNode lighting;
         Framebuffer framebuffer;
-        Pipeline lightingPipeline;
         CommandPool pool;
         CommandBuffer commandBuffer;
         List<CommandBuffer> submitBuffers;
@@ -28,13 +29,19 @@ namespace Test {
 
             gbuffer.OnSizeChanged += CreateFramebuffer;
 
+            CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
+            poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+
+            pool = new CommandPool(engine.Graphics.Device, poolInfo);
+
             CreateRenderpass();
             CreateFramebuffer(gbuffer.Width, gbuffer.Height);
             CreateCommandBuffer();
-            CreateLightingPipeline();
         }
 
         void CreateRenderpass() {
+            renderGraph = new RenderGraph(engine);
+
             AttachmentDescription albedo = new AttachmentDescription();
             albedo.format = gbuffer.AlbedoFormat;
             albedo.samples = VkSampleCountFlags._1Bit;
@@ -69,30 +76,30 @@ namespace Test {
             light.initialLayout = VkImageLayout.Undefined;
             light.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
-            SubpassDescription opaque = new SubpassDescription();
-            opaque.pipelineBindPoint = VkPipelineBindPoint.Graphics;
-            opaque.colorAttachments = new List<AttachmentReference> {
-                new AttachmentReference { attachment = 0, layout = VkImageLayout.ColorAttachmentOptimal },
-                new AttachmentReference { attachment = 1, layout = VkImageLayout.ColorAttachmentOptimal },
-                new AttachmentReference { attachment = 3, layout = VkImageLayout.ColorAttachmentOptimal }
-            };
-            opaque.depthStencilAttachment = new AttachmentReference { attachment = 2, layout = VkImageLayout.DepthStencilAttachmentOptimal };
+            renderGraph.AddAttachment(albedo);
+            renderGraph.AddAttachment(norm);
+            renderGraph.AddAttachment(depth);
+            renderGraph.AddAttachment(light);
 
-            SubpassDescription lighting = new SubpassDescription();
-            lighting.pipelineBindPoint = VkPipelineBindPoint.Graphics;
-            lighting.inputAttachments = new List<AttachmentReference> {
-                new AttachmentReference { attachment = 0, layout = VkImageLayout.ShaderReadOnlyOptimal },
-                new AttachmentReference { attachment = 1, layout = VkImageLayout.ShaderReadOnlyOptimal },
-                new AttachmentReference { attachment = 3, layout = VkImageLayout.General }
-            };
-            lighting.colorAttachments = new List<AttachmentReference> {
-                new AttachmentReference { attachment = 3, layout = VkImageLayout.General }
-            };
-            lighting.depthStencilAttachment = new AttachmentReference { attachment = 2, layout = VkImageLayout.DepthStencilReadOnlyOptimal };
+            opaque = new OpaqueNode(pool);
+            opaque.AddColor(albedo, VkImageLayout.ColorAttachmentOptimal);
+            opaque.AddColor(norm, VkImageLayout.ColorAttachmentOptimal);
+            opaque.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
+            opaque.DepthStencil = depth;
+            opaque.DepthStencilLayout = VkImageLayout.DepthStencilAttachmentOptimal;
+
+            renderGraph.AddNode(opaque);
+
+            lighting = new LightingNode(pool);
+            lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
+            lighting.AddInput(norm, VkImageLayout.ShaderReadOnlyOptimal);
+            lighting.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
+            lighting.DepthStencil = depth;
+            lighting.DepthStencilLayout = VkImageLayout.DepthStencilReadOnlyOptimal;
+
+            renderGraph.AddNode(lighting);
 
             SubpassDependency toOpaque = new SubpassDependency();
-            toOpaque.srcSubpass = uint.MaxValue;
-            toOpaque.dstSubpass = 0;
             toOpaque.srcStageMask = VkPipelineStageFlags.TopOfPipeBit;
             toOpaque.dstStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
             toOpaque.srcAccessMask = VkAccessFlags.None;
@@ -101,20 +108,16 @@ namespace Test {
                 | VkAccessFlags.InputAttachmentReadBit;
 
             SubpassDependency opaqueToLighting = new SubpassDependency();
-            opaqueToLighting.srcSubpass = 0;
-            opaqueToLighting.dstSubpass = 1;
             opaqueToLighting.srcStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
             opaqueToLighting.dstStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
             opaqueToLighting.srcAccessMask = VkAccessFlags.ColorAttachmentReadBit
                 | VkAccessFlags.InputAttachmentReadBit;
             opaqueToLighting.dstAccessMask = VkAccessFlags.ColorAttachmentWriteBit;
 
-            RenderPassCreateInfo info = new RenderPassCreateInfo();
-            info.attachments = new List<AttachmentDescription> { albedo, norm, depth, light };
-            info.subpasses = new List<SubpassDescription> { opaque, lighting };
-            info.dependencies = new List<SubpassDependency> { toOpaque, opaqueToLighting, };
-            
-            renderPass = new RenderPass(engine.Graphics.Device, info);
+            renderGraph.AddDependency(null, opaque, toOpaque);
+            renderGraph.AddDependency(opaque, lighting, opaqueToLighting);
+
+            renderGraph.Bake();
         }
 
         void CreateFramebuffer(int width, int height) {
@@ -123,29 +126,22 @@ namespace Test {
             info.width = (uint)width;
             info.height = (uint)height;
             info.layers = 1;
-            info.renderPass = renderPass;
+            info.renderPass = renderGraph.RenderPass;
 
             framebuffer?.Dispose();
             framebuffer = new Framebuffer(engine.Graphics.Device, info);
-        }
 
-        void CreateLightingPipeline() {
-
+            lighting.Init(framebuffer);
         }
 
         void CreateCommandBuffer() {
-            CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
-            poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
-
-            pool = new CommandPool(engine.Graphics.Device, poolInfo);
-
             commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
 
             submitBuffers = new List<CommandBuffer> { commandBuffer };
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             RenderPassBeginInfo renderPassInfo = new RenderPassBeginInfo();
-            renderPassInfo.renderPass = renderPass;
+            renderPassInfo.renderPass = renderGraph.RenderPass;
             renderPassInfo.framebuffer = framebuffer;
             renderPassInfo.clearValues = new List<VkClearValue> {
                 new VkClearValue {
@@ -185,11 +181,9 @@ namespace Test {
             renderPassInfo.renderArea.extent.height = (uint)gbuffer.Height;
 
             commandBuffer.Begin(beginInfo);
-            commandBuffer.BeginRenderPass(renderPassInfo, VkSubpassContents.Inline);
 
-            commandBuffer.NextSubpass(VkSubpassContents.Inline);
+            renderGraph.Render(renderPassInfo, commandBuffer);
 
-            commandBuffer.EndRenderPass();
             commandBuffer.End();
             
         }
@@ -209,7 +203,7 @@ namespace Test {
             base.Dispose(disposing);
 
             framebuffer.Dispose();
-            renderPass.Dispose();
+            renderGraph.Dispose();
             pool.Dispose();
 
             gbuffer.OnSizeChanged -= CreateFramebuffer;
