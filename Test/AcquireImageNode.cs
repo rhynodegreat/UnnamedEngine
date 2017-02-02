@@ -53,7 +53,7 @@ namespace Test {
             subresourceRange.baseArrayLayer = 0;
             subresourceRange.layerCount = 1;
 
-            var subresourceRanges = new VkImageSubresourceRange[] { subresourceRange };
+            var subresourceRanges = new List<VkImageSubresourceRange> { subresourceRange };
 
             ImageMemoryBarrier presentToClear = new ImageMemoryBarrier();
             presentToClear.srcAccessMask = VkAccessFlags.MemoryReadBit;
