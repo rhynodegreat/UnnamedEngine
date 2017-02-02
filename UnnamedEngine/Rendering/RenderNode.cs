@@ -103,6 +103,7 @@ namespace UnnamedEngine.Rendering {
             preserve.Remove(attachment);
         }
 
+        internal protected abstract void Bake(RenderPass renderPass, uint subpassIndex);
         public abstract List<CommandBuffer> GetCommands();
 
         public void Dispose() {

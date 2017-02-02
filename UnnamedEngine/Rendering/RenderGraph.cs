@@ -72,6 +72,10 @@ namespace UnnamedEngine.Rendering {
 
             RenderPass?.Dispose();
             RenderPass = new RenderPass(engine.Graphics.Device, info);
+
+            for (int i = 0; i < nodes.Count; i++) {
+                nodes[i].Bake(RenderPass, (uint)i);
+            }
         }
 
         void Bake(RenderNode node) {
