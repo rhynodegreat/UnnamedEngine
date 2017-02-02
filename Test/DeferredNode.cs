@@ -113,8 +113,7 @@ namespace Test {
             info.attachments = new List<VkAttachmentDescription> { albedo, norm, depth, light };
             info.subpasses = new List<SubpassDescription> { opaque, lighting };
             info.dependencies = new List<VkSubpassDependency> { toOpaque, opaqueToLighting, };
-
-            renderPass?.Dispose();
+            
             renderPass = new RenderPass(engine.Graphics.Device, info);
         }
 
