@@ -66,34 +66,17 @@ namespace Test {
             colorAttachment.initialLayout = VkImageLayout.Undefined;
             colorAttachment.finalLayout = VkImageLayout.ColorAttachmentOptimal;
 
-            //var colorAttachmentRef = new AttachmentReference();
-            //colorAttachmentRef.attachment = 0;
-            //colorAttachmentRef.layout = VkImageLayout.ColorAttachmentOptimal;
-
-            //var subpass = new SubpassDescription();
-            //subpass.pipelineBindPoint = VkPipelineBindPoint.Graphics;
-            //subpass.colorAttachments = new List<AttachmentReference> { colorAttachmentRef };
-
             var dependency = new SubpassDependency();
-            //dependency.srcSubpass = uint.MaxValue;  //VK_SUBPASS_EXTERNAL
-            //dependency.dstSubpass = 0;
             dependency.srcStageMask = VkPipelineStageFlags.BottomOfPipeBit;
             dependency.srcAccessMask = VkAccessFlags.MemoryReadBit;
             dependency.dstStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
             dependency.dstAccessMask = VkAccessFlags.ColorAttachmentReadBit
                                     | VkAccessFlags.ColorAttachmentWriteBit;
 
-
-
             renderNode.AddColor(colorAttachment, VkImageLayout.ColorAttachmentOptimal);
             renderGraph.AddAttachment(colorAttachment);
             renderGraph.AddDependency(null, renderNode, dependency);
             renderGraph.AddNode(renderNode);
-
-            //var info = new RenderPassCreateInfo();
-            //info.attachments = new List<AttachmentDescription> { colorAttachment };
-            //info.subpasses = new List<SubpassDescription> { subpass };
-            //info.dependencies = new List<SubpassDependency> { dependency };
 
             renderGraph.Bake();
         }
@@ -153,14 +136,6 @@ namespace Test {
                 var renderPassInfo = new RenderPassBeginInfo();
                 renderPassInfo.framebuffer = framebuffers[i];
                 renderPassInfo.renderArea.extent = window.SwapchainExtent;
-
-                VkClearValue clearColor = new VkClearValue();
-                clearColor.color.float32_0 = 0;
-                clearColor.color.float32_1 = 0;
-                clearColor.color.float32_2 = 0;
-                clearColor.color.float32_3 = 1f;
-
-                renderPassInfo.clearValues = new List<VkClearValue> { clearColor };
 
                 renderGraph.Render(renderPassInfo, buffer);
                 
