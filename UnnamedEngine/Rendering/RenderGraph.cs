@@ -51,12 +51,14 @@ namespace UnnamedEngine.Rendering {
 
             foreach (var pair in dependencyPairs) {
                 if (pair.source != null) {
+                    if (!nodeMap.ContainsKey(pair.source)) throw new RenderGraphException("RenderNode that is not a part of this RenderGraph referenced");
                     pair.dependency.srcSubpass = (uint)subpasses.IndexOf(nodeMap[pair.source]);
                 } else {
                     pair.dependency.srcSubpass = uint.MaxValue;
                 }
 
                 if (pair.dest != null) {
+                    if (!nodeMap.ContainsKey(pair.dest)) throw new RenderGraphException("RenderNode that is not a part of this RenderGraph referenced");
                     pair.dependency.dstSubpass = (uint)subpasses.IndexOf(nodeMap[pair.dest]);
                 } else {
                     pair.dependency.dstSubpass = uint.MaxValue;
@@ -105,8 +107,10 @@ namespace UnnamedEngine.Rendering {
                 desc.preserveAttachments.Add((uint)attachments.IndexOf(preserve));
             }
 
-            if (!attachments.Contains(node.DepthStencil)) throw new RenderGraphException("Attachment that is not part of this RenderGraph referenced");
-            desc.depthStencilAttachment = new AttachmentReference { attachment = (uint)attachments.IndexOf(node.DepthStencil), layout = node.DepthStencilLayout };
+            if (node.DepthStencil != null) {
+                if (!attachments.Contains(node.DepthStencil)) throw new RenderGraphException("Attachment that is not part of this RenderGraph referenced");
+                desc.depthStencilAttachment = new AttachmentReference { attachment = (uint)attachments.IndexOf(node.DepthStencil), layout = node.DepthStencilLayout };
+            }
         }
 
         public void AddAttachment(AttachmentDescription attachment) {
