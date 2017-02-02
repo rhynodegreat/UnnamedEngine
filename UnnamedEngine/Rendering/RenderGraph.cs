@@ -172,6 +172,12 @@ namespace UnnamedEngine.Rendering {
         void Dispose(bool disposing) {
             if (disposed) return;
 
+            if (disposing) {
+                foreach (var node in nodeMap.Keys) {
+                    node.Dispose();
+                }
+            }
+
             RenderPass?.Dispose();
 
             disposed = true;

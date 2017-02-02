@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using CSGL.Vulkan;
 
 namespace UnnamedEngine.Rendering {
-    public abstract class RenderNode {
+    public abstract class RenderNode : IDisposable {
         internal List<AttachmentPair> input;
         internal List<AttachmentPair> color;
         internal List<AttachmentPair> resolve;
@@ -104,6 +104,15 @@ namespace UnnamedEngine.Rendering {
         }
 
         public abstract List<CommandBuffer> GetCommands();
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) {
+
+        }
 
         internal struct AttachmentPair {
             public AttachmentDescription attachment;
