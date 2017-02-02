@@ -68,7 +68,7 @@ namespace Test {
         }
 
         void CreateRenderPass(Device device, Window window) {
-            var colorAttachment = new VkAttachmentDescription();
+            var colorAttachment = new AttachmentDescription();
             colorAttachment.format = window.SwapchainImageFormat;
             colorAttachment.samples = VkSampleCountFlags._1Bit;
             colorAttachment.loadOp = VkAttachmentLoadOp.Load;
@@ -86,7 +86,7 @@ namespace Test {
             subpass.pipelineBindPoint = VkPipelineBindPoint.Graphics;
             subpass.colorAttachments = new List<AttachmentReference> { colorAttachmentRef };
 
-            var dependency = new VkSubpassDependency();
+            var dependency = new SubpassDependency();
             dependency.srcSubpass = uint.MaxValue;  //VK_SUBPASS_EXTERNAL
             dependency.dstSubpass = 0;
             dependency.srcStageMask = VkPipelineStageFlags.BottomOfPipeBit;
@@ -96,9 +96,9 @@ namespace Test {
                                     | VkAccessFlags.ColorAttachmentWriteBit;
 
             var info = new RenderPassCreateInfo();
-            info.attachments = new List<VkAttachmentDescription> { colorAttachment };
+            info.attachments = new List<AttachmentDescription> { colorAttachment };
             info.subpasses = new List<SubpassDescription> { subpass };
-            info.dependencies = new List<VkSubpassDependency> { dependency };
+            info.dependencies = new List<SubpassDependency> { dependency };
 
             renderPass?.Dispose();
             renderPass = new RenderPass(device, info);
@@ -183,8 +183,8 @@ namespace Test {
             scissor.extent = window.SwapchainExtent;
 
             var viewportState = new PipelineViewportStateCreateInfo();
-            viewportState.viewports = new VkViewport[] { viewport };
-            viewportState.scissors = new VkRect2D[] { scissor };
+            viewportState.viewports = new List<VkViewport> { viewport };
+            viewportState.scissors = new List<VkRect2D> { scissor };
 
             var rasterizer = new PipelineRasterizationStateCreateInfo();
             rasterizer.polygonMode = VkPolygonMode.Point;
@@ -210,7 +210,7 @@ namespace Test {
 
             var colorBlending = new PipelineColorBlendStateCreateInfo();
             colorBlending.logicOp = VkLogicOp.Copy;
-            colorBlending.attachments = new PipelineColorBlendAttachmentState[] { colorBlendAttachment };
+            colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { colorBlendAttachment };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
             pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { camera.Layout };

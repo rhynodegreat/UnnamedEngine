@@ -35,7 +35,7 @@ namespace Test {
         }
 
         void CreateRenderpass() {
-            VkAttachmentDescription albedo = new VkAttachmentDescription();
+            AttachmentDescription albedo = new AttachmentDescription();
             albedo.format = gbuffer.AlbedoFormat;
             albedo.samples = VkSampleCountFlags._1Bit;
             albedo.loadOp = VkAttachmentLoadOp.Clear;
@@ -43,7 +43,7 @@ namespace Test {
             albedo.initialLayout = VkImageLayout.Undefined;
             albedo.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
-            VkAttachmentDescription norm = new VkAttachmentDescription();
+            AttachmentDescription norm = new AttachmentDescription();
             norm.format = gbuffer.NormFormat;
             norm.samples = VkSampleCountFlags._1Bit;
             norm.loadOp = VkAttachmentLoadOp.Clear;
@@ -51,7 +51,7 @@ namespace Test {
             norm.initialLayout = VkImageLayout.Undefined;
             norm.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
-            VkAttachmentDescription depth = new VkAttachmentDescription();
+            AttachmentDescription depth = new AttachmentDescription();
             depth.format = gbuffer.DepthFormat;
             depth.samples = VkSampleCountFlags._1Bit;
             depth.loadOp = VkAttachmentLoadOp.Clear;
@@ -61,7 +61,7 @@ namespace Test {
             depth.initialLayout = VkImageLayout.Undefined;
             depth.finalLayout = VkImageLayout.DepthStencilAttachmentOptimal;
 
-            VkAttachmentDescription light = new VkAttachmentDescription();
+            AttachmentDescription light = new AttachmentDescription();
             light.format = gbuffer.LightFormat;
             light.samples = VkSampleCountFlags._1Bit;
             light.loadOp = VkAttachmentLoadOp.Clear;
@@ -90,7 +90,7 @@ namespace Test {
             };
             lighting.depthStencilAttachment = new AttachmentReference { attachment = 2, layout = VkImageLayout.DepthStencilReadOnlyOptimal };
 
-            VkSubpassDependency toOpaque = new VkSubpassDependency();
+            SubpassDependency toOpaque = new SubpassDependency();
             toOpaque.srcSubpass = uint.MaxValue;
             toOpaque.dstSubpass = 0;
             toOpaque.srcStageMask = VkPipelineStageFlags.TopOfPipeBit;
@@ -100,7 +100,7 @@ namespace Test {
                 | VkAccessFlags.DepthStencilAttachmentWriteBit
                 | VkAccessFlags.InputAttachmentReadBit;
 
-            VkSubpassDependency opaqueToLighting = new VkSubpassDependency();
+            SubpassDependency opaqueToLighting = new SubpassDependency();
             opaqueToLighting.srcSubpass = 0;
             opaqueToLighting.dstSubpass = 1;
             opaqueToLighting.srcStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
@@ -110,9 +110,9 @@ namespace Test {
             opaqueToLighting.dstAccessMask = VkAccessFlags.ColorAttachmentWriteBit;
 
             RenderPassCreateInfo info = new RenderPassCreateInfo();
-            info.attachments = new List<VkAttachmentDescription> { albedo, norm, depth, light };
+            info.attachments = new List<AttachmentDescription> { albedo, norm, depth, light };
             info.subpasses = new List<SubpassDescription> { opaque, lighting };
-            info.dependencies = new List<VkSubpassDependency> { toOpaque, opaqueToLighting, };
+            info.dependencies = new List<SubpassDependency> { toOpaque, opaqueToLighting, };
             
             renderPass = new RenderPass(engine.Graphics.Device, info);
         }
