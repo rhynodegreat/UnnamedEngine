@@ -52,6 +52,8 @@
     <Compile Include="AcquireImageNode.cs" />
     <Compile Include="DeferredNode.cs" />
     <Compile Include="FreeCam.cs" />
+    <Compile Include="LightingNode.cs" />
+    <Compile Include="OpaqueNode.cs" />
     <Compile Include="PresentNode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
