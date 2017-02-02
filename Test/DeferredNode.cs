@@ -132,6 +132,7 @@ namespace Test {
             framebuffer = new Framebuffer(engine.Graphics.Device, info);
 
             lighting.Init(framebuffer);
+            opaque.Init(framebuffer);
         }
 
         void CreateCommandBuffer() {
