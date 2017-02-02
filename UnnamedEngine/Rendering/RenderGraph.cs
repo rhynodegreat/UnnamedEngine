@@ -10,9 +10,11 @@ namespace UnnamedEngine.Rendering {
         bool disposed;
         Engine engine;
 
-        List<AttachmentDescription> attachments;
         Dictionary<RenderNode, SubpassDescription> nodeMap;
         List<RenderNode> nodes;
+        List<DependencyPair> dependencyPairs;
+
+        List<AttachmentDescription> attachments;
         List<SubpassDescription> subpasses;
         List<SubpassDependency> dependencies;
 
@@ -24,13 +26,14 @@ namespace UnnamedEngine.Rendering {
 
             this.engine = engine;
 
+            nodeMap = new Dictionary<RenderNode, SubpassDescription>();
+            nodes = new List<RenderNode>();
+            dependencyPairs = new List<DependencyPair>();
+
             attachments = new List<AttachmentDescription>();
             subpasses = new List<SubpassDescription>();
             dependencies = new List<SubpassDependency>();
             Attachments = attachments.AsReadOnly();
-
-            nodeMap = new Dictionary<RenderNode, SubpassDescription>();
-            nodes = new List<RenderNode>();
         }
 
         public void Bake() {
@@ -44,6 +47,22 @@ namespace UnnamedEngine.Rendering {
 
             foreach (var node in nodeMap.Keys) {
                 Bake(node);
+            }
+
+            foreach (var pair in dependencyPairs) {
+                if (pair.source != null) {
+                    pair.dependency.srcSubpass = (uint)subpasses.IndexOf(nodeMap[pair.source]);
+                } else {
+                    pair.dependency.srcSubpass = uint.MaxValue;
+                }
+
+                if (pair.dest != null) {
+                    pair.dependency.dstSubpass = (uint)subpasses.IndexOf(nodeMap[pair.dest]);
+                } else {
+                    pair.dependency.dstSubpass = uint.MaxValue;
+                }
+
+                dependencies.Add(pair.dependency);
             }
 
             RenderPassCreateInfo info = new RenderPassCreateInfo();
@@ -84,24 +103,6 @@ namespace UnnamedEngine.Rendering {
 
             if (!attachments.Contains(node.DepthStencil)) throw new RenderGraphException("Attachment that is not part of this RenderGraph referenced");
             desc.depthStencilAttachment = new AttachmentReference { attachment = (uint)attachments.IndexOf(node.DepthStencil), layout = node.DepthStencilLayout };
-
-            foreach (var dependency in node.dependencies) {
-                var subpassDependency = dependency.dependency;
-
-                if (dependency.source != null) {
-                    subpassDependency.srcSubpass = (uint)subpasses.IndexOf(nodeMap[dependency.source]);
-                } else {
-                    subpassDependency.srcSubpass = uint.MaxValue;
-                }
-
-                if (dependency.dest != null) {
-                    subpassDependency.dstSubpass = (uint)subpasses.IndexOf(nodeMap[node]);
-                } else {
-                    subpassDependency.dstSubpass = uint.MaxValue;
-                }
-
-                dependencies.Add(subpassDependency);
-            }
         }
 
         public void AddAttachment(AttachmentDescription attachment) {
@@ -123,6 +124,31 @@ namespace UnnamedEngine.Rendering {
 
         public void RemoveNode(RenderNode node) {
             nodeMap.Remove(node);
+        }
+
+        public void AddDependency(RenderNode source, RenderNode dest, SubpassDependency dependency) {
+            if (dependencyPairs == null) throw new ArgumentNullException(nameof(dependency));
+
+            for (int i = 0; i < dependencyPairs.Count; i++) {
+                var pair = dependencyPairs[i];
+
+                if (pair.dependency == dependency) {
+                    pair.source = source;
+                    pair.dest = dest;
+                    return;
+                }
+            }
+
+            dependencyPairs.Add(new DependencyPair { source = source, dest = dest, dependency = dependency });
+        }
+
+        public void RemoveDependency(SubpassDependency dependency) {
+            for (int i = 0; i < dependencyPairs.Count; i++) {
+                if (dependencyPairs[i].dependency == dependency) {
+                    dependencyPairs.RemoveAt(i);
+                    return;
+                }
+            }
         }
 
         public void Render(RenderPassBeginInfo beginInfo, CommandBuffer commandBuffer) {
@@ -153,6 +179,12 @@ namespace UnnamedEngine.Rendering {
 
         ~RenderGraph() {
             Dispose(false);
+        }
+
+        struct DependencyPair {
+            public RenderNode source;
+            public RenderNode dest;
+            public SubpassDependency dependency;
         }
     }
 

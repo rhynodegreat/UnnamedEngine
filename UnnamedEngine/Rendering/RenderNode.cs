@@ -9,7 +9,6 @@ namespace UnnamedEngine.Rendering {
         internal List<AttachmentPair> color;
         internal List<AttachmentPair> resolve;
         internal List<AttachmentDescription> preserve;
-        internal List<Dependency> dependencies;
 
         public AttachmentDescription DepthStencil { get; set; }
         public VkImageLayout DepthStencilLayout { get; set; }
@@ -19,8 +18,6 @@ namespace UnnamedEngine.Rendering {
             color = new List<AttachmentPair>();
             resolve = new List<AttachmentPair>();
             preserve = new List<AttachmentDescription>();
-
-            dependencies = new List<Dependency>();
         }
 
         public void AddInput(AttachmentDescription attachment, VkImageLayout layout) {
@@ -106,56 +103,11 @@ namespace UnnamedEngine.Rendering {
             preserve.Remove(attachment);
         }
 
-        public void AddSource(RenderNode source, SubpassDependency dependency) {
-            if (dependency == null) throw new ArgumentNullException(nameof(dependency));
-
-            for (int i = 0; i < dependencies.Count; i++) {
-                var dep = dependencies[i];
-                if (dep.dependency == dependency) {
-                    dep.source = source;
-                    dependencies[i] = dep;
-                    return;
-                }
-            }
-
-            dependencies.Add(new Dependency { source = source, dest = this, dependency = dependency });
-        }
-
-        public void AddDest(RenderNode dest, SubpassDependency dependency) {
-            if (dependency == null) throw new ArgumentNullException(nameof(dependency));
-
-            for (int i = 0; i < dependencies.Count; i++) {
-                var dep = dependencies[i];
-                if (dep.dependency == dependency) {
-                    dep.dest = dest;
-                    dependencies[i] = dep;
-                    return;
-                }
-            }
-
-            dependencies.Add(new Dependency { source = this, dest = dest, dependency = dependency });
-        }
-
-        public void RemoveDependency(SubpassDependency dependency) {
-            for (int i = 0; i < dependencies.Count; i++) {
-                if (dependencies[i].dependency == dependency) {
-                    dependencies.RemoveAt(i);
-                    return;
-                }
-            }
-        }
-
         public abstract List<CommandBuffer> GetCommands();
 
         internal struct AttachmentPair {
             public AttachmentDescription attachment;
             public VkImageLayout layout;
-        }
-
-        internal struct Dependency {
-            public RenderNode source;
-            public RenderNode dest;
-            public SubpassDependency dependency;
         }
     }
 }
