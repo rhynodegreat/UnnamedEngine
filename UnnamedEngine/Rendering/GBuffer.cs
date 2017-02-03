@@ -107,12 +107,6 @@ namespace UnnamedEngine.Rendering {
                     descriptorCount = 1,
                     descriptorType = VkDescriptorType.InputAttachment,
                     stageFlags = VkShaderStageFlags.FragmentBit
-                },
-                new VkDescriptorSetLayoutBinding {
-                    binding = 2,
-                    descriptorCount = 1,
-                    descriptorType = VkDescriptorType.InputAttachment,
-                    stageFlags = VkShaderStageFlags.FragmentBit
                 }
             };
 
@@ -134,7 +128,7 @@ namespace UnnamedEngine.Rendering {
             poolInfo.maxSets = 2;
             poolInfo.poolSizes = new List<VkDescriptorPoolSize> {
                 new VkDescriptorPoolSize {
-                    descriptorCount = 3,
+                    descriptorCount = 2,
                     type = VkDescriptorType.InputAttachment
                 },
                 new VkDescriptorPoolSize {
@@ -181,18 +175,6 @@ namespace UnnamedEngine.Rendering {
                         new DescriptorImageInfo {
                             imageLayout = VkImageLayout.ColorAttachmentOptimal,
                             imageView = NormView
-                        }
-                    }
-                },
-                new WriteDescriptorSet {    //depth
-                    dstSet = InputDescriptor,
-                    descriptorType = VkDescriptorType.InputAttachment,
-                    dstArrayElement = 0,
-                    dstBinding = 2,
-                    imageInfo = new List<DescriptorImageInfo> {
-                        new DescriptorImageInfo {
-                            imageLayout = VkImageLayout.DepthStencilReadOnlyOptimal,
-                            imageView = DepthView
                         }
                     }
                 },
