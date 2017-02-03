@@ -8,57 +8,54 @@ using CSGL.Vulkan;
 using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
-using UnnamedEngine.Rendering;
 using UnnamedEngine.Resources;
 using UnnamedEngine.Utilities;
+using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class TriangleRenderNode : RenderNode {
+    public class TriangleRenderer : ISubpass, IDisposable {
         bool disposed;
-
         Engine engine;
-        Camera camera;
-        CommandPool pool;
         TransferNode transferNode;
+        DeferredNode deferredNode;
+        Camera camera;
 
-        RenderPass renderPass;
-        uint subpassIndex;
-
-        CommandBuffer commandBuffer;
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
+        CommandPool commandPool;
         Buffer vertexBuffer;
         VkaAllocation vertexAllocation;
-
-        List<CommandBuffer> renderBuffers;
-
+        CommandBuffer commandBuffer;
+        
         Vertex[] vertices = {
             new Vertex(new Vector3(0, 1, 0), new Vector3(1, 0, 0)),
             new Vertex(new Vector3(1, -1, 0), new Vector3(0, 1, 0)),
             new Vertex(new Vector3(-1, -1, 0), new Vector3(0, 0, 1)),
         };
 
-        public TriangleRenderNode(Engine engine, CommandPool pool, TransferNode transferNode) {
+        public TriangleRenderer(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            if (pool == null) throw new ArgumentNullException(nameof(pool));
+            if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
+            if (transferNode == null) throw new ArgumentNullException(nameof(transferNode));
+            if (deferredNode == null) throw new ArgumentNullException(nameof(deferredNode));
 
             this.engine = engine;
-            camera = engine.Camera;
-            this.pool = pool;
             this.transferNode = transferNode;
+            this.deferredNode = deferredNode;
+            camera = engine.Camera;
 
-            CreateVertexBuffer();
+            CreateVertexBuffer(engine.Graphics);
+            CreateCommandPool(engine);
+
+            deferredNode.Opaque.AddRenderer(this);
         }
 
-        protected override void Bake(RenderPass renderPass, uint subpassIndex) {
-            this.renderPass = renderPass;
-            this.subpassIndex = subpassIndex;
-
-            CreatePipeline();
-            CreateCommandBuffer();
+        public void Bake(RenderPass renderPass, uint subpassIndex) {
+            CreatePipeline(engine.Graphics.Device, renderPass);
+            CreateCommandBuffers(engine.Graphics.Device, renderPass, subpassIndex);
         }
 
-        void CreateVertexBuffer() {
+        void CreateVertexBuffer(Graphics renderer) {
             BufferCreateInfo info = new BufferCreateInfo();
             info.sharingMode = VkSharingMode.Exclusive;
             info.size = (uint)Interop.SizeOf(vertices);
@@ -66,7 +63,7 @@ namespace Test {
 
             vertexBuffer = new Buffer(engine.Graphics.Device, info);
 
-            vertexAllocation = engine.Graphics.Allocator.Alloc(vertexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            vertexAllocation = renderer.Allocator.Alloc(vertexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
             vertexBuffer.Bind(vertexAllocation.memory, vertexAllocation.offset);
 
             transferNode.Transfer(vertices, vertexBuffer);
@@ -77,9 +74,9 @@ namespace Test {
             return new ShaderModule(device, info);
         }
 
-        void CreatePipeline() {
-            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("vert.spv"));
-            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("frag.spv"));
+        void CreatePipeline(Device device, RenderPass renderPass) {
+            var vert = CreateShaderModule(device, File.ReadAllBytes("tri_vert.spv"));
+            var frag = CreateShaderModule(device, File.ReadAllBytes("tri_frag.spv"));
 
             var vertInfo = new PipelineShaderStageCreateInfo();
             vertInfo.stage = VkShaderStageFlags.VertexBit;
@@ -101,13 +98,14 @@ namespace Test {
             inputAssembly.topology = VkPrimitiveTopology.TriangleList;
 
             var viewport = new VkViewport();
-            viewport.width = engine.Window.SwapchainExtent.width;
-            viewport.height = engine.Window.SwapchainExtent.height;
+            viewport.width = deferredNode.GBuffer.Width;
+            viewport.height = deferredNode.GBuffer.Height;
             viewport.minDepth = 0f;
             viewport.maxDepth = 1f;
 
             var scissor = new VkRect2D();
-            scissor.extent = engine.Window.SwapchainExtent;
+            scissor.extent.width = (uint)deferredNode.GBuffer.Width;
+            scissor.extent.height = (uint)deferredNode.GBuffer.Height;
 
             var viewportState = new PipelineViewportStateCreateInfo();
             viewportState.viewports = new List<VkViewport> { viewport };
@@ -123,28 +121,58 @@ namespace Test {
             multisampling.rasterizationSamples = VkSampleCountFlags._1Bit;
             multisampling.minSampleShading = 1f;
 
-            var colorBlendAttachment = new PipelineColorBlendAttachmentState();
-            colorBlendAttachment.colorWriteMask = VkColorComponentFlags.RBit
+            var albedo = new PipelineColorBlendAttachmentState();
+            albedo.colorWriteMask = VkColorComponentFlags.RBit
                                                 | VkColorComponentFlags.GBit
                                                 | VkColorComponentFlags.BBit
                                                 | VkColorComponentFlags.ABit;
-            colorBlendAttachment.srcColorBlendFactor = VkBlendFactor.One;
-            colorBlendAttachment.dstColorBlendFactor = VkBlendFactor.Zero;
-            colorBlendAttachment.colorBlendOp = VkBlendOp.Add;
-            colorBlendAttachment.srcAlphaBlendFactor = VkBlendFactor.One;
-            colorBlendAttachment.dstAlphaBlendFactor = VkBlendFactor.Zero;
-            colorBlendAttachment.alphaBlendOp = VkBlendOp.Add;
+            albedo.srcColorBlendFactor = VkBlendFactor.One;
+            albedo.dstColorBlendFactor = VkBlendFactor.Zero;
+            albedo.colorBlendOp = VkBlendOp.Add;
+            albedo.srcAlphaBlendFactor = VkBlendFactor.One;
+            albedo.dstAlphaBlendFactor = VkBlendFactor.Zero;
+            albedo.alphaBlendOp = VkBlendOp.Add;
+
+            var norm = new PipelineColorBlendAttachmentState();
+            norm.colorWriteMask = VkColorComponentFlags.RBit
+                                                | VkColorComponentFlags.GBit
+                                                | VkColorComponentFlags.BBit
+                                                | VkColorComponentFlags.ABit;
+            norm.srcColorBlendFactor = VkBlendFactor.One;
+            norm.dstColorBlendFactor = VkBlendFactor.Zero;
+            norm.colorBlendOp = VkBlendOp.Add;
+            norm.srcAlphaBlendFactor = VkBlendFactor.One;
+            norm.dstAlphaBlendFactor = VkBlendFactor.Zero;
+            norm.alphaBlendOp = VkBlendOp.Add;
+
+            var light = new PipelineColorBlendAttachmentState();
+            light.colorWriteMask = VkColorComponentFlags.RBit
+                                                | VkColorComponentFlags.GBit
+                                                | VkColorComponentFlags.BBit
+                                                | VkColorComponentFlags.ABit;
+            light.blendEnable = true;
+            light.srcColorBlendFactor = VkBlendFactor.One;
+            light.dstColorBlendFactor = VkBlendFactor.One;
+            light.colorBlendOp = VkBlendOp.Add;
+            light.srcAlphaBlendFactor = VkBlendFactor.One;
+            light.dstAlphaBlendFactor = VkBlendFactor.Zero;
+            light.alphaBlendOp = VkBlendOp.Add;
 
             var colorBlending = new PipelineColorBlendStateCreateInfo();
             colorBlending.logicOp = VkLogicOp.Copy;
-            colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { colorBlendAttachment };
+            colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { albedo, norm, light };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
             pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { camera.Layout };
 
+            PipelineDepthStencilStateCreateInfo depth = new PipelineDepthStencilStateCreateInfo();
+            depth.depthTestEnable = true;
+            depth.depthWriteEnable = true;
+            depth.depthCompareOp = VkCompareOp.LessOrEqual;
+
             pipelineLayout?.Dispose();
 
-            pipelineLayout = new PipelineLayout(engine.Graphics.Device, pipelineLayoutInfo);
+            pipelineLayout = new PipelineLayout(device, pipelineLayoutInfo);
 
             var info = new GraphicsPipelineCreateInfo();
             info.stages = shaderStages;
@@ -154,6 +182,7 @@ namespace Test {
             info.rasterizationState = rasterizer;
             info.multisampleState = multisampling;
             info.colorBlendState = colorBlending;
+            info.depthStencilState = depth;
             info.layout = pipelineLayout;
             info.renderPass = renderPass;
             info.subpass = 0;
@@ -162,56 +191,63 @@ namespace Test {
 
             pipeline?.Dispose();
 
-            pipeline = new Pipeline(engine.Graphics.Device, info, null);
+            pipeline = new Pipeline(device, info, null);
 
             vert.Dispose();
             frag.Dispose();
         }
 
-        void CreateCommandBuffer() {
-            commandBuffer = pool.Allocate(VkCommandBufferLevel.Secondary);
+        void CreateCommandPool(Engine engine) {
+            var info = new CommandPoolCreateInfo();
+            info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+
+            commandPool = new CommandPool(engine.Graphics.Device, info);
+        }
+
+        void CreateCommandBuffers(Device device, RenderPass renderPass, uint subpassIndex) {
+            commandBuffer = commandPool.Allocate(VkCommandBufferLevel.Secondary);
 
             CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();
-            inheritance.subpass = subpassIndex;
             inheritance.renderPass = renderPass;
+            inheritance.framebuffer = deferredNode.Framebuffer;
+            inheritance.subpass = subpassIndex;
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
-            beginInfo.flags = VkCommandBufferUsageFlags.RenderPassContinueBit | VkCommandBufferUsageFlags.SimultaneousUseBit;
+            beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit | VkCommandBufferUsageFlags.RenderPassContinueBit;
             beginInfo.inheritanceInfo = inheritance;
 
             commandBuffer.Begin(beginInfo);
+
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
             commandBuffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
             commandBuffer.Draw(3, 1, 0, 0);
+
             commandBuffer.End();
-
-            renderBuffers = new List<CommandBuffer> { commandBuffer };
         }
 
-        public override List<CommandBuffer> GetCommands() {
-            return renderBuffers;
+        public CommandBuffer GetCommandBuffer() {
+            return commandBuffer;
         }
 
-        public new void Dispose() {
+        public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        protected override void Dispose(bool disposing) {
+        void Dispose(bool disposing) {
             if (disposed) return;
 
             vertexBuffer.Dispose();
+            commandPool.Dispose();
             pipeline.Dispose();
             pipelineLayout.Dispose();
             engine.Graphics.Allocator.Free(vertexAllocation);
 
-            base.Dispose(disposing);
-
             disposed = true;
         }
 
-        ~TriangleRenderNode() {
+        ~TriangleRenderer() {
             Dispose(false);
         }
     }

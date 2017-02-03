@@ -42,6 +42,7 @@ namespace Test {
 
             Camera camera = new Camera(engine, window, 90, .1f, 100);
             engine.Camera = camera;
+            camera.Transform.Position = new Vector3(0, 0, 1);
 
             FreeCam freeCam = new FreeCam(engine);
 
@@ -55,22 +56,18 @@ namespace Test {
 
             StagingNode staging = new StagingNode(engine);
 
-            TriangleNode triangle = new TriangleNode(engine, acquireImageNode, staging, camera);
-            presentNode.AddInput(triangle);
-
             DeferredNode deferred = new DeferredNode(engine, gbuffer);
             ToneMapNode toneMap = new ToneMapNode(engine, acquireImageNode, gbuffer);
             toneMap.AddInput(deferred);
-            toneMap.AddInput(triangle);
             presentNode.AddInput(toneMap);
 
             StarRenderer stars = new StarRenderer(engine, staging, deferred);
+            TriangleRenderer triangle = new TriangleRenderer(engine, staging, deferred);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Add(staging);
-            graph.Add(triangle);
             graph.Add(deferred);
             graph.Add(toneMap);
             graph.Bake();

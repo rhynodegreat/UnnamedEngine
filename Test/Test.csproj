@@ -52,6 +52,7 @@
     <Compile Include="AcquireImageNode.cs" />
     <Compile Include="DeferredNode.cs" />
     <Compile Include="FreeCam.cs" />
+    <Compile Include="ISubpass.cs" />
     <Compile Include="LightingNode.cs" />
     <Compile Include="OpaqueNode.cs" />
     <Compile Include="PresentNode.cs" />
@@ -60,8 +61,7 @@
     <Compile Include="IRenderer.cs" />
     <Compile Include="StarRenderer.cs" />
     <Compile Include="ToneMapNode.cs" />
-    <Compile Include="TriangleNode.cs" />
-    <Compile Include="TriangleRenderNode.cs" />
+    <Compile Include="TriangleRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -69,9 +69,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="deferred_vert.spv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
@@ -87,7 +84,10 @@
     <None Include="tonemap_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="vert.spv">
+    <None Include="tri_frag.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="tri_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
