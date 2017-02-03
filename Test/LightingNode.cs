@@ -49,8 +49,6 @@ namespace Test {
             var shaderStages = new List<PipelineShaderStageCreateInfo> { vertInfo, fragInfo };
 
             var vertexInputInfo = new PipelineVertexInputStateCreateInfo();
-            vertexInputInfo.vertexBindingDescriptions = new List<VkVertexInputBindingDescription> { Vertex.GetBindingDescription() };
-            vertexInputInfo.vertexAttributeDescriptions = Vertex.GetAttributeDescriptions();
 
             var inputAssembly = new PipelineInputAssemblyStateCreateInfo();
             inputAssembly.topology = VkPrimitiveTopology.TriangleList;
