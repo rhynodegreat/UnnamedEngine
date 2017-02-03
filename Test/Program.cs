@@ -63,6 +63,9 @@ namespace Test {
             triangle.AddInput(stars);
 
             DeferredNode deferred = new DeferredNode(engine, gbuffer);
+            ToneMapNode toneMap = new ToneMapNode(engine, acquireImageNode, gbuffer);
+            toneMap.AddInput(triangle);
+            presentNode.AddInput(toneMap);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
@@ -71,6 +74,7 @@ namespace Test {
             graph.Add(stars);
             graph.Add(triangle);
             graph.Add(deferred);
+            graph.Add(toneMap);
             graph.Bake();
 
 
