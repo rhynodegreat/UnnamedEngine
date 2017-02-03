@@ -13,7 +13,7 @@ using UnnamedEngine.Utilities;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class StarNode : IRenderer, IDisposable {
+    public class StarRenderer : IRenderer, IDisposable {
         bool disposed;
         Engine engine;
         TransferNode transferNode;
@@ -29,7 +29,7 @@ namespace Test {
 
         List<Star> stars;
 
-        public StarNode(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
+        public StarRenderer(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
             if (transferNode == null) throw new ArgumentNullException(nameof(transferNode));
@@ -248,7 +248,7 @@ namespace Test {
             disposed = true;
         }
 
-        ~StarNode() {
+        ~StarRenderer() {
             Dispose(false);
         }
     }
