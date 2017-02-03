@@ -152,8 +152,9 @@ namespace Test {
                                                 | VkColorComponentFlags.GBit
                                                 | VkColorComponentFlags.BBit
                                                 | VkColorComponentFlags.ABit;
+            light.blendEnable = true;
             light.srcColorBlendFactor = VkBlendFactor.One;
-            light.dstColorBlendFactor = VkBlendFactor.Zero;
+            light.dstColorBlendFactor = VkBlendFactor.One;
             light.colorBlendOp = VkBlendOp.Add;
             light.srcAlphaBlendFactor = VkBlendFactor.One;
             light.dstAlphaBlendFactor = VkBlendFactor.Zero;

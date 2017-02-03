@@ -81,8 +81,9 @@ namespace Test {
                                                 | VkColorComponentFlags.GBit
                                                 | VkColorComponentFlags.BBit
                                                 | VkColorComponentFlags.ABit;
+            colorBlendAttachment.blendEnable = true;
             colorBlendAttachment.srcColorBlendFactor = VkBlendFactor.One;
-            colorBlendAttachment.dstColorBlendFactor = VkBlendFactor.Zero;
+            colorBlendAttachment.dstColorBlendFactor = VkBlendFactor.One;
             colorBlendAttachment.colorBlendOp = VkBlendOp.Add;
             colorBlendAttachment.srcAlphaBlendFactor = VkBlendFactor.One;
             colorBlendAttachment.dstAlphaBlendFactor = VkBlendFactor.Zero;

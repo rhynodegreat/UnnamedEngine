@@ -177,7 +177,7 @@ namespace Test {
                         float32_0 = 0,
                         float32_1 = 0,
                         float32_2 = 0,
-                        float32_3 = 0
+                        float32_3 = 1
                     }
                 },
             };
