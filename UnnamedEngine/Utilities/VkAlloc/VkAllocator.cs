@@ -78,6 +78,14 @@ namespace UnnamedEngine.Utilities {
             throw new VkAllocOutOfMemoryException("Could not allocate memory");
         }
 
+        public bool Contains(VkMemoryPropertyFlags flags) {
+            for (int i = 0; i < heaps.Count; i++) {
+                if (heaps[i].Contains(flags)) return true;
+            }
+
+            return false;
+        }
+
         public void ResetTemp() {
             for (int i = 0; i < linearHeaps.Count; i++) {
                 linearHeaps[i].Reset();

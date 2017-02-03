@@ -45,6 +45,14 @@ namespace UnnamedEngine.Utilities {
                 return false;
             }
 
+            public bool Contains(VkMemoryPropertyFlags flags) {
+                for (int i = 0; i < memoryTypes.Count; i++) {
+                    if ((memoryTypes[i].flags & flags) == flags) return true;
+                }
+
+                return false;
+            }
+
             public VkaAllocation Alloc(VkMemoryRequirements requirements, int typeIndex) {
                 lock (locker) {
                     //look for pages with matching default size first
