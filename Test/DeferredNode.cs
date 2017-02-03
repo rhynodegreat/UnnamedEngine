@@ -10,12 +10,12 @@ namespace Test {
     public class DeferredNode : CommandNode, IDisposable {
         bool disposed;
         Engine engine;
-        GBuffer gbuffer;
 
         CommandPool pool;
         CommandBuffer commandBuffer;
         List<CommandBuffer> submitBuffers;
 
+        public GBuffer GBuffer { get; private set; }
         public RenderGraph RenderGraph { get; private set; }
         public Framebuffer Framebuffer { get; private set; }
         public OpaqueNode Opaque { get; private set; }
@@ -26,7 +26,7 @@ namespace Test {
             if (gbuffer == null) throw new ArgumentNullException(nameof(gbuffer));
 
             this.engine = engine;
-            this.gbuffer = gbuffer;
+            this.GBuffer = gbuffer;
 
             gbuffer.OnSizeChanged += CreateFramebuffer;
 
@@ -45,7 +45,7 @@ namespace Test {
             RenderGraph = new RenderGraph(engine);
 
             AttachmentDescription albedo = new AttachmentDescription();
-            albedo.format = gbuffer.AlbedoFormat;
+            albedo.format = GBuffer.AlbedoFormat;
             albedo.samples = VkSampleCountFlags._1Bit;
             albedo.loadOp = VkAttachmentLoadOp.Clear;
             albedo.storeOp = VkAttachmentStoreOp.DontCare;
@@ -53,7 +53,7 @@ namespace Test {
             albedo.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
             AttachmentDescription norm = new AttachmentDescription();
-            norm.format = gbuffer.NormFormat;
+            norm.format = GBuffer.NormFormat;
             norm.samples = VkSampleCountFlags._1Bit;
             norm.loadOp = VkAttachmentLoadOp.Clear;
             norm.storeOp = VkAttachmentStoreOp.DontCare;
@@ -61,7 +61,7 @@ namespace Test {
             norm.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
             AttachmentDescription depth = new AttachmentDescription();
-            depth.format = gbuffer.DepthFormat;
+            depth.format = GBuffer.DepthFormat;
             depth.samples = VkSampleCountFlags._1Bit;
             depth.loadOp = VkAttachmentLoadOp.Clear;
             depth.storeOp = VkAttachmentStoreOp.Store;
@@ -71,7 +71,7 @@ namespace Test {
             depth.finalLayout = VkImageLayout.DepthStencilAttachmentOptimal;
 
             AttachmentDescription light = new AttachmentDescription();
-            light.format = gbuffer.LightFormat;
+            light.format = GBuffer.LightFormat;
             light.samples = VkSampleCountFlags._1Bit;
             light.loadOp = VkAttachmentLoadOp.Clear;
             light.storeOp = VkAttachmentStoreOp.Store;
@@ -92,7 +92,7 @@ namespace Test {
 
             RenderGraph.AddNode(Opaque);
 
-            Lighting = new LightingNode(engine, gbuffer, pool);
+            Lighting = new LightingNode(engine, GBuffer, pool);
             Lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
             Lighting.AddInput(norm, VkImageLayout.ShaderReadOnlyOptimal);
             Lighting.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
@@ -124,7 +124,7 @@ namespace Test {
 
         void CreateFramebuffer(int width, int height) {
             FramebufferCreateInfo info = new FramebufferCreateInfo();
-            info.attachments = new List<ImageView> { gbuffer.AlbedoView, gbuffer.NormView, gbuffer.DepthView, gbuffer.LightView };
+            info.attachments = new List<ImageView> { GBuffer.AlbedoView, GBuffer.NormView, GBuffer.DepthView, GBuffer.LightView };
             info.width = (uint)width;
             info.height = (uint)height;
             info.layers = 1;
@@ -183,8 +183,8 @@ namespace Test {
             };
             renderPassInfo.renderArea.offset.x = 0;
             renderPassInfo.renderArea.offset.y = 0;
-            renderPassInfo.renderArea.extent.width = (uint)gbuffer.Width;
-            renderPassInfo.renderArea.extent.height = (uint)gbuffer.Height;
+            renderPassInfo.renderArea.extent.width = (uint)GBuffer.Width;
+            renderPassInfo.renderArea.extent.height = (uint)GBuffer.Height;
 
             commandBuffer.Begin(beginInfo);
 
@@ -217,7 +217,7 @@ namespace Test {
             RenderGraph.Dispose();
             pool.Dispose();
 
-            gbuffer.OnSizeChanged -= CreateFramebuffer;
+            GBuffer.OnSizeChanged -= CreateFramebuffer;
 
             disposed = true;
         }
