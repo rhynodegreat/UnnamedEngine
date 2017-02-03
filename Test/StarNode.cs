@@ -26,13 +26,11 @@ namespace Test {
         Buffer vertexBuffer;
         VkaAllocation vertexAllocation;
         CommandBuffer commandBuffer;
-        uint index;
 
         List<Star> stars;
 
         public StarNode(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            if (engine.Window == null) throw new ArgumentNullException(nameof(engine.Window));
             if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
             if (transferNode == null) throw new ArgumentNullException(nameof(transferNode));
             if (deferredNode == null) throw new ArgumentNullException(nameof(deferredNode));
@@ -50,10 +48,10 @@ namespace Test {
                 stars.Add(new Star(pos, col));
             }
             
-            CreatePipeline(engine.Graphics.Device, engine.Window);
+            CreatePipeline(engine.Graphics.Device);
             CreateVertexBuffer(engine.Graphics);
             CreateCommandPool(engine);
-            CreateCommandBuffers(engine.Graphics.Device, engine.Window);
+            CreateCommandBuffers(engine.Graphics.Device);
 
             deferredNode.Opaque.AddRenderer(this);
         }
@@ -77,7 +75,7 @@ namespace Test {
             return new ShaderModule(device, info);
         }
 
-        void CreatePipeline(Device device, Window window) {
+        void CreatePipeline(Device device) {
             var vert = CreateShaderModule(device, File.ReadAllBytes("stars_vert.spv"));
             var frag = CreateShaderModule(device, File.ReadAllBytes("stars_frag.spv"));
 
@@ -101,13 +99,14 @@ namespace Test {
             inputAssembly.topology = VkPrimitiveTopology.PointList;
 
             var viewport = new VkViewport();
-            viewport.width = window.SwapchainExtent.width;
-            viewport.height = window.SwapchainExtent.height;
+            viewport.width = deferredNode.GBuffer.Width;
+            viewport.height = deferredNode.GBuffer.Height;
             viewport.minDepth = 0f;
             viewport.maxDepth = 1f;
 
             var scissor = new VkRect2D();
-            scissor.extent = window.SwapchainExtent;
+            scissor.extent.width = (uint)deferredNode.GBuffer.Width;
+            scissor.extent.height = (uint)deferredNode.GBuffer.Height;
 
             var viewportState = new PipelineViewportStateCreateInfo();
             viewportState.viewports = new List<VkViewport> { viewport };
@@ -206,11 +205,7 @@ namespace Test {
             commandPool = new CommandPool(engine.Graphics.Device, info);
         }
 
-        void CreateCommandBuffers(Device device, Window window) {
-            var info = new CommandBufferAllocateInfo();
-            info.level = VkCommandBufferLevel.Primary;
-            info.commandBufferCount = (uint)window.SwapchainImages.Count;
-
+        void CreateCommandBuffers(Device device) {
             commandBuffer = commandPool.Allocate(VkCommandBufferLevel.Secondary);
 
             CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();
