@@ -28,7 +28,7 @@ namespace UnnamedEngine.Rendering {
         public DescriptorSetLayout LightLayout { get; private set; }
         public DescriptorSet LightDescriptor { get; private set; }
 
-        public VkFormat AlbedoFormat { get; private set; } = VkFormat.R8g8b8a8Uint;
+        public VkFormat AlbedoFormat { get; private set; } = VkFormat.R8g8b8a8Unorm;
         public VkFormat NormFormat { get; private set; } = VkFormat.R16g16b16a16Sfloat;
         public VkFormat DepthFormat { get; private set; }
         public VkFormat LightFormat { get; private set; } = VkFormat.R16g16b16a16Sfloat;
