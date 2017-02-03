@@ -142,6 +142,7 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new List<DescriptorSet> { gbuffer.InputDescriptor }, null);
+            commandBuffer.Draw(3, 1, 0, 0);
 
             commandBuffer.End();
 

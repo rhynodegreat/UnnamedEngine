@@ -64,6 +64,7 @@ namespace Test {
 
             DeferredNode deferred = new DeferredNode(engine, gbuffer);
             ToneMapNode toneMap = new ToneMapNode(engine, acquireImageNode, gbuffer);
+            toneMap.AddInput(deferred);
             toneMap.AddInput(triangle);
             presentNode.AddInput(toneMap);
 
