@@ -7,6 +7,8 @@ using UnnamedEngine.Rendering;
 
 namespace Test {
     public class OpaqueNode : RenderNode {
+        bool disposed;
+
         RenderPass renderPass;
         uint subpassIndex;
         CommandPool pool;
@@ -41,6 +43,29 @@ namespace Test {
             }
 
             return submitBuffers;
+        }
+
+        public new void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected override void Dispose(bool disposing) {
+            if (disposed) return;
+
+            if (disposing) {
+                foreach (var renderer in renderers) {
+                    renderer.Dispose();
+                }
+            }
+
+            base.Dispose(disposing);
+
+            disposed = true;
+        }
+
+        ~OpaqueNode() {
+
         }
     }
 }

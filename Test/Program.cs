@@ -79,8 +79,7 @@ namespace Test {
             using (engine)
             using (commandPool)
             using (camera)
-            using (gbuffer)
-            using (stars) {
+            using (gbuffer) {
                 engine.Run();
             }
 
