@@ -15,10 +15,11 @@ namespace Test {
         RenderGraph renderGraph;
         OpaqueNode opaque;
         LightingNode lighting;
-        Framebuffer framebuffer;
         CommandPool pool;
         CommandBuffer commandBuffer;
         List<CommandBuffer> submitBuffers;
+
+        public Framebuffer Framebuffer { get; private set; }
 
         public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -128,11 +129,11 @@ namespace Test {
             info.layers = 1;
             info.renderPass = renderGraph.RenderPass;
 
-            framebuffer?.Dispose();
-            framebuffer = new Framebuffer(engine.Graphics.Device, info);
+            Framebuffer?.Dispose();
+            Framebuffer = new Framebuffer(engine.Graphics.Device, info);
 
-            lighting.Init(framebuffer);
-            opaque.Init(framebuffer);
+            lighting.Init(Framebuffer);
+            opaque.Init(Framebuffer);
         }
 
         void CreateCommandBuffer() {
@@ -143,7 +144,7 @@ namespace Test {
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             RenderPassBeginInfo renderPassInfo = new RenderPassBeginInfo();
             renderPassInfo.renderPass = renderGraph.RenderPass;
-            renderPassInfo.framebuffer = framebuffer;
+            renderPassInfo.framebuffer = Framebuffer;
             renderPassInfo.clearValues = new List<VkClearValue> {
                 new VkClearValue {
                     color = new VkClearColorValue { //albedo
@@ -203,7 +204,7 @@ namespace Test {
             
             base.Dispose(disposing);
 
-            framebuffer.Dispose();
+            Framebuffer.Dispose();
             renderGraph.Dispose();
             pool.Dispose();
 
