@@ -222,7 +222,7 @@ namespace Test {
 
                 commandBuffers[i].BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
                 commandBuffers[i].BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new List<DescriptorSet> { gbuffer.LightDescriptor });
-                commandBuffers[i].Draw(3, 1, 0, 0);
+                commandBuffers[i].Draw(6, 1, 0, 0);
 
                 commandBuffers[i].EndRenderPass();
                 commandBuffers[i].End();
