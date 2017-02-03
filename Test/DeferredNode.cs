@@ -12,13 +12,13 @@ namespace Test {
         Engine engine;
         GBuffer gbuffer;
 
-        RenderGraph renderGraph;
         OpaqueNode opaque;
         LightingNode lighting;
         CommandPool pool;
         CommandBuffer commandBuffer;
         List<CommandBuffer> submitBuffers;
 
+        public RenderGraph RenderGraph { get; private set; }
         public Framebuffer Framebuffer { get; private set; }
 
         public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.ColorAttachmentOutputBit) {
@@ -41,7 +41,7 @@ namespace Test {
         }
 
         void CreateRenderpass() {
-            renderGraph = new RenderGraph(engine);
+            RenderGraph = new RenderGraph(engine);
 
             AttachmentDescription albedo = new AttachmentDescription();
             albedo.format = gbuffer.AlbedoFormat;
@@ -77,10 +77,10 @@ namespace Test {
             light.initialLayout = VkImageLayout.Undefined;
             light.finalLayout = VkImageLayout.ShaderReadOnlyOptimal;
 
-            renderGraph.AddAttachment(albedo);
-            renderGraph.AddAttachment(norm);
-            renderGraph.AddAttachment(depth);
-            renderGraph.AddAttachment(light);
+            RenderGraph.AddAttachment(albedo);
+            RenderGraph.AddAttachment(norm);
+            RenderGraph.AddAttachment(depth);
+            RenderGraph.AddAttachment(light);
 
             opaque = new OpaqueNode(pool);
             opaque.AddColor(albedo, VkImageLayout.ColorAttachmentOptimal);
@@ -89,7 +89,7 @@ namespace Test {
             opaque.DepthStencil = depth;
             opaque.DepthStencilLayout = VkImageLayout.DepthStencilAttachmentOptimal;
 
-            renderGraph.AddNode(opaque);
+            RenderGraph.AddNode(opaque);
 
             lighting = new LightingNode(engine, gbuffer, pool);
             lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
@@ -98,7 +98,7 @@ namespace Test {
             lighting.DepthStencil = depth;
             lighting.DepthStencilLayout = VkImageLayout.DepthStencilReadOnlyOptimal;
 
-            renderGraph.AddNode(lighting);
+            RenderGraph.AddNode(lighting);
 
             SubpassDependency toOpaque = new SubpassDependency();
             toOpaque.srcStageMask = VkPipelineStageFlags.TopOfPipeBit;
@@ -115,10 +115,10 @@ namespace Test {
                 | VkAccessFlags.InputAttachmentReadBit;
             opaqueToLighting.dstAccessMask = VkAccessFlags.ColorAttachmentWriteBit;
 
-            renderGraph.AddDependency(null, opaque, toOpaque);
-            renderGraph.AddDependency(opaque, lighting, opaqueToLighting);
+            RenderGraph.AddDependency(null, opaque, toOpaque);
+            RenderGraph.AddDependency(opaque, lighting, opaqueToLighting);
 
-            renderGraph.Bake();
+            RenderGraph.Bake();
         }
 
         void CreateFramebuffer(int width, int height) {
@@ -127,7 +127,7 @@ namespace Test {
             info.width = (uint)width;
             info.height = (uint)height;
             info.layers = 1;
-            info.renderPass = renderGraph.RenderPass;
+            info.renderPass = RenderGraph.RenderPass;
 
             Framebuffer?.Dispose();
             Framebuffer = new Framebuffer(engine.Graphics.Device, info);
@@ -143,7 +143,7 @@ namespace Test {
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             RenderPassBeginInfo renderPassInfo = new RenderPassBeginInfo();
-            renderPassInfo.renderPass = renderGraph.RenderPass;
+            renderPassInfo.renderPass = RenderGraph.RenderPass;
             renderPassInfo.framebuffer = Framebuffer;
             renderPassInfo.clearValues = new List<VkClearValue> {
                 new VkClearValue {
@@ -184,7 +184,7 @@ namespace Test {
 
             commandBuffer.Begin(beginInfo);
 
-            renderGraph.Render(renderPassInfo, commandBuffer);
+            RenderGraph.Render(renderPassInfo, commandBuffer);
 
             commandBuffer.End();
             
@@ -205,7 +205,7 @@ namespace Test {
             base.Dispose(disposing);
 
             Framebuffer.Dispose();
-            renderGraph.Dispose();
+            RenderGraph.Dispose();
             pool.Dispose();
 
             gbuffer.OnSizeChanged -= CreateFramebuffer;
