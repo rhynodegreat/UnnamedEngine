@@ -13,7 +13,7 @@ namespace Test {
         uint subpassIndex;
         CommandPool pool;
 
-        List<IRenderer> renderers;
+        List<ISubpass> renderers;
 
         List<CommandBuffer> submitBuffers;
 
@@ -21,13 +21,14 @@ namespace Test {
             this.pool = pool;
 
             submitBuffers = new List<CommandBuffer>();
-            renderers = new List<IRenderer>();
+            renderers = new List<ISubpass>();
 
             Dirty = true;
         }
 
-        public void AddRenderer(IRenderer renderer) {
+        public void AddRenderer(ISubpass renderer) {
             renderers.Add(renderer);
+            renderer.Bake(renderPass, subpassIndex);
         }
 
         protected override void Bake(RenderPass renderPass, uint subpassIndex) {

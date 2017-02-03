@@ -13,7 +13,7 @@ using UnnamedEngine.Utilities;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class StarRenderer : IRenderer, IDisposable {
+    public class StarRenderer : ISubpass, IDisposable {
         bool disposed;
         Engine engine;
         TransferNode transferNode;
@@ -48,12 +48,15 @@ namespace Test {
                 stars.Add(new Star(pos, col));
             }
             
-            CreatePipeline(engine.Graphics.Device);
             CreateVertexBuffer(engine.Graphics);
             CreateCommandPool(engine);
-            CreateCommandBuffers(engine.Graphics.Device);
 
             deferredNode.Opaque.AddRenderer(this);
+        }
+
+        public void Bake(RenderPass renderPass, uint subpassIndex) {
+            CreatePipeline(engine.Graphics.Device, renderPass);
+            CreateCommandBuffers(engine.Graphics.Device, renderPass, subpassIndex);
         }
 
         void CreateVertexBuffer(Graphics renderer) {
@@ -75,7 +78,7 @@ namespace Test {
             return new ShaderModule(device, info);
         }
 
-        void CreatePipeline(Device device) {
+        void CreatePipeline(Device device, RenderPass renderPass) {
             var vert = CreateShaderModule(device, File.ReadAllBytes("stars_vert.spv"));
             var frag = CreateShaderModule(device, File.ReadAllBytes("stars_frag.spv"));
 
@@ -185,7 +188,7 @@ namespace Test {
             info.colorBlendState = colorBlending;
             info.depthStencilState = depth;
             info.layout = pipelineLayout;
-            info.renderPass = deferredNode.RenderGraph.RenderPass;
+            info.renderPass = renderPass;
             info.subpass = 0;
             info.basePipeline = null;
             info.basePipelineIndex = -1;
@@ -205,13 +208,13 @@ namespace Test {
             commandPool = new CommandPool(engine.Graphics.Device, info);
         }
 
-        void CreateCommandBuffers(Device device) {
+        void CreateCommandBuffers(Device device, RenderPass renderPass, uint subpassIndex) {
             commandBuffer = commandPool.Allocate(VkCommandBufferLevel.Secondary);
 
             CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();
-            inheritance.renderPass = deferredNode.RenderGraph.RenderPass;
+            inheritance.renderPass = renderPass;
             inheritance.framebuffer = deferredNode.Framebuffer;
-            inheritance.subpass = 0;
+            inheritance.subpass = subpassIndex;
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit | VkCommandBufferUsageFlags.RenderPassContinueBit;
