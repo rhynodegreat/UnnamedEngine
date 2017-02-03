@@ -42,11 +42,23 @@ namespace Test {
 
             Random rand = new Random(0);
             stars = new List<Star>();
-            for (int i = 0; i < 1000; i++) {
-                Vector4 pos = new Vector4((float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 10) + 1);
-                Vector3 col = new Vector3(1, 1, 1);
-                stars.Add(new Star(pos, col));
+            int subdivisions = 100;
+
+            for (int x = 0; x < subdivisions; x++) {
+                for (int y = 0; y < subdivisions; y++) {
+                    for (int z = 0; z < subdivisions; z++) {
+                        if (rand.NextDouble() < 0.01d) {
+                            stars.Add(new Star(new Vector4(
+                                (10 * x / (float)subdivisions) - 5,
+                                (10 * y / (float)subdivisions) - 5,
+                                (10 * z / (float)subdivisions) - 5, (float)(rand.NextDouble() * 10) + 1),
+                                new Vector3(1, 1, 1)));
+                        }
+                    }
+                }
             }
+
+            Console.WriteLine("{0:n0} stars    {1:n0} bytes", stars.Count, Interop.SizeOf(stars));
             
             CreateVertexBuffer(engine.Graphics);
             CreateCommandPool(engine);
