@@ -19,6 +19,7 @@ namespace UnnamedEngine.Rendering {
         List<SubpassDependency> dependencies;
 
         public IList<AttachmentDescription> Attachments { get; private set; }
+        public IList<RenderNode> Nodes { get; private set; }
         public RenderPass RenderPass { get; private set; }
 
         public RenderGraph(Engine engine) {
@@ -34,6 +35,7 @@ namespace UnnamedEngine.Rendering {
             subpasses = new List<SubpassDescription>();
             dependencies = new List<SubpassDependency>();
             Attachments = attachments.AsReadOnly();
+            Nodes = nodes.AsReadOnly();
         }
 
         public void Bake() {

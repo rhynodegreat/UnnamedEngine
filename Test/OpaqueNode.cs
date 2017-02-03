@@ -11,29 +11,21 @@ namespace Test {
         uint subpassIndex;
         CommandPool pool;
 
+        List<IRenderer> renderers;
+
         List<CommandBuffer> submitBuffers;
 
         public OpaqueNode(CommandPool pool) {
             this.pool = pool;
+
+            submitBuffers = new List<CommandBuffer>();
+            renderers = new List<IRenderer>();
+
+            Dirty = true;
         }
 
-        public void Init(Framebuffer framebuffer) {
-            CommandBuffer commandBuffer = pool.Allocate(VkCommandBufferLevel.Secondary);
-
-            CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();
-            inheritance.renderPass = renderPass;
-            inheritance.subpass = subpassIndex;
-            inheritance.framebuffer = framebuffer;
-
-            CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
-            beginInfo.flags = VkCommandBufferUsageFlags.RenderPassContinueBit | VkCommandBufferUsageFlags.SimultaneousUseBit;
-            beginInfo.inheritanceInfo = inheritance;
-
-            commandBuffer.Begin(beginInfo);
-
-            commandBuffer.End();
-
-            submitBuffers = new List<CommandBuffer> { commandBuffer };
+        public void AddRenderer(IRenderer renderer) {
+            renderers.Add(renderer);
         }
 
         protected override void Bake(RenderPass renderPass, uint subpassIndex) {
@@ -42,6 +34,12 @@ namespace Test {
         }
 
         public override List<CommandBuffer> GetCommands() {
+            submitBuffers.Clear();
+
+            for (int i = 0; i < renderers.Count; i++) {
+                submitBuffers.Add(renderers[i].GetCommandBuffer());
+            }
+
             return submitBuffers;
         }
     }

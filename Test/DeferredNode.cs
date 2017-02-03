@@ -12,14 +12,14 @@ namespace Test {
         Engine engine;
         GBuffer gbuffer;
 
-        OpaqueNode opaque;
-        LightingNode lighting;
         CommandPool pool;
         CommandBuffer commandBuffer;
         List<CommandBuffer> submitBuffers;
 
         public RenderGraph RenderGraph { get; private set; }
         public Framebuffer Framebuffer { get; private set; }
+        public OpaqueNode Opaque { get; private set; }
+        public LightingNode Lighting { get; private set; }
 
         public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -32,6 +32,7 @@ namespace Test {
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+            poolInfo.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
 
             pool = new CommandPool(engine.Graphics.Device, poolInfo);
 
@@ -82,23 +83,23 @@ namespace Test {
             RenderGraph.AddAttachment(depth);
             RenderGraph.AddAttachment(light);
 
-            opaque = new OpaqueNode(pool);
-            opaque.AddColor(albedo, VkImageLayout.ColorAttachmentOptimal);
-            opaque.AddColor(norm, VkImageLayout.ColorAttachmentOptimal);
-            opaque.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
-            opaque.DepthStencil = depth;
-            opaque.DepthStencilLayout = VkImageLayout.DepthStencilAttachmentOptimal;
+            Opaque = new OpaqueNode(pool);
+            Opaque.AddColor(albedo, VkImageLayout.ColorAttachmentOptimal);
+            Opaque.AddColor(norm, VkImageLayout.ColorAttachmentOptimal);
+            Opaque.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
+            Opaque.DepthStencil = depth;
+            Opaque.DepthStencilLayout = VkImageLayout.DepthStencilAttachmentOptimal;
 
-            RenderGraph.AddNode(opaque);
+            RenderGraph.AddNode(Opaque);
 
-            lighting = new LightingNode(engine, gbuffer, pool);
-            lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
-            lighting.AddInput(norm, VkImageLayout.ShaderReadOnlyOptimal);
-            lighting.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
-            lighting.DepthStencil = depth;
-            lighting.DepthStencilLayout = VkImageLayout.DepthStencilReadOnlyOptimal;
+            Lighting = new LightingNode(engine, gbuffer, pool);
+            Lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
+            Lighting.AddInput(norm, VkImageLayout.ShaderReadOnlyOptimal);
+            Lighting.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
+            Lighting.DepthStencil = depth;
+            Lighting.DepthStencilLayout = VkImageLayout.DepthStencilReadOnlyOptimal;
 
-            RenderGraph.AddNode(lighting);
+            RenderGraph.AddNode(Lighting);
 
             SubpassDependency toOpaque = new SubpassDependency();
             toOpaque.srcStageMask = VkPipelineStageFlags.TopOfPipeBit;
@@ -115,8 +116,8 @@ namespace Test {
                 | VkAccessFlags.InputAttachmentReadBit;
             opaqueToLighting.dstAccessMask = VkAccessFlags.ColorAttachmentWriteBit;
 
-            RenderGraph.AddDependency(null, opaque, toOpaque);
-            RenderGraph.AddDependency(opaque, lighting, opaqueToLighting);
+            RenderGraph.AddDependency(null, Opaque, toOpaque);
+            RenderGraph.AddDependency(Opaque, Lighting, opaqueToLighting);
 
             RenderGraph.Bake();
         }
@@ -132,14 +133,17 @@ namespace Test {
             Framebuffer?.Dispose();
             Framebuffer = new Framebuffer(engine.Graphics.Device, info);
 
-            lighting.Init(Framebuffer);
-            opaque.Init(Framebuffer);
+            Lighting.Init(Framebuffer);
         }
 
         void CreateCommandBuffer() {
             commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
 
             submitBuffers = new List<CommandBuffer> { commandBuffer };
+        }
+
+        void RecordCommands() {
+            commandBuffer.Reset(VkCommandBufferResetFlags.None);
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             RenderPassBeginInfo renderPassInfo = new RenderPassBeginInfo();
@@ -187,10 +191,15 @@ namespace Test {
             RenderGraph.Render(renderPassInfo, commandBuffer);
 
             commandBuffer.End();
-            
         }
 
         public override List<CommandBuffer> GetCommands() {
+            for (int i = 0; i < RenderGraph.Nodes.Count; i++) {
+                if (RenderGraph.Nodes[i].Dirty) {
+                    RecordCommands();
+                    break;
+                }
+            }
             return submitBuffers;
         }
 

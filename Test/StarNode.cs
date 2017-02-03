@@ -13,122 +13,49 @@ using UnnamedEngine.Utilities;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class StarNode : CommandNode, IDisposable {
+    public class StarNode : IRenderer, IDisposable {
         bool disposed;
         Engine engine;
-        AcquireImageNode acquireImageNode;
         TransferNode transferNode;
+        DeferredNode deferredNode;
         Camera camera;
-
-        RenderPass renderPass;
-        List<ImageView> imageViews;
-        List<Framebuffer> framebuffers;
+        
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
         CommandPool commandPool;
         Buffer vertexBuffer;
         VkaAllocation vertexAllocation;
-
-        List<CommandBuffer> commandBuffers;
-        List<CommandBuffer> submitCommands;
+        CommandBuffer commandBuffer;
         uint index;
 
         List<Star> stars;
 
-        public StarNode(Engine engine, AcquireImageNode acquireImageNode, TransferNode transferNode, Camera camera) : base(engine.Graphics.Device, VkPipelineStageFlags.TopOfPipeBit) {
+        public StarNode(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (engine.Window == null) throw new ArgumentNullException(nameof(engine.Window));
-            if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
+            if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
             if (transferNode == null) throw new ArgumentNullException(nameof(transferNode));
+            if (deferredNode == null) throw new ArgumentNullException(nameof(deferredNode));
 
             this.engine = engine;
-            this.acquireImageNode = acquireImageNode;
             this.transferNode = transferNode;
-            this.camera = camera;
+            this.deferredNode = deferredNode;
+            camera = engine.Camera;
 
             Random rand = new Random(0);
             stars = new List<Star>();
             for (int i = 0; i < 1000; i++) {
-                Vector3 pos = new Vector3((float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 2) - 1);
+                Vector4 pos = new Vector4((float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 2) - 1, (float)(rand.NextDouble() * 10) + 1);
                 Vector3 col = new Vector3(1, 1, 1);
                 stars.Add(new Star(pos, col));
             }
-
-            submitCommands = new List<CommandBuffer> { null };
-
-            CreateRenderPass(engine.Graphics.Device, engine.Window);
-            CreateFramebuffers(engine.Window);
+            
             CreatePipeline(engine.Graphics.Device, engine.Window);
             CreateVertexBuffer(engine.Graphics);
             CreateCommandPool(engine);
             CreateCommandBuffers(engine.Graphics.Device, engine.Window);
 
-            AddInput(transferNode);
-            AddInput(acquireImageNode);
-        }
-
-        void CreateRenderPass(Device device, Window window) {
-            var colorAttachment = new AttachmentDescription();
-            colorAttachment.format = window.SwapchainImageFormat;
-            colorAttachment.samples = VkSampleCountFlags._1Bit;
-            colorAttachment.loadOp = VkAttachmentLoadOp.Load;
-            colorAttachment.storeOp = VkAttachmentStoreOp.Store;
-            colorAttachment.stencilLoadOp = VkAttachmentLoadOp.DontCare;
-            colorAttachment.stencilStoreOp = VkAttachmentStoreOp.DontCare;
-            colorAttachment.initialLayout = VkImageLayout.Undefined;
-            colorAttachment.finalLayout = VkImageLayout.ColorAttachmentOptimal;
-
-            var colorAttachmentRef = new AttachmentReference();
-            colorAttachmentRef.attachment = 0;
-            colorAttachmentRef.layout = VkImageLayout.ColorAttachmentOptimal;
-
-            var subpass = new SubpassDescription();
-            subpass.pipelineBindPoint = VkPipelineBindPoint.Graphics;
-            subpass.colorAttachments = new List<AttachmentReference> { colorAttachmentRef };
-
-            var dependency = new SubpassDependency();
-            dependency.srcSubpass = uint.MaxValue;  //VK_SUBPASS_EXTERNAL
-            dependency.dstSubpass = 0;
-            dependency.srcStageMask = VkPipelineStageFlags.BottomOfPipeBit;
-            dependency.srcAccessMask = VkAccessFlags.MemoryReadBit;
-            dependency.dstStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
-            dependency.dstAccessMask = VkAccessFlags.ColorAttachmentReadBit
-                                    | VkAccessFlags.ColorAttachmentWriteBit;
-
-            var info = new RenderPassCreateInfo();
-            info.attachments = new List<AttachmentDescription> { colorAttachment };
-            info.subpasses = new List<SubpassDescription> { subpass };
-            info.dependencies = new List<SubpassDependency> { dependency };
-
-            renderPass?.Dispose();
-            renderPass = new RenderPass(device, info);
-        }
-
-        void CreateFramebuffers(Window window) {
-            imageViews = new List<ImageView>(window.SwapchainImages.Count);
-            framebuffers = new List<Framebuffer>(window.SwapchainImages.Count);
-
-            for (int i = 0; i < window.SwapchainImages.Count; i++) {
-                ImageViewCreateInfo ivInfo = new ImageViewCreateInfo(window.SwapchainImages[i]);
-                ivInfo.viewType = VkImageViewType._2d;
-                ivInfo.format = window.SwapchainImageFormat;
-                ivInfo.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
-                ivInfo.subresourceRange.baseMipLevel = 0;
-                ivInfo.subresourceRange.levelCount = 1;
-                ivInfo.subresourceRange.baseArrayLayer = 0;
-                ivInfo.subresourceRange.layerCount = 1;
-
-                imageViews.Add(new ImageView(device, ivInfo));
-
-                FramebufferCreateInfo fbInfo = new FramebufferCreateInfo();
-                fbInfo.renderPass = renderPass;
-                fbInfo.attachments = new List<ImageView> { imageViews[i] };
-                fbInfo.height = window.SwapchainExtent.height;
-                fbInfo.width = window.SwapchainExtent.width;
-                fbInfo.layers = 1;
-
-                framebuffers.Add(new Framebuffer(device, fbInfo));
-            }
+            deferredNode.Opaque.AddRenderer(this);
         }
 
         void CreateVertexBuffer(Graphics renderer) {
@@ -137,7 +64,7 @@ namespace Test {
             info.size = (uint)Interop.SizeOf(stars);
             info.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
 
-            vertexBuffer = new Buffer(device, info);
+            vertexBuffer = new Buffer(engine.Graphics.Device, info);
 
             vertexAllocation = renderer.Allocator.Alloc(vertexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
             vertexBuffer.Bind(vertexAllocation.memory, vertexAllocation.offset);
@@ -151,8 +78,8 @@ namespace Test {
         }
 
         void CreatePipeline(Device device, Window window) {
-            var vert = CreateShaderModule(device, File.ReadAllBytes("star_vert.spv"));
-            var frag = CreateShaderModule(device, File.ReadAllBytes("star_frag.spv"));
+            var vert = CreateShaderModule(device, File.ReadAllBytes("stars_vert.spv"));
+            var frag = CreateShaderModule(device, File.ReadAllBytes("stars_frag.spv"));
 
             var vertInfo = new PipelineShaderStageCreateInfo();
             vertInfo.stage = VkShaderStageFlags.VertexBit;
@@ -196,24 +123,53 @@ namespace Test {
             multisampling.rasterizationSamples = VkSampleCountFlags._1Bit;
             multisampling.minSampleShading = 1f;
 
-            var colorBlendAttachment = new PipelineColorBlendAttachmentState();
-            colorBlendAttachment.colorWriteMask = VkColorComponentFlags.RBit
+            var albedo = new PipelineColorBlendAttachmentState();
+            albedo.colorWriteMask = VkColorComponentFlags.RBit
                                                 | VkColorComponentFlags.GBit
                                                 | VkColorComponentFlags.BBit
                                                 | VkColorComponentFlags.ABit;
-            colorBlendAttachment.srcColorBlendFactor = VkBlendFactor.One;
-            colorBlendAttachment.dstColorBlendFactor = VkBlendFactor.Zero;
-            colorBlendAttachment.colorBlendOp = VkBlendOp.Add;
-            colorBlendAttachment.srcAlphaBlendFactor = VkBlendFactor.One;
-            colorBlendAttachment.dstAlphaBlendFactor = VkBlendFactor.Zero;
-            colorBlendAttachment.alphaBlendOp = VkBlendOp.Add;
+            albedo.srcColorBlendFactor = VkBlendFactor.One;
+            albedo.dstColorBlendFactor = VkBlendFactor.Zero;
+            albedo.colorBlendOp = VkBlendOp.Add;
+            albedo.srcAlphaBlendFactor = VkBlendFactor.One;
+            albedo.dstAlphaBlendFactor = VkBlendFactor.Zero;
+            albedo.alphaBlendOp = VkBlendOp.Add;
+
+            var norm = new PipelineColorBlendAttachmentState();
+            norm.colorWriteMask = VkColorComponentFlags.RBit
+                                                | VkColorComponentFlags.GBit
+                                                | VkColorComponentFlags.BBit
+                                                | VkColorComponentFlags.ABit;
+            norm.srcColorBlendFactor = VkBlendFactor.One;
+            norm.dstColorBlendFactor = VkBlendFactor.Zero;
+            norm.colorBlendOp = VkBlendOp.Add;
+            norm.srcAlphaBlendFactor = VkBlendFactor.One;
+            norm.dstAlphaBlendFactor = VkBlendFactor.Zero;
+            norm.alphaBlendOp = VkBlendOp.Add;
+
+            var light = new PipelineColorBlendAttachmentState();
+            light.colorWriteMask = VkColorComponentFlags.RBit
+                                                | VkColorComponentFlags.GBit
+                                                | VkColorComponentFlags.BBit
+                                                | VkColorComponentFlags.ABit;
+            light.srcColorBlendFactor = VkBlendFactor.One;
+            light.dstColorBlendFactor = VkBlendFactor.Zero;
+            light.colorBlendOp = VkBlendOp.Add;
+            light.srcAlphaBlendFactor = VkBlendFactor.One;
+            light.dstAlphaBlendFactor = VkBlendFactor.Zero;
+            light.alphaBlendOp = VkBlendOp.Add;
 
             var colorBlending = new PipelineColorBlendStateCreateInfo();
             colorBlending.logicOp = VkLogicOp.Copy;
-            colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { colorBlendAttachment };
+            colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { albedo, norm, light };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
             pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { camera.Layout };
+
+            PipelineDepthStencilStateCreateInfo depth = new PipelineDepthStencilStateCreateInfo();
+            depth.depthTestEnable = true;
+            depth.depthWriteEnable = false;
+            depth.depthCompareOp = VkCompareOp.LessOrEqual;
 
             pipelineLayout?.Dispose();
 
@@ -227,8 +183,9 @@ namespace Test {
             info.rasterizationState = rasterizer;
             info.multisampleState = multisampling;
             info.colorBlendState = colorBlending;
+            info.depthStencilState = depth;
             info.layout = pipelineLayout;
-            info.renderPass = renderPass;
+            info.renderPass = deferredNode.RenderGraph.RenderPass;
             info.subpass = 0;
             info.basePipeline = null;
             info.basePipelineIndex = -1;
@@ -249,70 +206,47 @@ namespace Test {
         }
 
         void CreateCommandBuffers(Device device, Window window) {
-            if (commandBuffers != null) {
-                commandPool.Free(commandBuffers);
-            }
-
             var info = new CommandBufferAllocateInfo();
             info.level = VkCommandBufferLevel.Primary;
             info.commandBufferCount = (uint)window.SwapchainImages.Count;
 
-            commandBuffers = new List<CommandBuffer>(commandPool.Allocate(info));
+            commandBuffer = commandPool.Allocate(VkCommandBufferLevel.Secondary);
 
-            for (int i = 0; i < commandBuffers.Count; i++) {
-                var buffer = commandBuffers[i];
-                var beginInfo = new CommandBufferBeginInfo();
-                beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit;
+            CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();
+            inheritance.renderPass = deferredNode.RenderGraph.RenderPass;
+            inheritance.framebuffer = deferredNode.Framebuffer;
+            inheritance.subpass = 0;
 
-                buffer.Begin(beginInfo);
+            CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
+            beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit | VkCommandBufferUsageFlags.RenderPassContinueBit;
+            beginInfo.inheritanceInfo = inheritance;
 
-                var renderPassInfo = new RenderPassBeginInfo();
-                renderPassInfo.renderPass = renderPass;
-                renderPassInfo.framebuffer = framebuffers[i];
-                renderPassInfo.renderArea.extent = window.SwapchainExtent;
+            commandBuffer.Begin(beginInfo);
 
-                VkClearValue clearColor = new VkClearValue();
-                clearColor.color.float32_0 = 0;
-                clearColor.color.float32_1 = 0;
-                clearColor.color.float32_2 = 0;
-                clearColor.color.float32_3 = 1f;
+            commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
+            commandBuffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
+            commandBuffer.Draw(stars.Count, 1, 0, 0);
 
-                renderPassInfo.clearValues = new List<VkClearValue> { clearColor };
-
-                buffer.BeginRenderPass(renderPassInfo, VkSubpassContents.Inline);
-                buffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
-                buffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
-                buffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
-                buffer.Draw(stars.Count, 1, 0, 0);
-                buffer.EndRenderPass();
-                buffer.End();
-            }
+            commandBuffer.End();
         }
 
-        public override void PreRender() {
-            index = acquireImageNode.ImageIndex;
+        public CommandBuffer GetCommandBuffer() {
+            return commandBuffer;
         }
 
-        public override List<CommandBuffer> GetCommands() {
-            submitCommands[0] = commandBuffers[(int)index];
-            return submitCommands;
-        }
-
-        public new void Dispose() {
+        public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        protected override void Dispose(bool disposing) {
+        void Dispose(bool disposing) {
             if (disposed) return;
 
             vertexBuffer.Dispose();
             commandPool.Dispose();
             pipeline.Dispose();
             pipelineLayout.Dispose();
-            foreach (var fb in framebuffers) fb.Dispose();
-            foreach (var iv in imageViews) iv.Dispose();
-            renderPass.Dispose();
             engine.Graphics.Allocator.Free(vertexAllocation);
 
             disposed = true;
@@ -324,10 +258,10 @@ namespace Test {
     }
 
     public struct Star {
-        public Vector3 position;
+        public Vector4 position;
         public Vector3 color;
 
-        public Star(Vector3 position, Vector3 color) {
+        public Star(Vector4 position, Vector3 color) {
             this.position = position;
             this.color = color;
         }
@@ -346,7 +280,7 @@ namespace Test {
             var a = new VkVertexInputAttributeDescription();
             a.binding = 0;
             a.location = 0;
-            a.format = VkFormat.R32g32b32Sfloat;
+            a.format = VkFormat.R32g32b32a32Sfloat;
             a.offset = (uint)Interop.Offset(ref v, ref v.position);
 
             var b = new VkVertexInputAttributeDescription();

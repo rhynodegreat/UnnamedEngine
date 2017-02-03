@@ -55,12 +55,8 @@ namespace Test {
 
             StagingNode staging = new StagingNode(engine);
 
-            StarNode stars = new StarNode(engine, acquireImageNode, staging, camera);
-            presentNode.AddInput(stars);
-
             TriangleNode triangle = new TriangleNode(engine, acquireImageNode, staging, camera);
             presentNode.AddInput(triangle);
-            triangle.AddInput(stars);
 
             DeferredNode deferred = new DeferredNode(engine, gbuffer);
             ToneMapNode toneMap = new ToneMapNode(engine, acquireImageNode, gbuffer);
@@ -68,11 +64,12 @@ namespace Test {
             toneMap.AddInput(triangle);
             presentNode.AddInput(toneMap);
 
+            StarNode stars = new StarNode(engine, staging, deferred);
+
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Add(staging);
-            graph.Add(stars);
             graph.Add(triangle);
             graph.Add(deferred);
             graph.Add(toneMap);
@@ -82,7 +79,8 @@ namespace Test {
             using (engine)
             using (commandPool)
             using (camera)
-            using (gbuffer) {
+            using (gbuffer)
+            using (stars) {
                 engine.Run();
             }
 
