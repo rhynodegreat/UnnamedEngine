@@ -163,7 +163,7 @@ namespace Test {
                 },
                 new VkClearValue {
                     depthStencil = new VkClearDepthStencilValue {   //depth
-                        depth = 0,
+                        depth = 1,
                         stencil = 0
                     }
                 },
