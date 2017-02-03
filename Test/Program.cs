@@ -61,8 +61,8 @@ namespace Test {
             toneMap.AddInput(deferred);
             presentNode.AddInput(toneMap);
 
-            StarRenderer stars = new StarRenderer(engine, staging, deferred);
             TriangleRenderer triangle = new TriangleRenderer(engine, staging, deferred);
+            StarRenderer stars = new StarRenderer(engine, staging, deferred);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
