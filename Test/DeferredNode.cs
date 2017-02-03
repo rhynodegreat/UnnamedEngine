@@ -90,7 +90,7 @@ namespace Test {
 
             renderGraph.AddNode(opaque);
 
-            lighting = new LightingNode(pool);
+            lighting = new LightingNode(engine, gbuffer, pool);
             lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
             lighting.AddInput(norm, VkImageLayout.ShaderReadOnlyOptimal);
             lighting.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
