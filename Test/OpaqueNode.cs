@@ -22,8 +22,6 @@ namespace Test {
 
             submitBuffers = new List<CommandBuffer>();
             renderers = new List<ISubpass>();
-
-            Dirty = true;
         }
 
         public void AddRenderer(ISubpass renderer) {
@@ -42,8 +40,6 @@ namespace Test {
             for (int i = 0; i < renderers.Count; i++) {
                 submitBuffers.Add(renderers[i].GetCommandBuffer());
             }
-
-            Dirty = false;
 
             return submitBuffers;
         }

@@ -13,8 +13,6 @@ namespace UnnamedEngine.Rendering {
         public AttachmentDescription DepthStencil { get; set; }
         public VkImageLayout DepthStencilLayout { get; set; }
 
-        public bool Dirty { get; protected set; }
-
         public RenderNode() {
             input = new List<AttachmentPair>();
             color = new List<AttachmentPair>();

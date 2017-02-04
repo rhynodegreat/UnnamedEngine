@@ -168,7 +168,6 @@ namespace Test {
         }
 
         public override List<CommandBuffer> GetCommands() {
-            Dirty = false;
             return submitBuffers;
         }
 
