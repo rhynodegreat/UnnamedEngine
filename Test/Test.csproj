@@ -53,6 +53,7 @@
     <Compile Include="DeferredNode.cs" />
     <Compile Include="FreeCam.cs" />
     <Compile Include="ISubpass.cs" />
+    <Compile Include="Light.cs" />
     <Compile Include="LightingNode.cs" />
     <Compile Include="OpaqueNode.cs" />
     <Compile Include="PresentNode.cs" />
