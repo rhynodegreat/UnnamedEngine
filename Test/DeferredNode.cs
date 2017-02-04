@@ -152,10 +152,10 @@ namespace Test {
             renderPassInfo.clearValues = new List<VkClearValue> {
                 new VkClearValue {
                     color = new VkClearColorValue { //albedo
-                        uint32_0 = 0,
-                        uint32_1 = 0,
-                        uint32_2 = 0,
-                        uint32_3 = 255
+                        float32_0 = 0,
+                        float32_1 = 0,
+                        float32_2 = 0,
+                        float32_3 = 1
                     }
                 },
                 new VkClearValue {
