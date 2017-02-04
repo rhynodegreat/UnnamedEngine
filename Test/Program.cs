@@ -4,7 +4,6 @@ using System.Numerics;
 
 using CSGL.GLFW;
 using CSGL.Vulkan;
-using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
 using UWindow = UnnamedEngine.Core.Window;
@@ -20,10 +19,6 @@ namespace Test {
         string[] layers = {
             "VK_LAYER_LUNARG_standard_validation",
             //"VK_LAYER_LUNARG_api_dump"
-        };
-
-        float[] data = {
-            1, 2, 3
         };
 
         void Run() {
