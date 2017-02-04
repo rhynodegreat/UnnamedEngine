@@ -8,8 +8,10 @@ using UnnamedEngine.Core;
 namespace Test {
     public class AcquireImageNode : CommandNode, IDisposable {
         bool disposed;
-        Graphics renderer;
-        Swapchain swapchain;
+        Engine engine;
+        Graphics graphics;
+        Window window;
+        CommandPool pool;
 
         Semaphore acquireImageSemaphore;
         List<CommandBuffer> commandBuffers;
@@ -24,18 +26,24 @@ namespace Test {
 
         public AcquireImageNode(Engine engine, CommandPool commandPool) : base(engine.Graphics.Device, VkPipelineStageFlags.TransferBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            renderer = engine.Graphics;
-            swapchain = engine.Window.Swapchain;
+
+            this.engine = engine;
+            graphics = engine.Graphics;
+            window = engine.Window;
+            pool = commandPool;
 
             acquireImageSemaphore = new Semaphore(engine.Graphics.Device);
             submitBuffers = new List<CommandBuffer> { null };
-            CreateCommandBuffer(renderer, engine.Window.SwapchainImages, commandPool);
+            CreateCommandBuffer();
 
             AddInput(acquireImageSemaphore, VkPipelineStageFlags.TopOfPipeBit);
+
+            window.OnSizeChanged += (int x, int y) => { CreateCommandBuffer(); };
         }
 
-        void CreateCommandBuffer(Graphics renderer, IList<Image> images, CommandPool commandPool) {
-            commandBuffers = new List<CommandBuffer>(commandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
+        void CreateCommandBuffer() {
+            if (commandBuffers != null) pool.Free(commandBuffers);
+            commandBuffers = new List<CommandBuffer>(pool.Allocate(VkCommandBufferLevel.Primary, window.SwapchainImages.Count));
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit;
@@ -60,8 +68,8 @@ namespace Test {
             presentToClear.dstAccessMask = VkAccessFlags.TransferReadBit;
             presentToClear.oldLayout = VkImageLayout.Undefined;
             presentToClear.newLayout = VkImageLayout.TransferDstOptimal;
-            presentToClear.srcQueueFamilyIndex = renderer.PresentQueue.FamilyIndex;
-            presentToClear.dstQueueFamilyIndex = renderer.GraphicsQueue.FamilyIndex;
+            presentToClear.srcQueueFamilyIndex = graphics.PresentQueue.FamilyIndex;
+            presentToClear.dstQueueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
             //presentToClear.image set in loop
             presentToClear.subresourceRange = subresourceRange;
 
@@ -72,25 +80,26 @@ namespace Test {
             clearToFB.dstAccessMask = VkAccessFlags.MemoryWriteBit | VkAccessFlags.MemoryReadBit;
             clearToFB.oldLayout = VkImageLayout.TransferDstOptimal;
             clearToFB.newLayout = VkImageLayout.ColorAttachmentOptimal;
-            clearToFB.srcQueueFamilyIndex = renderer.GraphicsQueue.FamilyIndex;
-            clearToFB.dstQueueFamilyIndex = renderer.GraphicsQueue.FamilyIndex;
+            clearToFB.srcQueueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
+            clearToFB.dstQueueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
             //clearToPresentBarrier.image set in loop
             clearToFB.subresourceRange = subresourceRange;
 
             List<ImageMemoryBarrier> clearToFBBarriers = new List<ImageMemoryBarrier> { clearToFB };
 
-            for (int i = 0; i < images.Count; i++) {
+            for (int i = 0; i < window.SwapchainImages.Count; i++) {
                 var commandBuffer = commandBuffers[i];
                 commandBuffer.Begin(beginInfo);
+                var image = window.SwapchainImages[i];
 
-                presentToClear.image = images[i];
-                clearToFB.image = images[i];
+                presentToClear.image = image;
+                clearToFB.image = image;
 
                 commandBuffer.PipelineBarrier(VkPipelineStageFlags.TransferBit, VkPipelineStageFlags.TransferBit,
                     VkDependencyFlags.None,
                     null, null, presentToClearBarriers);
 
-                commandBuffer.ClearColorImage(images[i], VkImageLayout.TransferDstOptimal, ref clearColor, subresourceRanges);
+                commandBuffer.ClearColorImage(image, VkImageLayout.TransferDstOptimal, ref clearColor, subresourceRanges);
 
                 commandBuffer.PipelineBarrier(VkPipelineStageFlags.TransferBit, VkPipelineStageFlags.TopOfPipeBit,
                     VkDependencyFlags.None,
@@ -101,7 +110,7 @@ namespace Test {
         }
 
         public override void PreRender() {
-            swapchain.AcquireNextImage(ulong.MaxValue, acquireImageSemaphore, out imageIndex);
+            engine.Window.Swapchain.AcquireNextImage(ulong.MaxValue, acquireImageSemaphore, out imageIndex);
         }
 
         public override List<CommandBuffer> GetCommands() {

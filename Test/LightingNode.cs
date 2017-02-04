@@ -16,15 +16,21 @@ namespace Test {
         GBuffer gbuffer;
         RenderPass renderPass;
         uint subpassIndex;
+        DeferredNode deferred;
 
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
         List<CommandBuffer> submitBuffers;
 
-        public LightingNode(Engine engine, GBuffer gbuffer, CommandPool pool) {
+        public LightingNode(Engine engine, GBuffer gbuffer, DeferredNode deferred, CommandPool pool) {
             this.engine = engine;
             this.pool = pool;
             this.gbuffer = gbuffer;
+            this.deferred = deferred;
+
+            deferred.OnFramebufferChanged += RecordCommands;
+
+            submitBuffers = new List<CommandBuffer>();
         }
 
         ShaderModule CreateShaderModule(Device device, byte[] code) {
@@ -127,13 +133,17 @@ namespace Test {
             frag.Dispose();
         }
 
-        public void Init(Framebuffer framebuffer) {
+        void RecordCommands() {
+            Console.WriteLine("Recreating lighting");
+            if (submitBuffers.Count > 0) pool.Free(submitBuffers);
+            submitBuffers.Clear();
+
             CommandBuffer commandBuffer = pool.Allocate(VkCommandBufferLevel.Secondary);
 
             CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();
             inheritance.renderPass = renderPass;
             inheritance.subpass = subpassIndex;
-            inheritance.framebuffer = framebuffer;
+            //inheritance.framebuffer = deferred.Framebuffer;
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             beginInfo.flags = VkCommandBufferUsageFlags.RenderPassContinueBit | VkCommandBufferUsageFlags.SimultaneousUseBit;
@@ -147,7 +157,7 @@ namespace Test {
 
             commandBuffer.End();
 
-            submitBuffers = new List<CommandBuffer> { commandBuffer };
+            submitBuffers.Add(commandBuffer);
         }
 
         protected override void Bake(RenderPass renderPass, uint subpassIndex) {
@@ -155,9 +165,11 @@ namespace Test {
             this.subpassIndex = subpassIndex;
 
             CreatePipeline();
+            RecordCommands();
         }
 
         public override List<CommandBuffer> GetCommands() {
+            Dirty = false;
             return submitBuffers;
         }
 
@@ -171,6 +183,8 @@ namespace Test {
 
             pipeline.Dispose();
             pipelineLayout.Dispose();
+
+            deferred.OnFramebufferChanged -= RecordCommands;
 
             base.Dispose(disposing);
 

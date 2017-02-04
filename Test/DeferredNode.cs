@@ -21,6 +21,8 @@ namespace Test {
         public OpaqueNode Opaque { get; private set; }
         public LightingNode Lighting { get; private set; }
 
+        public event Action OnFramebufferChanged = delegate { };
+
         public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (gbuffer == null) throw new ArgumentNullException(nameof(gbuffer));
@@ -28,7 +30,7 @@ namespace Test {
             this.engine = engine;
             this.GBuffer = gbuffer;
 
-            gbuffer.OnSizeChanged += CreateFramebuffer;
+            gbuffer.OnSizeChanged += RecreateFramebuffer;
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
@@ -37,8 +39,15 @@ namespace Test {
             pool = new CommandPool(engine.Graphics.Device, poolInfo);
 
             CreateRenderpass();
-            CreateFramebuffer(gbuffer.Width, gbuffer.Height);
             CreateCommandBuffer();
+            CreateFramebuffer(gbuffer.Width, gbuffer.Height);
+        }
+
+        void RecreateFramebuffer(int width, int height) {
+            CreateFramebuffer(width, height);
+            Console.WriteLine("Framebuffer changed");
+            OnFramebufferChanged();
+            RecordCommands();
         }
 
         void CreateRenderpass() {
@@ -92,7 +101,7 @@ namespace Test {
 
             RenderGraph.AddNode(Opaque);
 
-            Lighting = new LightingNode(engine, GBuffer, pool);
+            Lighting = new LightingNode(engine, GBuffer, this, pool);
             Lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
             Lighting.AddInput(norm, VkImageLayout.ShaderReadOnlyOptimal);
             Lighting.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
@@ -132,8 +141,6 @@ namespace Test {
 
             Framebuffer?.Dispose();
             Framebuffer = new Framebuffer(engine.Graphics.Device, info);
-
-            Lighting.Init(Framebuffer);
         }
 
         void CreateCommandBuffer() {
@@ -143,7 +150,7 @@ namespace Test {
         }
 
         void RecordCommands() {
-            commandBuffer.Reset(VkCommandBufferResetFlags.None);
+            commandBuffer?.Reset(VkCommandBufferResetFlags.None);
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             RenderPassBeginInfo renderPassInfo = new RenderPassBeginInfo();

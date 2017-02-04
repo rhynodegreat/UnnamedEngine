@@ -19,6 +19,8 @@ namespace Test {
         TransferNode transferNode;
         DeferredNode deferredNode;
         Camera camera;
+        RenderPass renderPass;
+        uint subpassIndex;
         
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
@@ -64,11 +66,16 @@ namespace Test {
             CreateCommandPool(engine);
 
             deferredNode.Opaque.AddRenderer(this);
+
+            deferredNode.OnFramebufferChanged += CreateCommandBuffers;
+            CreateCommandBuffers();
         }
 
         public void Bake(RenderPass renderPass, uint subpassIndex) {
+            this.renderPass = renderPass;
+            this.subpassIndex = subpassIndex;
+
             CreatePipeline(engine.Graphics.Device, renderPass);
-            CreateCommandBuffers(engine.Graphics.Device, renderPass, subpassIndex);
         }
 
         void CreateVertexBuffer(Graphics renderer) {
@@ -215,17 +222,21 @@ namespace Test {
 
         void CreateCommandPool(Engine engine) {
             var info = new CommandPoolCreateInfo();
+            info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
             info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
 
             commandPool = new CommandPool(engine.Graphics.Device, info);
+
+            commandBuffer = commandPool.Allocate(VkCommandBufferLevel.Secondary);
         }
 
-        void CreateCommandBuffers(Device device, RenderPass renderPass, uint subpassIndex) {
-            commandBuffer = commandPool.Allocate(VkCommandBufferLevel.Secondary);
+        void CreateCommandBuffers() {
+            Console.WriteLine("Recreating star node");
+            commandBuffer.Reset(VkCommandBufferResetFlags.None);
 
             CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();
             inheritance.renderPass = renderPass;
-            inheritance.framebuffer = deferredNode.Framebuffer;
+            //inheritance.framebuffer = deferredNode.Framebuffer;
             inheritance.subpass = subpassIndex;
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();

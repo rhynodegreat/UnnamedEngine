@@ -8,8 +8,10 @@ using UnnamedEngine.Core;
 namespace Test {
     public class PresentNode : CommandNode, IDisposable {
         bool disposed;
-        Graphics renderer;
+        Graphics graphics;
         AcquireImageNode acquireImageNode;
+        Window window;
+        CommandPool commandPool;
         
         List<CommandBuffer> commandBuffers;
         List<CommandBuffer> submitBuffers;
@@ -22,12 +24,14 @@ namespace Test {
         public PresentNode(Engine engine, AcquireImageNode acquireImageNode, CommandPool commandPool) : base(engine.Graphics.Device, VkPipelineStageFlags.BottomOfPipeBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
-            renderer = engine.Graphics;
+            graphics = engine.Graphics;
             this.acquireImageNode = acquireImageNode;
+            window = engine.Window;
+            this.commandPool = commandPool;
             
             commandBuffers = new List<CommandBuffer>();
             submitBuffers = new List<CommandBuffer> { null };
-            renderDoneSemaphore = new Semaphore(renderer.Device);
+            renderDoneSemaphore = new Semaphore(graphics.Device);
 
             presentInfo = new PresentInfo();
             presentInfo.imageIndices = new List<uint> { 0 };
@@ -36,11 +40,20 @@ namespace Test {
 
             AddOutput(renderDoneSemaphore);
 
-            CreateCommandBuffers(renderer, engine.Window.SwapchainImages, commandPool);
+            CreateCommandBuffers();
+            window.OnSizeChanged += (int x, int y) => {
+                CreateCommandBuffers();
+                
+                presentInfo = new PresentInfo();
+                presentInfo.imageIndices = new List<uint> { 0 };
+                presentInfo.swapchains = new List<Swapchain> { engine.Window.Swapchain };
+                presentInfo.waitSemaphores = new List<Semaphore> { renderDoneSemaphore };
+            };
         }
 
-        void CreateCommandBuffers(Graphics renderer, IList<Image> images, CommandPool commandPool) {
-            commandBuffers = new List<CommandBuffer>(commandPool.Allocate(VkCommandBufferLevel.Primary, images.Count));
+        void CreateCommandBuffers() {
+            if (commandBuffers != null) commandPool.Free(commandBuffers);
+            commandBuffers = new List<CommandBuffer>(commandPool.Allocate(VkCommandBufferLevel.Primary, window.SwapchainImages.Count));
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
             beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit;
@@ -57,18 +70,18 @@ namespace Test {
             colorToPresent.dstAccessMask = VkAccessFlags.MemoryReadBit;
             colorToPresent.oldLayout = VkImageLayout.ColorAttachmentOptimal;
             colorToPresent.newLayout = VkImageLayout.PresentSrcKhr;
-            colorToPresent.srcQueueFamilyIndex = renderer.GraphicsQueue.FamilyIndex;
-            colorToPresent.dstQueueFamilyIndex = renderer.PresentQueue.FamilyIndex;
+            colorToPresent.srcQueueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
+            colorToPresent.dstQueueFamilyIndex = graphics.PresentQueue.FamilyIndex;
             //clearToPresentBarrier.image set in loop
             colorToPresent.subresourceRange = subresourceRange;
 
             List<ImageMemoryBarrier> colorToPresentBarriers = new List<ImageMemoryBarrier> { colorToPresent };
 
-            for (int i = 0; i < images.Count; i++) {
+            for (int i = 0; i < window.SwapchainImages.Count; i++) {
                 var commandBuffer = commandBuffers[i];
                 commandBuffer.Begin(beginInfo);
 
-                colorToPresent.image = images[i];
+                colorToPresent.image = window.SwapchainImages[i];
 
                 commandBuffer.PipelineBarrier(VkPipelineStageFlags.BottomOfPipeBit, VkPipelineStageFlags.BottomOfPipeBit,
                     VkDependencyFlags.None,
@@ -89,7 +102,7 @@ namespace Test {
 
         public override void PostRender() {
             presentInfo.imageIndices[0] = index;
-            renderer.PresentQueue.Present(presentInfo);
+            graphics.PresentQueue.Present(presentInfo);
         }
 
         public new void Dispose() {

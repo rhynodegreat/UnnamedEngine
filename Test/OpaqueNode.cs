@@ -43,6 +43,8 @@ namespace Test {
                 submitBuffers.Add(renderers[i].GetCommandBuffer());
             }
 
+            Dirty = false;
+
             return submitBuffers;
         }
 

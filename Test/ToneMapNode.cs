@@ -36,9 +36,23 @@ namespace Test {
 
             AddInput(acquire);
 
+            CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
+            poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+
+            pool = new CommandPool(engine.Graphics.Device, poolInfo);
+
+            commandBuffers = new List<CommandBuffer>();
+
             CreateRenderPass();
-            CreateFramebuffers(engine.Window);
             CreatePipeline();
+            CreateFramebuffers(engine.Window);
+            CreateCommandBuffer();
+
+            gbuffer.OnSizeChanged += (int x, int y) => { Recreate(); };
+        }
+
+        void Recreate() {
+            CreateFramebuffers(engine.Window);
             CreateCommandBuffer();
         }
 
@@ -201,10 +215,7 @@ namespace Test {
         }
 
         void CreateCommandBuffer() {
-            CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
-            poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
-
-            pool = new CommandPool(engine.Graphics.Device, poolInfo);
+            if (commandBuffers.Count > 0) pool.Free(commandBuffers);
 
             commandBuffers = new List<CommandBuffer>(pool.Allocate(VkCommandBufferLevel.Primary, engine.Window.SwapchainImages.Count));
 

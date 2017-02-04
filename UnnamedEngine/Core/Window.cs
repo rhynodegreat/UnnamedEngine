@@ -73,7 +73,7 @@ namespace UnnamedEngine.Core {
 
        internal void Update() {
             if (sizeChanged) {
-                CreateSurface();
+                engine.Graphics.Device.WaitIdle();
                 CreateSwapchain(engine.Graphics);
 
                 width = newWidth;

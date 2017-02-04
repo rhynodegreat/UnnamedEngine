@@ -67,7 +67,6 @@ namespace Test {
             graph.Add(toneMap);
             graph.Bake();
 
-
             using (engine)
             using (commandPool)
             using (camera)
