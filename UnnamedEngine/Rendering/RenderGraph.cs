@@ -167,7 +167,6 @@ namespace UnnamedEngine.Rendering {
             commandBuffer.BeginRenderPass(beginInfo, VkSubpassContents.SecondaryCommandBuffers);
 
             for (int i = 0; i < nodes.Count; i++) {
-                Console.WriteLine(nodes[i].GetType());
                 commandBuffer.Execute(nodes[i].GetCommands());
                 if (i < nodes.Count - 1) commandBuffer.NextSubpass(VkSubpassContents.SecondaryCommandBuffers);
             }

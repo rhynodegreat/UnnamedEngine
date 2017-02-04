@@ -214,7 +214,6 @@ namespace Test {
         }
 
         void CreateCommandBuffers() {
-            Console.WriteLine("Recreating triangle node");
             commandBuffer.Reset(VkCommandBufferResetFlags.None);
 
             CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();

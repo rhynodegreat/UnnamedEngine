@@ -231,7 +231,6 @@ namespace Test {
         }
 
         void CreateCommandBuffers() {
-            Console.WriteLine("Recreating star node");
             commandBuffer.Reset(VkCommandBufferResetFlags.None);
 
             CommandBufferInheritanceInfo inheritance = new CommandBufferInheritanceInfo();

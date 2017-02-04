@@ -134,7 +134,6 @@ namespace Test {
         }
 
         void RecordCommands() {
-            Console.WriteLine("Recreating lighting");
             if (submitBuffers.Count > 0) pool.Free(submitBuffers);
             submitBuffers.Clear();
 

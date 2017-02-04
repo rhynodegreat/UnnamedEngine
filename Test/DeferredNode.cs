@@ -45,7 +45,6 @@ namespace Test {
 
         void RecreateFramebuffer(int width, int height) {
             CreateFramebuffer(width, height);
-            Console.WriteLine("Framebuffer changed");
             OnFramebufferChanged();
             RecordCommands();
         }
