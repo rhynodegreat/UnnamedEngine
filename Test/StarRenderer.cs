@@ -270,6 +270,8 @@ namespace Test {
             pipelineLayout.Dispose();
             engine.Graphics.Allocator.Free(vertexAllocation);
 
+            deferredNode.OnFramebufferChanged -= CreateCommandBuffers;
+
             disposed = true;
         }
 
