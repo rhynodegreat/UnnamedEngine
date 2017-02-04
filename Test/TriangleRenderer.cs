@@ -30,9 +30,9 @@ namespace Test {
         CommandBuffer commandBuffer;
         
         Vertex[] vertices = {
-            new Vertex(new Vector3(0, 1, 0), new Vector3(1, 0, 0)),
-            new Vertex(new Vector3(1, -1, 0), new Vector3(0, 1, 0)),
-            new Vertex(new Vector3(-1, -1, 0), new Vector3(0, 0, 1)),
+            new Vertex(new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1)),
+            new Vertex(new Vector3(1, -1, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)),
+            new Vertex(new Vector3(-1, -1, 0), new Vector3(0, 0, 1), new Vector3(0, 0, 1)),
         };
 
         public TriangleRenderer(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
@@ -266,10 +266,12 @@ namespace Test {
     public struct Vertex {
         public Vector3 position;
         public Vector3 color;
+        public Vector3 normal;
 
-        public Vertex(Vector3 position, Vector3 color) {
+        public Vertex(Vector3 position, Vector3 color, Vector3 normal) {
             this.position = position;
             this.color = color;
+            this.normal = normal;
         }
 
         public static VkVertexInputBindingDescription GetBindingDescription() {
@@ -295,7 +297,13 @@ namespace Test {
             b.format = VkFormat.R32g32b32Sfloat;
             b.offset = (uint)Interop.Offset(ref v, ref v.color);
 
-            return new List<VkVertexInputAttributeDescription> { a, b };
+            var c = new VkVertexInputAttributeDescription();
+            c.binding = 0;
+            c.location = 2;
+            c.format = VkFormat.R32g32b32Sfloat;
+            c.offset = (uint)Interop.Offset(ref v, ref v.normal);
+
+            return new List<VkVertexInputAttributeDescription> { a, b, c };
         }
     }
 }
