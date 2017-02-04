@@ -46,7 +46,6 @@ namespace Test {
         void RecreateFramebuffer(int width, int height) {
             CreateFramebuffer(width, height);
             OnFramebufferChanged();
-            RecordCommands();
         }
 
         void CreateRenderpass() {
@@ -152,6 +151,8 @@ namespace Test {
             commandBuffer?.Reset(VkCommandBufferResetFlags.None);
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
+            beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmitBit;
+
             RenderPassBeginInfo renderPassInfo = new RenderPassBeginInfo();
             renderPassInfo.renderPass = RenderGraph.RenderPass;
             renderPassInfo.framebuffer = Framebuffer;
@@ -200,12 +201,7 @@ namespace Test {
         }
 
         public override List<CommandBuffer> GetCommands() {
-            for (int i = 0; i < RenderGraph.Nodes.Count; i++) {
-                if (RenderGraph.Nodes[i].Dirty) {
-                    RecordCommands();
-                    break;
-                }
-            }
+            RecordCommands();
             return submitBuffers;
         }
 
