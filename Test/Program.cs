@@ -40,7 +40,7 @@ namespace Test {
 
             GBuffer gbuffer = new GBuffer(engine, window);
 
-            Camera camera = new Camera(engine, window, 90, .1f, 100);
+            Camera camera = new Camera(engine, window, 90, .1f);
             engine.Camera = camera;
             camera.Transform.Position = new Vector3(0, 0, 1);
 

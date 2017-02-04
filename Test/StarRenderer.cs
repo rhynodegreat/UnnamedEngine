@@ -184,7 +184,7 @@ namespace Test {
             PipelineDepthStencilStateCreateInfo depth = new PipelineDepthStencilStateCreateInfo();
             depth.depthTestEnable = true;
             depth.depthWriteEnable = false;
-            depth.depthCompareOp = VkCompareOp.LessOrEqual;
+            depth.depthCompareOp = VkCompareOp.Greater;
 
             pipelineLayout?.Dispose();
 
