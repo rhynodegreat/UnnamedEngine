@@ -49,10 +49,12 @@ namespace Test {
                 y += 1;
             }
 
-            Vector3 dir = Vector3.Normalize(new Vector3(x, y, z));
-            x = dir.X;
-            y = dir.Y;
-            z = dir.Z;
+            if (x != 0 || y != 0 || z != 0) {
+                Vector3 dir = Vector3.Normalize(new Vector3(x, y, z));
+                x = dir.X;
+                y = dir.Y;
+                z = dir.Z;
+            }
 
             lookX += input.MouseDelta.X;
             lookY += input.MouseDelta.Y;
