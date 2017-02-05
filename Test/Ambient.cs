@@ -42,6 +42,11 @@ namespace Test {
             pool = new CommandPool(engine.Graphics.Device, poolInfo);
 
             commandBuffer = pool.Allocate(VkCommandBufferLevel.Secondary);
+
+            deferred.OnFramebufferChanged += () => {
+                CreatePipeline();
+                dirty = true;
+            };
         }
 
         public void AddLight(Light light) {
@@ -213,6 +218,8 @@ namespace Test {
             pipeline.Dispose();
             pipelineLayout.Dispose();
             pool.Dispose();
+
+            deferred.OnFramebufferChanged -= CreatePipeline;
 
             disposed = true;
         }
