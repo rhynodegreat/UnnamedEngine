@@ -52,7 +52,7 @@ namespace Test {
         }
 
         void CreateCommandBuffers() {
-            if (commandBuffers != null) commandPool.Free(commandBuffers);
+            if (commandBuffers.Count > 0) commandPool.Free(commandBuffers);
             commandBuffers = new List<CommandBuffer>(commandPool.Allocate(VkCommandBufferLevel.Primary, window.SwapchainImages.Count));
 
             CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
