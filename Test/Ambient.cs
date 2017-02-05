@@ -19,7 +19,6 @@ namespace Test {
         uint subpassIndex;
 
         List<Light> lights;
-        bool dirty = true;
         CommandPool pool;
         CommandBuffer commandBuffer;
         PipelineLayout pipelineLayout;
@@ -45,7 +44,6 @@ namespace Test {
 
             deferred.OnFramebufferChanged += () => {
                 CreatePipeline();
-                dirty = true;
             };
         }
 
@@ -54,7 +52,6 @@ namespace Test {
             if (lights.Contains(light)) return;
 
             lights.Add(light);
-            dirty = true;
         }
 
         ShaderModule CreateShaderModule(Device device, byte[] code) {
@@ -200,10 +197,7 @@ namespace Test {
         }
 
         public CommandBuffer GetCommandBuffer() {
-            if (dirty) {
-                RecordCommands();
-                dirty = false;
-            }
+            RecordCommands();
             return commandBuffer;
         }
 
