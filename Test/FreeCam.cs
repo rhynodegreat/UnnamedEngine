@@ -50,18 +50,21 @@ namespace Test {
                 y += 1;
             }
 
-            lookX += input.MouseDelta.X / 64f;
-            lookY += input.MouseDelta.Y / 64f;
+            lookX += input.MouseDelta.X;
+            lookY += input.MouseDelta.Y;
             
-            lookY = Math.Min(Math.Max(lookY, (float)-Math.PI / 2), (float)Math.PI / 2);
+            lookY = Math.Min(Math.Max(lookY, -90), 90);
 
             cam.Transform.Position = cam.Transform.Position
                 + x * delta * cam.Transform.Right
                 + y * delta * cam.Transform.Up
                 + z * delta * cam.Transform.Forward;
 
-            cam.Transform.Rotation = Quaternion.CreateFromYawPitchRoll(0, lookY, 0)
-                * Quaternion.CreateFromYawPitchRoll(lookX, 0, 0);
+            float radY = lookY * (float)(Math.PI / 180f);
+            float radX = lookX * (float)(Math.PI / 180f);
+
+            cam.Transform.Rotation = Quaternion.CreateFromYawPitchRoll(0, radY, 0)
+                * Quaternion.CreateFromYawPitchRoll(radX, 0, 0);
         }
     }
 }
