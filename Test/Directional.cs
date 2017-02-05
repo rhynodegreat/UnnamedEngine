@@ -197,7 +197,6 @@ namespace Test {
             for (int i = 0; i < lights.Count; i++) {
                 var forward = lights[i].Transform.Forward;
                 var color = lights[i].Color;
-                Console.WriteLine(forward);
                 commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new LightData {
                     color = new Vector4(color.r, color.g, color.b, 0),
                     direction = new Vector4(forward.X, forward.Y, forward.Z, 0)
