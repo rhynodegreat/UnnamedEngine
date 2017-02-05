@@ -42,6 +42,8 @@ namespace Test {
             pool = new CommandPool(engine.Graphics.Device, poolInfo);
 
             commandBuffers = new List<CommandBuffer>();
+            imageViews = new List<ImageView>();
+            framebuffers = new List<Framebuffer>();
 
             CreateRenderPass();
             CreatePipeline();
@@ -94,8 +96,10 @@ namespace Test {
         }
 
         void CreateFramebuffers(Window window) {
-            imageViews = new List<ImageView>(window.SwapchainImages.Count);
-            framebuffers = new List<Framebuffer>(window.SwapchainImages.Count);
+            foreach (var iv in imageViews) iv.Dispose();
+            foreach (var fb in framebuffers) fb.Dispose();
+            imageViews.Clear();
+            framebuffers.Clear();
 
             for (int i = 0; i < window.SwapchainImages.Count; i++) {
                 ImageViewCreateInfo ivInfo = new ImageViewCreateInfo(window.SwapchainImages[i]);
