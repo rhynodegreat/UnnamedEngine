@@ -13,8 +13,7 @@ namespace Test {
 
         Camera cam;
         Input input;
-
-        float x, y, z;
+        
         float lookX, lookY;
 
         public FreeCam(Engine engine) {
@@ -27,9 +26,9 @@ namespace Test {
         }
 
         public void Update(float delta) {
-            x = 0;
-            y = 0;
-            z = 0;
+            float x = 0;
+            float y = 0;
+            float z = 0;
 
             if (input.Hold(KeyCode.W)) {
                 z += 1;
@@ -49,6 +48,11 @@ namespace Test {
             if (input.Hold(KeyCode.E)) {
                 y += 1;
             }
+
+            Vector3 dir = Vector3.Normalize(new Vector3(x, y, z));
+            x = dir.X;
+            y = dir.Y;
+            z = dir.Z;
 
             lookX += input.MouseDelta.X;
             lookY += input.MouseDelta.Y;
