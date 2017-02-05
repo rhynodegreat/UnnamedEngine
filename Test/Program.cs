@@ -58,6 +58,17 @@ namespace Test {
 
             TriangleRenderer triangle = new TriangleRenderer(engine, staging, deferred);
             StarRenderer stars = new StarRenderer(engine, staging, deferred);
+            
+            Light light1 = new Light();
+            light1.Color = new CSGL.Graphics.Color(0.5f, 0.5f, 0.5f, 0);
+
+            Light light2 = new Light();
+            light2.Color = new CSGL.Graphics.Color(0.5f, 0.5f, 0.5f, 0);
+
+            Ambient ambient = new Ambient(engine, deferred);
+            deferred.Lighting.AddLighting(ambient);
+
+            ambient.AddLight(light1);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);

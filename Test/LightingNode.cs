@@ -34,15 +34,11 @@ namespace Test {
         protected override void Bake(RenderPass renderPass, uint subpassIndex) {
             this.renderPass = renderPass;
             this.subpassIndex = subpassIndex;
+        }
 
-            Ambient ambient = new Ambient(engine, deferred);
-            subpasses.Add(ambient);
-
-            Light light = new Light();
-            light.Color = new CSGL.Graphics.Color(0.5f, 0.5f, 0.5f, 1);
-            ambient.AddLight(light);
-
-            ambient.Bake(renderPass, subpassIndex);
+        public void AddLighting(ISubpass subpass) {
+            subpasses.Add(subpass);
+            subpass.Bake(renderPass, subpassIndex);
         }
 
         public override List<CommandBuffer> GetCommands() {
