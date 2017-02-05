@@ -28,7 +28,10 @@ namespace Test {
             this.gbuffer = gbuffer;
             this.deferred = deferred;
 
-            deferred.OnFramebufferChanged += RecordCommands;
+            deferred.OnFramebufferChanged += () => {
+                CreatePipeline();
+                RecordCommands();
+            };
 
             submitBuffers = new List<CommandBuffer>();
         }
@@ -110,6 +113,8 @@ namespace Test {
 
             pipelineLayout = new PipelineLayout(engine.Graphics.Device, pipelineLayoutInfo);
 
+            var oldPipeline = pipeline;
+
             var info = new GraphicsPipelineCreateInfo();
             info.stages = shaderStages;
             info.vertexInputState = vertexInputInfo;
@@ -122,12 +127,12 @@ namespace Test {
             info.layout = pipelineLayout;
             info.renderPass = renderPass;
             info.subpass = subpassIndex;
-            info.basePipeline = null;
+            info.basePipeline = oldPipeline;
             info.basePipelineIndex = -1;
 
-            pipeline?.Dispose();
-
             pipeline = new Pipeline(engine.Graphics.Device, info, null);
+
+            oldPipeline?.Dispose();
 
             vert.Dispose();
             frag.Dispose();

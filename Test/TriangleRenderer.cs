@@ -51,14 +51,18 @@ namespace Test {
 
             deferredNode.Opaque.AddRenderer(this);
 
-            deferredNode.OnFramebufferChanged += CreateCommandBuffers;
+            deferredNode.OnFramebufferChanged += () => {
+                CreatePipeline();
+                CreateCommandBuffers();
+            };
+
             CreateCommandBuffers();
         }
 
         public void Bake(RenderPass renderPass, uint subpassIndex) {
             this.renderPass = renderPass;
             this.subpassIndex = subpassIndex;
-            CreatePipeline(engine.Graphics.Device, renderPass);
+            CreatePipeline();
         }
 
         void CreateVertexBuffer(Graphics renderer) {
@@ -80,9 +84,9 @@ namespace Test {
             return new ShaderModule(device, info);
         }
 
-        void CreatePipeline(Device device, RenderPass renderPass) {
-            var vert = CreateShaderModule(device, File.ReadAllBytes("tri_vert.spv"));
-            var frag = CreateShaderModule(device, File.ReadAllBytes("tri_frag.spv"));
+        void CreatePipeline() {
+            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("tri_vert.spv"));
+            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("tri_frag.spv"));
 
             var vertInfo = new PipelineShaderStageCreateInfo();
             vertInfo.stage = VkShaderStageFlags.VertexBit;
@@ -178,7 +182,9 @@ namespace Test {
 
             pipelineLayout?.Dispose();
 
-            pipelineLayout = new PipelineLayout(device, pipelineLayoutInfo);
+            pipelineLayout = new PipelineLayout(engine.Graphics.Device, pipelineLayoutInfo);
+
+            var oldPipeline = pipeline;
 
             var info = new GraphicsPipelineCreateInfo();
             info.stages = shaderStages;
@@ -192,12 +198,12 @@ namespace Test {
             info.layout = pipelineLayout;
             info.renderPass = renderPass;
             info.subpass = 0;
-            info.basePipeline = null;
+            info.basePipeline = oldPipeline;
             info.basePipelineIndex = -1;
 
-            pipeline?.Dispose();
+            pipeline = new Pipeline(engine.Graphics.Device, info, null);
 
-            pipeline = new Pipeline(device, info, null);
+            oldPipeline?.Dispose();
 
             vert.Dispose();
             frag.Dispose();

@@ -55,6 +55,7 @@ namespace Test {
 
         void Recreate() {
             CreateFramebuffers(engine.Window);
+            CreatePipeline();
             CreateCommandBuffer();
         }
 
@@ -196,6 +197,8 @@ namespace Test {
 
             pipelineLayout = new PipelineLayout(device, pipelineLayoutInfo);
 
+            var oldPipeline = pipeline;
+
             var info = new GraphicsPipelineCreateInfo();
             info.stages = shaderStages;
             info.vertexInputState = vertexInputInfo;
@@ -207,12 +210,12 @@ namespace Test {
             info.layout = pipelineLayout;
             info.renderPass = renderPass;
             info.subpass = 0;
-            info.basePipeline = null;
+            info.basePipeline = pipeline;
             info.basePipelineIndex = -1;
 
-            pipeline?.Dispose();
-
             pipeline = new Pipeline(device, info, null);
+
+            oldPipeline?.Dispose();
 
             vert.Dispose();
             frag.Dispose();
