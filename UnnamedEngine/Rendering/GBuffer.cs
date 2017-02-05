@@ -161,7 +161,7 @@ namespace UnnamedEngine.Rendering {
                     dstBinding = 0,
                     imageInfo = new List<DescriptorImageInfo> {
                         new DescriptorImageInfo {
-                            imageLayout = VkImageLayout.ColorAttachmentOptimal,
+                            imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
                             imageView = AlbedoView
                         }
                     }
@@ -173,7 +173,7 @@ namespace UnnamedEngine.Rendering {
                     dstBinding = 1,
                     imageInfo = new List<DescriptorImageInfo> {
                         new DescriptorImageInfo {
-                            imageLayout = VkImageLayout.ColorAttachmentOptimal,
+                            imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
                             imageView = NormView
                         }
                     }
