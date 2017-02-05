@@ -90,7 +90,7 @@ namespace UnnamedEngine.Rendering {
             binding.binding = 0;
             binding.descriptorCount = 1;
             binding.descriptorType = VkDescriptorType.UniformBuffer;
-            binding.stageFlags = VkShaderStageFlags.VertexBit;
+            binding.stageFlags = VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit;
 
             DescriptorSetLayoutCreateInfo layoutInfo = new DescriptorSetLayoutCreateInfo();
             layoutInfo.bindings = new List<VkDescriptorSetLayoutBinding> { binding };
