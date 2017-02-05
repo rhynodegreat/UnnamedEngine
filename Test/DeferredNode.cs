@@ -102,9 +102,8 @@ namespace Test {
             Lighting = new LightingNode(engine, GBuffer, this, pool);
             Lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
             Lighting.AddInput(norm, VkImageLayout.ShaderReadOnlyOptimal);
+            Lighting.AddInput(depth, VkImageLayout.DepthStencilReadOnlyOptimal);
             Lighting.AddColor(light, VkImageLayout.ColorAttachmentOptimal);
-            Lighting.DepthStencil = depth;
-            Lighting.DepthStencilLayout = VkImageLayout.DepthStencilReadOnlyOptimal;
 
             RenderGraph.AddNode(Lighting);
 
@@ -113,8 +112,7 @@ namespace Test {
             toOpaque.dstStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
             toOpaque.srcAccessMask = VkAccessFlags.None;
             toOpaque.dstAccessMask = VkAccessFlags.ColorAttachmentWriteBit
-                | VkAccessFlags.DepthStencilAttachmentWriteBit
-                | VkAccessFlags.InputAttachmentReadBit;
+                | VkAccessFlags.DepthStencilAttachmentWriteBit;
 
             SubpassDependency opaqueToLighting = new SubpassDependency();
             opaqueToLighting.srcStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
@@ -170,7 +168,7 @@ namespace Test {
                         float32_0 = 0,
                         float32_1 = 0,
                         float32_2 = 0,
-                        float32_3 = 0
+                        float32_3 = 1
                     }
                 },
                 new VkClearValue {

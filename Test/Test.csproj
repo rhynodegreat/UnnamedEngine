@@ -52,6 +52,7 @@
     <Compile Include="AcquireImageNode.cs" />
     <Compile Include="Ambient.cs" />
     <Compile Include="DeferredNode.cs" />
+    <Compile Include="Directional.cs" />
     <Compile Include="FreeCam.cs" />
     <Compile Include="ISubpass.cs" />
     <Compile Include="Light.cs" />
@@ -77,6 +78,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="deferred_vert.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="directional_frag.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="directional_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />

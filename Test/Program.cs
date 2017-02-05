@@ -70,6 +70,11 @@ namespace Test {
 
             ambient.AddLight(light1);
 
+            Directional directional = new Directional(engine, deferred, camera);
+            deferred.Lighting.AddLighting(directional);
+
+            directional.AddLight(light2);
+
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);

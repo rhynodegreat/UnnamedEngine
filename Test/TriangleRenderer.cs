@@ -33,6 +33,9 @@ namespace Test {
             new Vertex(new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1)),
             new Vertex(new Vector3(1, -1, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)),
             new Vertex(new Vector3(-1, -1, 0), new Vector3(0, 0, 1), new Vector3(0, 0, 1)),
+            new Vertex(new Vector3(0, 1, -.1f), new Vector3(1, 0, 0), new Vector3(0, 0, -1)),
+            new Vertex(new Vector3(1, -1, -.1f), new Vector3(0, 1, 0), new Vector3(0, 0, -1)),
+            new Vertex(new Vector3(-1, -1, -.1f), new Vector3(0, 0, 1), new Vector3(0, 0, -1)),
         };
 
         public TriangleRenderer(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
@@ -236,7 +239,7 @@ namespace Test {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
             commandBuffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
-            commandBuffer.Draw(3, 1, 0, 0);
+            commandBuffer.Draw(vertices.Length, 1, 0, 0);
 
             commandBuffer.End();
         }
