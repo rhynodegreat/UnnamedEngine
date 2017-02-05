@@ -74,10 +74,11 @@ namespace UnnamedEngine.Core {
        internal void Update() {
             if (sizeChanged) {
                 engine.Graphics.Device.WaitIdle();
-                CreateSwapchain(engine.Graphics);
-
                 width = newWidth;
                 height = newHeight;
+
+                CreateSwapchain(engine.Graphics);
+
                 OnSizeChanged(newWidth, newHeight);
                 sizeChanged = false;
             }
