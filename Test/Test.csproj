@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcquireImageNode.cs" />
+    <Compile Include="Ambient.cs" />
     <Compile Include="DeferredNode.cs" />
     <Compile Include="FreeCam.cs" />
     <Compile Include="ISubpass.cs" />
@@ -65,6 +66,12 @@
     <Compile Include="TriangleRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ambient_frag.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ambient_vert.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="App.config" />
     <None Include="deferred_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
