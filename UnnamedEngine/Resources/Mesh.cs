@@ -16,6 +16,7 @@ namespace UnnamedEngine.Resources {
         bool disposed;
 
         Engine engine;
+        TransferNode transferNode;
 
         VkaAllocation vertexAllocation;
         VkaAllocation indexAllocation;
@@ -24,17 +25,6 @@ namespace UnnamedEngine.Resources {
         public Buffer IndexBuffer { get; private set; }
         int lastVertexSize;
         int lastIndexSize;
-
-        TransferNode transferNode;
-        public TransferNode TransferNode {
-            get {
-                return transferNode;
-            }
-            set {
-                if (value == null) throw new ArgumentNullException(nameof(TransferNode));
-                transferNode = value;
-            }
-        }
 
         VertexData vertexData;
         public VertexData VertexData {  //vertex data can't be null
@@ -66,7 +56,7 @@ namespace UnnamedEngine.Resources {
 
             ReadStream(stream, null, null);
 
-            TransferNode = engine.Graphics.TransferNode;
+            transferNode = engine.Graphics.TransferNode;
             Apply();
         }
 
@@ -77,7 +67,7 @@ namespace UnnamedEngine.Resources {
 
             ReadStream(stream, bindings, attributes);
 
-            TransferNode = engine.Graphics.TransferNode;
+            transferNode = engine.Graphics.TransferNode;
             Apply();
         }
 
@@ -139,7 +129,7 @@ namespace UnnamedEngine.Resources {
             }
 
             GCHandle vertexHandle = GCHandle.Alloc(VertexData.InternalData, GCHandleType.Pinned);
-            TransferNode.Transfer(vertexHandle.AddrOfPinnedObject(), (uint)VertexData.Size, VertexBuffer);
+            transferNode.Transfer(vertexHandle.AddrOfPinnedObject(), (uint)VertexData.Size, VertexBuffer);
             vertexHandle.Free();
 
             if (IndexData != null) {
@@ -161,7 +151,7 @@ namespace UnnamedEngine.Resources {
                 }
 
                 GCHandle indexHandle = GCHandle.Alloc(IndexData.InternalData, GCHandleType.Pinned);
-                TransferNode.Transfer(indexHandle.AddrOfPinnedObject(), (uint)IndexData.Size, IndexBuffer);
+                transferNode.Transfer(indexHandle.AddrOfPinnedObject(), (uint)IndexData.Size, IndexBuffer);
                 indexHandle.Free();
             } else {
                 IndexBuffer?.Dispose();
