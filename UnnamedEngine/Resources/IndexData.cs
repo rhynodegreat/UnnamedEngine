@@ -7,8 +7,6 @@ using CSGL.Vulkan;
 
 namespace UnnamedEngine.Resources {
     public class IndexData {
-        bool disposed;
-
         public VkIndexType IndexType { get; private set; }
 
         public object Data { get; private set; }

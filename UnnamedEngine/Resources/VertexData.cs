@@ -22,8 +22,6 @@ namespace UnnamedEngine.Resources {
     }
 
     public abstract class VertexData {
-        bool disposed;
-
         List<VkVertexInputBindingDescription> bindings;
         public List<VkVertexInputBindingDescription> Bindings {
             get {
