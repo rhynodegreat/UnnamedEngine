@@ -71,7 +71,7 @@ namespace UnnamedEngine.Resources {
                     }
 
                     if (indexOffset != 0) {
-
+                        IndexData = new IndexData(stream);
                     }
                 }
             }
