@@ -66,9 +66,9 @@ namespace UnnamedEngine.Resources {
 
                 if (attributesOffset == 0) {
                     stream.Position = (long)vertexOffset;
-                    VertexData = new VertexData(stream, bindings, attributes);
+                    VertexData = new OpaqueVertexData(stream, bindings, attributes);
                 } else {
-                    VertexData = new VertexData(stream);
+                    VertexData = new OpaqueVertexData(stream);
                 }
 
                 if (indexOffset != 0) {

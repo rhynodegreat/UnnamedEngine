@@ -61,6 +61,7 @@
     <Compile Include="Rendering\Transform.cs" />
     <Compile Include="Resources\IndexData.cs" />
     <Compile Include="Resources\Mesh.cs" />
+    <Compile Include="Resources\OpaqueVertexData.cs" />
     <Compile Include="Resources\StagingNode.cs" />
     <Compile Include="Resources\TransferNode.cs" />
     <Compile Include="Resources\VertexData.cs" />

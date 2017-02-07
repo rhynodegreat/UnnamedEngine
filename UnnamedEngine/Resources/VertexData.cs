@@ -21,7 +21,7 @@ namespace UnnamedEngine.Resources {
         Float64 = 10,
     }
 
-    public class VertexData : IDisposable {
+    public abstract class VertexData : IDisposable {
         bool disposed;
 
         List<VkVertexInputBindingDescription> bindings;
@@ -46,21 +46,11 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        byte[] data;
-        public byte[] Data {
-            get {
-                return data;
-            }
-            set {
-                if (value == null) throw new ArgumentNullException(nameof(Data));
-                data = value;
-                InternalData = value;
-            }
-        }
-
         internal protected object InternalData { get; set; }
 
-        internal VertexData(List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) {
+        public int VertexCount { get; protected set; }
+
+        protected VertexData(List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) {
             if (bindings == null) throw new ArgumentNullException(nameof(bindings));
             if (attributes == null) throw new ArgumentNullException(nameof(attributes));
 
@@ -68,13 +58,7 @@ namespace UnnamedEngine.Resources {
             Attributes = Attributes;
         }
 
-        public VertexData(List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes, byte[] data) : this(bindings, attributes) {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            Data = data;
-        }
-
-        public VertexData(Stream stream) {
+        protected VertexData(Stream stream) {
             using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
                 Bindings = new List<VkVertexInputBindingDescription>();
                 Attributes = new List<VkVertexInputAttributeDescription>();
@@ -83,13 +67,13 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        public VertexData(Stream stream, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) : this(bindings, attributes) {
+        protected VertexData(Stream stream, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) : this(bindings, attributes) {
             using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
                 ReadVertices(reader);
             }
         }
 
-        void ReadAttributes(BinaryReader reader) {
+        protected void ReadAttributes(BinaryReader reader) {
             byte formatLength = reader.ReadByte();
             if (formatLength > 0) {
                 reader.ReadBytes(formatLength); //skip format
@@ -128,13 +112,7 @@ namespace UnnamedEngine.Resources {
             });
         }
 
-        void ReadVertices(BinaryReader reader) {
-            uint vertexSize = reader.ReadUInt32();
-            if (vertexSize != bindings[0].stride) throw new VertexDataException(string.Format("Vertex size ({0}) does not match attribute size ({1})", vertexSize, bindings[0].stride));
-
-            uint vertexCount = reader.ReadUInt32();
-            Data = reader.ReadBytes((int)(vertexCount * vertexSize));
-        }
+        protected abstract void ReadVertices(BinaryReader reader);
 
         VkFormat GetFormat(int components, VertexAttribute type, int index, out int size) {
             switch (type) {
@@ -267,7 +245,7 @@ namespace UnnamedEngine.Resources {
             GC.SuppressFinalize(this);
         }
 
-        protected void Dispose(bool disposing) {
+        protected virtual void Dispose(bool disposing) {
             if (disposed) return;
 
             disposed = true;
