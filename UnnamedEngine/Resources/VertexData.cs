@@ -21,7 +21,7 @@ namespace UnnamedEngine.Resources {
         Float64 = 10,
     }
 
-    public abstract class VertexData : IDisposable {
+    public abstract class VertexData {
         bool disposed;
 
         List<VkVertexInputBindingDescription> bindings;
@@ -238,21 +238,6 @@ namespace UnnamedEngine.Resources {
                     break;
             }
             throw new VertexDataException(string.Format("Invalid attribute type of {0} at attribute {1}", type, index));          
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing) {
-            if (disposed) return;
-
-            disposed = true;
-        }
-
-        ~VertexData() {
-            Dispose(false);
         }
     }
 

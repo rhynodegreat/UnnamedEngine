@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using CSGL.Vulkan;
 
 namespace UnnamedEngine.Resources {
-    public class IndexData : IDisposable {
+    public class IndexData {
         bool disposed;
 
         public VkIndexType IndexType { get; private set; }
@@ -84,21 +84,6 @@ namespace UnnamedEngine.Resources {
             }
 
             Data16 = indices;
-        }
-
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        void Dispose(bool disposing) {
-            if (disposed) return;
-
-            disposed = true;
-        }
-
-        ~IndexData() {
-            Dispose(false);
         }
     }
 
