@@ -12,6 +12,7 @@ namespace UnnamedEngine.Resources {
         public VkIndexType IndexType { get; private set; }
 
         public object Data { get; private set; }
+        public int IndexCount { get; private set; }
 
         public uint[] Data32 {
             get {
@@ -21,6 +22,7 @@ namespace UnnamedEngine.Resources {
                 if (value == null) throw new ArgumentNullException(nameof(Data32));
                 Data = value;
                 IndexType = VkIndexType.Uint32;
+                IndexCount = value.Length;
             }
         }
 
@@ -32,6 +34,7 @@ namespace UnnamedEngine.Resources {
                 if (value == null) throw new ArgumentNullException(nameof(Data16));
                 Data = value;
                 IndexType = VkIndexType.Uint16;
+                IndexCount = value.Length;
             }
         }
 

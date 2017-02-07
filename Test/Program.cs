@@ -90,7 +90,7 @@ namespace Test {
             }
 
             Console.WriteLine(mesh.VertexData.VertexCount);
-            Console.WriteLine(mesh.IndexData.Data32.Length);
+            Console.WriteLine(mesh.IndexData.IndexCount);
 
             using (engine)
             using (commandPool)
