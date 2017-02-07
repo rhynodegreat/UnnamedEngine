@@ -22,6 +22,8 @@ namespace UnnamedEngine.Resources {
 
         public Buffer VertexBuffer { get; private set; }
         public Buffer IndexBuffer { get; private set; }
+        int lastVertexSize;
+        int lastIndexSize;
 
         TransferNode transferNode;
         public TransferNode TransferNode {
@@ -118,49 +120,54 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        void Free() {
-            VertexBuffer?.Dispose();
-            IndexBuffer?.Dispose();
-            engine.Graphics.Allocator.Free(vertexAllocation);
-            engine.Graphics.Allocator.Free(indexAllocation);
-
-            VertexBuffer = null;
-            IndexBuffer = null;
-            vertexAllocation = new VkaAllocation();
-            indexAllocation = new VkaAllocation();
-        }
-
         public void Apply() {
-            Free();
+            if (VertexData.Size > lastVertexSize) {
+                VertexBuffer?.Dispose();
+                engine.Graphics.Allocator.Free(vertexAllocation);
 
-            BufferCreateInfo vertexInfo = new BufferCreateInfo();
-            vertexInfo.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
-            vertexInfo.size = (ulong)VertexData.Size;
-            vertexInfo.sharingMode = VkSharingMode.Exclusive;
-            
-            VertexBuffer = new Buffer(engine.Graphics.Device, vertexInfo);
+                BufferCreateInfo vertexInfo = new BufferCreateInfo();
+                vertexInfo.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
+                vertexInfo.size = (ulong)VertexData.Size;
+                vertexInfo.sharingMode = VkSharingMode.Exclusive;
 
-            vertexAllocation = engine.Graphics.Allocator.Alloc(VertexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            VertexBuffer.Bind(vertexAllocation.memory, vertexAllocation.offset);
+                VertexBuffer = new Buffer(engine.Graphics.Device, vertexInfo);
+
+                vertexAllocation = engine.Graphics.Allocator.Alloc(VertexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
+                VertexBuffer.Bind(vertexAllocation.memory, vertexAllocation.offset);
+
+                lastVertexSize = VertexData.Size;
+            }
 
             GCHandle vertexHandle = GCHandle.Alloc(VertexData.InternalData, GCHandleType.Pinned);
             TransferNode.Transfer(vertexHandle.AddrOfPinnedObject(), (uint)VertexData.Size, VertexBuffer);
             vertexHandle.Free();
 
             if (IndexData != null) {
-                BufferCreateInfo indexInfo = new BufferCreateInfo();
-                indexInfo.usage = VkBufferUsageFlags.IndexBufferBit | VkBufferUsageFlags.TransferDstBit;
-                indexInfo.size = (ulong)IndexData.Size;
-                indexInfo.sharingMode = VkSharingMode.Exclusive;
+                if (IndexData.Size > lastIndexSize) {
+                    IndexBuffer?.Dispose();
+                    engine.Graphics.Allocator.Free(indexAllocation);
 
-                IndexBuffer = new Buffer(engine.Graphics.Device, indexInfo);
+                    BufferCreateInfo indexInfo = new BufferCreateInfo();
+                    indexInfo.usage = VkBufferUsageFlags.IndexBufferBit | VkBufferUsageFlags.TransferDstBit;
+                    indexInfo.size = (ulong)IndexData.Size;
+                    indexInfo.sharingMode = VkSharingMode.Exclusive;
 
-                indexAllocation = engine.Graphics.Allocator.Alloc(IndexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-                IndexBuffer.Bind(indexAllocation.memory, indexAllocation.offset);
+                    IndexBuffer = new Buffer(engine.Graphics.Device, indexInfo);
+
+                    indexAllocation = engine.Graphics.Allocator.Alloc(IndexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
+                    IndexBuffer.Bind(indexAllocation.memory, indexAllocation.offset);
+
+                    lastIndexSize = IndexData.Size;
+                }
 
                 GCHandle indexHandle = GCHandle.Alloc(IndexData.InternalData, GCHandleType.Pinned);
                 TransferNode.Transfer(indexHandle.AddrOfPinnedObject(), (uint)IndexData.Size, IndexBuffer);
                 indexHandle.Free();
+            } else {
+                IndexBuffer?.Dispose();
+                IndexBuffer = null;
+                engine.Graphics.Allocator.Free(indexAllocation);
+                indexAllocation = new VkaAllocation();
             }
         }
 
@@ -172,7 +179,10 @@ namespace UnnamedEngine.Resources {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            Free();
+            VertexBuffer?.Dispose();
+            IndexBuffer?.Dispose();
+            engine.Graphics.Allocator.Free(vertexAllocation);
+            engine.Graphics.Allocator.Free(indexAllocation);
 
             disposed = true;
         }
