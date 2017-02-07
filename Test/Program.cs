@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.IO;
 
 using CSGL.GLFW;
 using CSGL.Vulkan;
@@ -82,6 +83,14 @@ namespace Test {
             graph.Add(deferred);
             graph.Add(toneMap);
             graph.Bake();
+
+            Mesh mesh;
+            using (var stream = File.OpenRead("E:/misc/meshes/chalet2.mesh")) {
+                mesh = new Mesh(stream);
+            }
+
+            Console.WriteLine(mesh.VertexData.VertexCount);
+            Console.WriteLine(mesh.IndexData.Data32.Length);
 
             using (engine)
             using (commandPool)
