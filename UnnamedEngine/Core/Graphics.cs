@@ -80,6 +80,7 @@ namespace UnnamedEngine.Core {
 
         internal void Init(Engine engine) {
             TransferNode = new StagingNode(engine);
+            engine.CommandGraph.Add(TransferNode);
         }
 
         public void Dispose() {
