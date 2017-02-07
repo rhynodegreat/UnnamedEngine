@@ -85,7 +85,7 @@ namespace Test {
             graph.Bake();
 
             Mesh mesh;
-            using (var stream = File.OpenRead("E:/misc/meshes/chalet2.mesh")) {
+            using (var stream = File.OpenRead("chalet2.mesh")) {
                 mesh = new Mesh(stream);
             }
 
