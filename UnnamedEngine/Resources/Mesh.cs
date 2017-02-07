@@ -143,9 +143,9 @@ namespace UnnamedEngine.Resources {
             vertexAllocation = engine.Graphics.Allocator.Alloc(VertexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
             VertexBuffer.Bind(vertexAllocation.memory, vertexAllocation.offset);
 
-            GCHandle handle = GCHandle.Alloc(VertexData.InternalData, GCHandleType.Pinned);
-            TransferNode.Transfer(handle.AddrOfPinnedObject(), (uint)IndexData.Size, VertexBuffer);
-            handle.Free();
+            GCHandle vertexHandle = GCHandle.Alloc(VertexData.InternalData, GCHandleType.Pinned);
+            TransferNode.Transfer(vertexHandle.AddrOfPinnedObject(), (uint)VertexData.Size, VertexBuffer);
+            vertexHandle.Free();
 
             if (IndexData != null) {
                 BufferCreateInfo indexInfo = new BufferCreateInfo();
@@ -158,12 +158,9 @@ namespace UnnamedEngine.Resources {
                 indexAllocation = engine.Graphics.Allocator.Alloc(IndexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
                 IndexBuffer.Bind(indexAllocation.memory, indexAllocation.offset);
 
-                if (IndexData.IndexType == VkIndexType.Uint16) {
-                    TransferNode.Transfer(IndexData.Data16, IndexBuffer);
-                }
-                else {
-                    TransferNode.Transfer(IndexData.Data32, IndexBuffer);
-                }
+                GCHandle indexHandle = GCHandle.Alloc(IndexData.InternalData, GCHandleType.Pinned);
+                TransferNode.Transfer(indexHandle.AddrOfPinnedObject(), (uint)IndexData.Size, IndexBuffer);
+                indexHandle.Free();
             }
         }
 
