@@ -63,12 +63,18 @@ namespace Test {
             TriangleRenderer triangle = new TriangleRenderer(engine, deferred);
             BasicRenderer basic = new BasicRenderer(engine, deferred, mesh);
             StarRenderer stars = new StarRenderer(engine, deferred);
-            
+
             Light light1 = new Light();
-            light1.Color = new CSGL.Graphics.Color(0.5f, 0.5f, 0.5f, 0);
+            light1.Color = new CSGL.Graphics.Color(0.125f, 0.125f, 0.125f, 0);
 
             Light light2 = new Light();
             light2.Color = new CSGL.Graphics.Color(0.5f, 0.5f, 0.5f, 0);
+            
+            Light light3 = new Light();
+            light3.Color = new CSGL.Graphics.Color(0.25f, 0.25f, 0.25f, 0);
+
+            light3.Transform.Rotation = Quaternion.CreateFromYawPitchRoll((float)Math.PI * .65f, 0, 0) *
+                                        Quaternion.CreateFromYawPitchRoll(0, -(float)Math.PI * .25f, 0);
 
             Ambient ambient = new Ambient(engine, deferred);
             deferred.Lighting.AddLighting(ambient);
@@ -78,6 +84,7 @@ namespace Test {
             Directional directional = new Directional(engine, deferred, camera);
             deferred.Lighting.AddLighting(directional);
 
+            directional.AddLight(light3);
             directional.AddLight(light2);
 
             CommandGraph graph = engine.CommandGraph;
