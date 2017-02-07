@@ -86,7 +86,7 @@ namespace Test {
 
             Mesh mesh;
             using (var stream = File.OpenRead("chalet2.mesh")) {
-                mesh = new Mesh(stream);
+                mesh = new Mesh(engine, stream);
             }
 
             Console.WriteLine(mesh.VertexData.VertexCount);
@@ -95,7 +95,8 @@ namespace Test {
             using (engine)
             using (commandPool)
             using (camera)
-            using (gbuffer) {
+            using (gbuffer)
+            using (mesh) {
                 engine.Run();
             }
 
