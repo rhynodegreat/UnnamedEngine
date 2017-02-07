@@ -38,14 +38,13 @@ namespace Test {
             new Vertex(new Vector3(-1, -1, -.1f), new Vector3(0, 0, 1), new Vector3(0, 0, -1)),
         };
 
-        public TriangleRenderer(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
+        public TriangleRenderer(Engine engine, DeferredNode deferredNode) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
-            if (transferNode == null) throw new ArgumentNullException(nameof(transferNode));
             if (deferredNode == null) throw new ArgumentNullException(nameof(deferredNode));
 
             this.engine = engine;
-            this.transferNode = transferNode;
+            transferNode = engine.Graphics.TransferNode;
             this.deferredNode = deferredNode;
             camera = engine.Camera;
 

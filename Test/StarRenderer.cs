@@ -31,14 +31,13 @@ namespace Test {
 
         List<Star> stars;
 
-        public StarRenderer(Engine engine, TransferNode transferNode, DeferredNode deferredNode) {
+        public StarRenderer(Engine engine, DeferredNode deferredNode) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
-            if (transferNode == null) throw new ArgumentNullException(nameof(transferNode));
             if (deferredNode == null) throw new ArgumentNullException(nameof(deferredNode));
 
             this.engine = engine;
-            this.transferNode = transferNode;
+            transferNode = engine.Graphics.TransferNode;
             this.deferredNode = deferredNode;
             camera = engine.Camera;
 

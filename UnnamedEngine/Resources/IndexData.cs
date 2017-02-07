@@ -9,17 +9,17 @@ namespace UnnamedEngine.Resources {
     public class IndexData {
         public VkIndexType IndexType { get; private set; }
 
-        public object Data { get; private set; }
+        internal object InternalData { get; private set; }
         public int IndexCount { get; private set; }
         public int Size { get; private set; }
 
         public uint[] Data32 {
             get {
-                return (uint[])Data;    //we want this getter to fail at the callsite if the wrong type is called
+                return (uint[])InternalData;    //we want this getter to fail at the callsite if the wrong type is called
             }
             set {
                 if (value == null) throw new ArgumentNullException(nameof(Data32));
-                Data = value;
+                InternalData = value;
                 IndexType = VkIndexType.Uint32;
                 IndexCount = value.Length;
             }
@@ -27,11 +27,11 @@ namespace UnnamedEngine.Resources {
 
         public ushort[] Data16 {
             get {
-                return (ushort[])Data;  //we want this getter to fail at the callsite if the wrong type is called
+                return (ushort[])InternalData;  //we want this getter to fail at the callsite if the wrong type is called
             }
             set {
                 if (value == null) throw new ArgumentNullException(nameof(Data16));
-                Data = value;
+                InternalData = value;
                 IndexType = VkIndexType.Uint16;
                 IndexCount = value.Length;
             }

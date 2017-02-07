@@ -50,15 +50,19 @@ namespace Test {
             PresentNode presentNode = new PresentNode(engine, acquireImageNode, commandPool);
             presentNode.AddInput(acquireImageNode);
 
-            StagingNode staging = new StagingNode(engine);
-
             DeferredNode deferred = new DeferredNode(engine, gbuffer);
             ToneMapNode toneMap = new ToneMapNode(engine, acquireImageNode, gbuffer);
             toneMap.AddInput(deferred);
             presentNode.AddInput(toneMap);
+            
+            Mesh mesh;
+            using (var stream = File.OpenRead("box.mesh")) {
+                mesh = new Mesh(engine, stream);
+            }
 
-            TriangleRenderer triangle = new TriangleRenderer(engine, staging, deferred);
-            StarRenderer stars = new StarRenderer(engine, staging, deferred);
+            TriangleRenderer triangle = new TriangleRenderer(engine, deferred);
+            BasicRenderer basic = new BasicRenderer(engine, deferred, mesh);
+            StarRenderer stars = new StarRenderer(engine, deferred);
             
             Light light1 = new Light();
             light1.Color = new CSGL.Graphics.Color(0.5f, 0.5f, 0.5f, 0);
@@ -79,15 +83,9 @@ namespace Test {
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
-            graph.Add(staging);
             graph.Add(deferred);
             graph.Add(toneMap);
             graph.Bake();
-
-            Mesh mesh;
-            using (var stream = File.OpenRead("chalet2.mesh")) {
-                mesh = new Mesh(engine, stream);
-            }
 
             Console.WriteLine(mesh.VertexData.VertexCount);
             Console.WriteLine(mesh.IndexData.IndexCount);
@@ -95,8 +93,7 @@ namespace Test {
             using (engine)
             using (commandPool)
             using (camera)
-            using (gbuffer)
-            using (mesh) {
+            using (gbuffer) {
                 engine.Run();
             }
 

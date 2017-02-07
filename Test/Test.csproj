@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="AcquireImageNode.cs" />
     <Compile Include="Ambient.cs" />
+    <Compile Include="BasicRenderer.cs" />
     <Compile Include="DeferredNode.cs" />
     <Compile Include="Directional.cs" />
     <Compile Include="FreeCam.cs" />
@@ -74,7 +75,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="App.config" />
-    <None Include="chalet2.mesh">
+    <None Include="basic_frag.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="basic_vert.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="box.mesh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="deferred_frag.spv">
