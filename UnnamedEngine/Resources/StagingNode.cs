@@ -149,7 +149,7 @@ namespace UnnamedEngine.Resources {
             staging.Bind(alloc.memory, alloc.offset);
 
             IntPtr ptr = alloc.memory.Map(alloc.offset, alloc.size);
-            Interop.Copy(data, ptr);
+            Interop.Copy(data, ptr, size);
             alloc.memory.Unmap();
 
             lock (transfers) {
