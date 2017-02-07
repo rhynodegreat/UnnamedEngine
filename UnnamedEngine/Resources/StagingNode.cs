@@ -133,6 +133,30 @@ namespace UnnamedEngine.Resources {
             }
         }
 
+        public override void Transfer(IntPtr data, uint size, Buffer buffer) {
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+
+            if ((buffer.Usage & VkBufferUsageFlags.TransferDstBit) == 0) throw new TransferException("Buffer.Usage must include TransferDstBit");
+            if (!buffer.Bound) throw new TransferException("Buffer must be bound to a VkDeviceMemory object");
+
+            var info = new BufferCreateInfo();
+            info.size = size;
+            info.usage = VkBufferUsageFlags.TransferSrcBit;
+            info.sharingMode = VkSharingMode.Exclusive;
+
+            Buffer staging = new Buffer(device, info);
+            VkaAllocation alloc = allocator.AllocTemp(staging.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
+            staging.Bind(alloc.memory, alloc.offset);
+
+            IntPtr ptr = alloc.memory.Map(alloc.offset, alloc.size);
+            Interop.Copy(data, ptr);
+            alloc.memory.Unmap();
+
+            lock (transfers) {
+                transfers.Add(new TransferOp(staging, buffer));
+            }
+        }
+
         public new void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
