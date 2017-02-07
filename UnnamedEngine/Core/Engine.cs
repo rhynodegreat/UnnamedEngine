@@ -42,8 +42,10 @@ namespace UnnamedEngine.Core {
 
         public Engine(Graphics graphics) {
             if (graphics == null) throw new ArgumentNullException(nameof(graphics));
-
+            
             Graphics = graphics;
+            graphics.Init(this);
+
             CommandGraph = new CommandGraph(this);
             FrameLoop = new FrameLoop();
             Clock = new Clock();

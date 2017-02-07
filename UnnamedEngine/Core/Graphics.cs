@@ -6,6 +6,7 @@ using CSGL.GLFW;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Utilities;
+using UnnamedEngine.Resources;
 
 namespace UnnamedEngine.Core {
     public class Graphics : IDisposable {
@@ -23,6 +24,7 @@ namespace UnnamedEngine.Core {
         public Queue PresentQueue { get; private set; }
 
         public VkAllocator Allocator { get; private set; }
+        public TransferNode TransferNode { get; private set; }
 
         public Graphics(Instance instance, PhysicalDevice physicalDevice) {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
@@ -74,6 +76,10 @@ namespace UnnamedEngine.Core {
 
             GraphicsQueue = Device.GetQueue(graphicsIndex, 0);
             PresentQueue = Device.GetQueue(presentIndex, 0);
+        }
+
+        internal void Init(Engine engine) {
+            TransferNode = new StagingNode(engine);
         }
 
         public void Dispose() {
