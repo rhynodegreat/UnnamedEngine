@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Collections.Generic;
 
 using CSGL;
@@ -74,40 +75,17 @@ namespace UnnamedEngine.Resources {
         }
 
         public VertexData(Stream stream) {
-            using (var reader = new BinaryReader(stream)) {
-                Seek(reader, stream.Position, false);
+            using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
+                Bindings = new List<VkVertexInputBindingDescription>();
+                Attributes = new List<VkVertexInputAttributeDescription>();
                 ReadAttributes(reader);
                 ReadVertices(reader);
             }
         }
 
         public VertexData(Stream stream, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) : this(bindings, attributes) {
-            using (var reader = new BinaryReader(stream)) {
-                Seek(reader, stream.Position, true);
+            using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
                 ReadVertices(reader);
-            }
-        }
-
-        void Seek(BinaryReader reader, long startPos, bool skipAttributes) {
-            //check if constructor was called at start of mesh data stream, or at a preset location
-            //also accounts for if mesh data stream starts partway into file
-            byte[] header = reader.ReadBytes(5);
-            if (!(header[0] == 'M' && header[1] == 'e' && header[2] == 's' && header[3] == 'h' && header[5] == 0)) {
-                reader.ReadByte();  //skip version
-                reader.ReadByte();
-                reader.ReadByte();
-
-                ulong attributeOffset = reader.ReadUInt64();
-                ulong vertexOffset = reader.ReadUInt64();
-
-                if (!skipAttributes && attributeOffset == 0) throw new VertexDataException("Mesh does not have an attributes section");
-                if (vertexOffset == 0) throw new VertexDataException("Mesh does not have a vertex section");
-
-                if (skipAttributes) {
-                    reader.BaseStream.Position = startPos + (long)vertexOffset;
-                } else {
-                    reader.BaseStream.Position = startPos + (long)attributeOffset;
-                }
             }
         }
 

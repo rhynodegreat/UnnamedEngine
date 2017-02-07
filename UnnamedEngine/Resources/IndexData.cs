@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Collections.Generic;
 
 using CSGL.Vulkan;
@@ -45,31 +46,8 @@ namespace UnnamedEngine.Resources {
         public IndexData(Stream stream) {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            using (var reader = new BinaryReader(stream)) {
-                Seek(reader);
+            using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
                 Read(reader);
-            }
-        }
-
-        void Seek(BinaryReader reader) {
-            //check if constructor was called at start of mesh data stream, or at a preset location
-            //also accounts for if mesh data stream starts partway into file
-
-            long startPos = reader.BaseStream.Position;
-
-            byte[] header = reader.ReadBytes(5);
-            if (!(header[0] == 'M' && header[1] == 'e' && header[2] == 's' && header[3] == 'h' && header[5] == 0)) {
-                reader.ReadByte();  //skip version
-                reader.ReadByte();
-                reader.ReadByte();
-
-                reader.ReadUInt64();    //skip other sections
-                reader.ReadUInt64();
-                ulong indexOffset = reader.ReadUInt64();
-
-                if (indexOffset == 0) throw new IndexDataException("Mesh does not have an index section");
-
-                reader.BaseStream.Position = startPos + (long)indexOffset;
             }
         }
 

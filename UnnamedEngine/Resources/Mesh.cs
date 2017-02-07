@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Collections.Generic;
 
 using CSGL;
@@ -41,43 +42,38 @@ namespace UnnamedEngine.Resources {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
             long startPos = stream.Position;
-            try {
-                using (var reader = new BinaryReader(stream)) {
-                    byte[] header = reader.ReadBytes(5);
-                    if (!(header[0] == 'M' && header[1] == 'e' && header[2] == 's' && header[3] == 'h' && header[5] == 0)) {
-                        string format = Interop.GetString(header);
-                        throw new MeshException(string.Format("Invalid format \"{0}\"", format));
-                    }
 
-                    byte major = reader.ReadByte();
-                    byte minor = reader.ReadByte();
-                    byte patch = reader.ReadByte();
-
-                    if (!(major == 1 && minor == 0 && patch == 0)) {
-                        throw new MeshException(string.Format("Unsupported version \"{0}.{1}.{3}\"", major, minor, patch));
-                    }
-
-                    ulong attributesOffset = reader.ReadUInt64();
-                    ulong vertexOffset = reader.ReadUInt64();
-                    ulong indexOffset = reader.ReadUInt64();
-
-                    if (vertexOffset == 0) throw new MeshException("Mesh does not have a vertex section");
-
-                    if (attributesOffset == 0) {
-                        stream.Position = (long)vertexOffset;
-                        VertexData = new VertexData(stream, bindings, attributes);
-                    } else {
-                        VertexData = new VertexData(stream);
-                    }
-
-                    if (indexOffset != 0) {
-                        IndexData = new IndexData(stream);
-                    }
+            using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
+                byte[] header = reader.ReadBytes(5);
+                if (!(header[0] == 'M' && header[1] == 'e' && header[2] == 's' && header[3] == 'h' && header[4] == 0)) {
+                    string format = Interop.GetString(header);
+                    throw new MeshException(string.Format("Invalid format \"{0}\"", format));
                 }
-            }
-            catch {
-                stream.Position = startPos;
-                throw;
+
+                byte major = reader.ReadByte();
+                byte minor = reader.ReadByte();
+                byte patch = reader.ReadByte();
+
+                if (!(major == 1 && minor == 0 && patch == 0)) {
+                    throw new MeshException(string.Format("Unsupported version \"{0}.{1}.{3}\"", major, minor, patch));
+                }
+
+                ulong attributesOffset = reader.ReadUInt64();
+                ulong vertexOffset = reader.ReadUInt64();
+                ulong indexOffset = reader.ReadUInt64();
+
+                if (vertexOffset == 0) throw new MeshException("Mesh does not have a vertex section");
+
+                if (attributesOffset == 0) {
+                    stream.Position = (long)vertexOffset;
+                    VertexData = new VertexData(stream, bindings, attributes);
+                } else {
+                    VertexData = new VertexData(stream);
+                }
+
+                if (indexOffset != 0) {
+                    IndexData = new IndexData(stream);
+                }
             }
         }
 
