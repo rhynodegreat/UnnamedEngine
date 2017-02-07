@@ -3,10 +3,14 @@ using System.IO;
 using System.Numerics;
 using System.Collections.Generic;
 
+using CSGL;
+using CSGL.Graphics;
 using CSGL.Vulkan;
+using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
+using UnnamedEngine.Utilities;
 
 namespace Test {
     public class Directional : ISubpass {
@@ -20,13 +24,21 @@ namespace Test {
         uint subpassIndex;
 
         List<Light> lights;
+        List<uint> lightIndices;
+        List<LightData> lightData;
         CommandPool pool;
         CommandBuffer commandBuffer;
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
+        DescriptorSetLayout descriptorLayout;
+        DescriptorPool descriptorPool;
+        DescriptorSet set;
+        Buffer uniform;
+        VkaAllocation uniformAllocation;
+        bool dirty = true;
 
         struct LightData {
-            public Vector4 color;
+            public Color color;
             public Vector4 direction;
         }
 
@@ -41,6 +53,8 @@ namespace Test {
             gbuffer = deferred.GBuffer;
 
             lights = new List<Light>();
+            lightIndices = new List<uint>();
+            lightData = new List<LightData>();
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
@@ -49,6 +63,9 @@ namespace Test {
             pool = new CommandPool(engine.Graphics.Device, poolInfo);
 
             commandBuffer = pool.Allocate(VkCommandBufferLevel.Secondary);
+
+            CreateDescriptor();
+            CreateBuffer();
 
             deferred.OnFramebufferChanged += () => {
                 CreatePipeline();
@@ -60,6 +77,82 @@ namespace Test {
             if (lights.Contains(light)) return;
 
             lights.Add(light);
+            lightData.Add(new LightData());
+            dirty = true;
+        }
+
+        public void RemoveLight(Light light) {
+            dirty = lights.Remove(light);
+            lightData.RemoveAt(lightData.Count - 1);
+        }
+
+        void CreateDescriptor() {
+            DescriptorSetLayoutCreateInfo layoutInfo = new DescriptorSetLayoutCreateInfo();
+            layoutInfo.bindings = new List<VkDescriptorSetLayoutBinding> {
+                new VkDescriptorSetLayoutBinding {
+                    binding = 0,
+                    descriptorCount = 1,
+                    descriptorType = VkDescriptorType.UniformBufferDynamic,
+                    stageFlags = VkShaderStageFlags.FragmentBit
+                }
+            };
+
+            descriptorLayout = new DescriptorSetLayout(engine.Graphics.Device, layoutInfo);
+
+            DescriptorPoolCreateInfo poolInfo = new DescriptorPoolCreateInfo();
+            poolInfo.maxSets = 1;
+            poolInfo.poolSizes = new List<VkDescriptorPoolSize> {
+                new VkDescriptorPoolSize {
+                    descriptorCount = 1,
+                    type = VkDescriptorType.UniformBufferDynamic
+                }
+            };
+
+            descriptorPool = new DescriptorPool(engine.Graphics.Device, poolInfo);
+
+            DescriptorSetAllocateInfo setInfo = new DescriptorSetAllocateInfo();
+            setInfo.descriptorSetCount = 1;
+            setInfo.setLayouts = new List<DescriptorSetLayout> { descriptorLayout };
+
+            set = descriptorPool.Allocate(setInfo)[0];
+        }
+
+        void CreateBuffer() {
+            BufferCreateInfo info = new BufferCreateInfo();
+            info.usage = VkBufferUsageFlags.UniformBufferBit;
+            info.size = 1024;
+            info.sharingMode = VkSharingMode.Exclusive;
+
+            uniform = new Buffer(engine.Graphics.Device, info);
+
+            uniformAllocation = engine.Graphics.Allocator.Alloc(uniform.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
+            uniform.Bind(uniformAllocation.memory, uniformAllocation.offset);
+
+            DescriptorSet.Update(engine.Graphics.Device, new List<WriteDescriptorSet> {
+                new WriteDescriptorSet {
+                    bufferInfo = new List<DescriptorBufferInfo> {
+                        new DescriptorBufferInfo {
+                            buffer = uniform,
+                            offset = 0,
+                            range = 1024
+                        }
+                    },
+                    descriptorType = VkDescriptorType.UniformBufferDynamic,
+                    dstArrayElement = 0,
+                    dstBinding = 0,
+                    dstSet = set
+                }
+            });
+        }
+
+        void UpdateUniform() {
+            for (int i = 0; i < lights.Count; i++) {
+                lightData[i] = new LightData { color = lights[i].Color, direction = new Vector4(lights[i].Transform.Forward, 0) };
+            }
+
+            IntPtr ptr = uniformAllocation.memory.Map(uniformAllocation.offset, uniformAllocation.size);
+            Interop.Copy(lightData, ptr);
+            uniformAllocation.memory.Unmap();
         }
 
         ShaderModule CreateShaderModule(Device device, byte[] code) {
@@ -129,7 +222,7 @@ namespace Test {
             colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { colorBlendAttachment };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
-            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { gbuffer.InputLayout };
+            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { gbuffer.InputLayout, descriptorLayout };
             pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
                 new VkPushConstantRange {
                     offset = 0,
@@ -190,13 +283,8 @@ namespace Test {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, gbuffer.InputDescriptor);
 
-            for (int i = 0; i < lights.Count; i++) {
-                var forward = lights[i].Transform.Forward;
-                var color = lights[i].Color;
-                commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new LightData {
-                    color = new Vector4(color.r, color.g, color.b, 0),
-                    direction = new Vector4(forward.X, forward.Y, forward.Z, 0)
-                });
+            for (uint i = 0; i < lights.Count; i++) {
+                commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, set, i * 16);
                 commandBuffer.Draw(6, 1, 0, 0);
             }
 
@@ -204,7 +292,10 @@ namespace Test {
         }
 
         public CommandBuffer GetCommandBuffer() {
-            RecordCommands();
+            UpdateUniform();
+            if (dirty) {
+                RecordCommands();
+            }
             return commandBuffer;
         }
 
@@ -219,6 +310,10 @@ namespace Test {
             pipeline.Dispose();
             pipelineLayout.Dispose();
             pool.Dispose();
+            descriptorPool.Dispose();
+            descriptorLayout.Dispose();
+            uniform.Dispose();
+            engine.Graphics.Allocator.Free(uniformAllocation);
 
             deferred.OnFramebufferChanged -= CreatePipeline;
 
