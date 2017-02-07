@@ -13,6 +13,7 @@ namespace UnnamedEngine.Resources {
 
         public object Data { get; private set; }
         public int IndexCount { get; private set; }
+        public int Size { get; private set; }
 
         public uint[] Data32 {
             get {
@@ -57,6 +58,7 @@ namespace UnnamedEngine.Resources {
         void Read(BinaryReader reader) {
             byte indexType = reader.ReadByte();
             uint indexCount = reader.ReadUInt32();
+
             if ((VertexAttribute)indexType == VertexAttribute.Uint16) {
                 Read16(reader, indexCount);
             } else if ((VertexAttribute)indexType == VertexAttribute.Uint32) {
@@ -74,6 +76,7 @@ namespace UnnamedEngine.Resources {
             }
 
             Data32 = indices;
+            Size = (int)indexCount * 4;
         }
 
         void Read16(BinaryReader reader, uint indexCount) {
@@ -84,6 +87,7 @@ namespace UnnamedEngine.Resources {
             }
 
             Data16 = indices;
+            Size = (int)indexCount * 2;
         }
     }
 
