@@ -32,8 +32,9 @@ namespace UnnamedEngine.Resources {
             if (vertexSize != Bindings[0].stride) throw new VertexDataException(string.Format("Vertex size ({0}) does not match attribute size ({1})", vertexSize, Bindings[0].stride));
 
             uint vertexCount = reader.ReadUInt32();
-            Data = reader.ReadBytes((int)(vertexCount * vertexSize));
             VertexCount = (int)vertexCount;
+            Size = (int)(vertexCount * vertexSize);
+            Data = reader.ReadBytes(Size);
         }
     }
 }

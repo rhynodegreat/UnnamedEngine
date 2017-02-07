@@ -49,6 +49,7 @@ namespace UnnamedEngine.Resources {
         internal protected object InternalData { get; set; }
 
         public int VertexCount { get; protected set; }
+        public int Size { get; protected set; }
 
         protected VertexData(List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) {
             if (bindings == null) throw new ArgumentNullException(nameof(bindings));
