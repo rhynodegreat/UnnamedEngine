@@ -134,7 +134,7 @@ namespace Test {
                         new DescriptorBufferInfo {
                             buffer = uniform,
                             offset = 0,
-                            range = 1024
+                            range = 32
                         }
                     },
                     descriptorType = VkDescriptorType.UniformBufferDynamic,
@@ -284,7 +284,7 @@ namespace Test {
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, gbuffer.InputDescriptor);
 
             for (uint i = 0; i < lights.Count; i++) {
-                commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, set, i * 16);
+                commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, set, i * 32);
                 commandBuffer.Draw(6, 1, 0, 0);
             }
 
@@ -295,6 +295,7 @@ namespace Test {
             UpdateUniform();
             if (dirty) {
                 RecordCommands();
+                dirty = false;
             }
             return commandBuffer;
         }
