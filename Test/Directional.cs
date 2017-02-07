@@ -129,7 +129,7 @@ namespace Test {
             colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { colorBlendAttachment };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
-            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { gbuffer.InputLayout, camera.Layout };
+            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { gbuffer.InputLayout };
             pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
                 new VkPushConstantRange {
                     offset = 0,
@@ -189,7 +189,6 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, gbuffer.InputDescriptor);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, camera.Desciptor);
 
             for (int i = 0; i < lights.Count; i++) {
                 var forward = lights[i].Transform.Forward;
