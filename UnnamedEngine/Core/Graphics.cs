@@ -107,12 +107,10 @@ namespace UnnamedEngine.Core {
 
         void Dispose(bool disposing) {
             if (disposed) return;
-
-            if (disposing) {
-                Allocator.Dispose();
-                Device.Dispose();
-                Instance.Dispose();
-            }
+            
+            Allocator.Dispose();
+            Device.Dispose();
+            Instance.Dispose();
 
             disposed = true;
         }
