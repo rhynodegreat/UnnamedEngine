@@ -76,16 +76,25 @@ namespace Test {
             light3.Transform.Rotation = Quaternion.CreateFromYawPitchRoll((float)Math.PI * .65f, 0, 0) *
                                         Quaternion.CreateFromYawPitchRoll(0, -(float)Math.PI * .25f, 0);
 
+            Light light4 = new Light();
+            light4.Color = new CSGL.Graphics.Color(1, 1, 1, 0);
+            light4.Transform.Position = new Vector3(0, 0.75f, 0.75f);
+
             Ambient ambient = new Ambient(engine, deferred);
             deferred.Lighting.AddLighting(ambient);
 
-            ambient.AddLight(light1);
+            //ambient.AddLight(light1);
 
             Directional directional = new Directional(engine, deferred, 32);
             deferred.Lighting.AddLighting(directional);
 
-            directional.AddLight(light3);
-            directional.AddLight(light2);
+            //directional.AddLight(light3);
+            //directional.AddLight(light2);
+
+            Point point = new Point(engine, deferred, camera, 4096);
+            deferred.Lighting.AddLighting(point);
+
+            point.AddLight(light4);
 
             CommandGraph graph = engine.CommandGraph;
             graph.Add(acquireImageNode);
