@@ -25,7 +25,7 @@ namespace Test {
         List<CommandBuffer> commandBuffers;
         List<CommandBuffer> submitBuffers;
 
-        public ToneMapNode(Engine engine, AcquireImageNode acquire, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.ColorAttachmentOutputBit) {
+        public ToneMapNode(Engine engine, AcquireImageNode acquire, GBuffer gbuffer) : base(engine.Graphics.Device, engine.Graphics.GraphicsQueue, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (acquire == null) throw new ArgumentNullException(nameof(acquire));
             if (gbuffer == null) throw new ArgumentNullException(nameof(gbuffer));

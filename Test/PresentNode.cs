@@ -21,7 +21,7 @@ namespace Test {
 
         uint index;
 
-        public PresentNode(Engine engine, AcquireImageNode acquireImageNode, CommandPool commandPool) : base(engine.Graphics.Device, VkPipelineStageFlags.BottomOfPipeBit) {
+        public PresentNode(Engine engine, AcquireImageNode acquireImageNode, CommandPool commandPool) : base(engine.Graphics.Device, engine.Graphics.GraphicsQueue, VkPipelineStageFlags.BottomOfPipeBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (acquireImageNode == null) throw new ArgumentNullException(nameof(acquireImageNode));
             graphics = engine.Graphics;

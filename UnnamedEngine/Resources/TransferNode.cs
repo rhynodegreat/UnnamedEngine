@@ -8,7 +8,7 @@ using UnnamedEngine.Core;
 
 namespace UnnamedEngine.Resources {
     public abstract class TransferNode : CommandNode {
-        protected TransferNode(Device device, VkPipelineStageFlags flags) : base(device, flags) {
+        protected TransferNode(Device device, Queue queue, VkPipelineStageFlags flags) : base(device, queue, flags) {
             SignalStage = flags;
         }
 

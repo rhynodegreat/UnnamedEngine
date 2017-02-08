@@ -10,6 +10,7 @@ namespace UnnamedEngine.Core {
         List<CommandNode> input;
         List<CommandNode> output;
 
+        public Queue Queue { get; private set; }
         public IList<CommandNode> Input { get; private set; }
         public IList<CommandNode> Output { get; private set; }
         public VkPipelineStageFlags SignalStage { get; protected set; }
@@ -27,8 +28,9 @@ namespace UnnamedEngine.Core {
         internal List<WaitPair> ExtraInput { get; private set; }
         internal List<Semaphore> ExtraOutput { get; private set; }
 
-        protected CommandNode(Device device, VkPipelineStageFlags stageFlags) {
+        protected CommandNode(Device device, Queue queue, VkPipelineStageFlags stageFlags) {
             this.device = device;
+            Queue = queue;
             SignalStage = stageFlags;
             input = new List<CommandNode>();
             output = new List<CommandNode>();

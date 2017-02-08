@@ -34,14 +34,14 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        public StagingNode(Graphics graphics) : base(graphics.Device, VkPipelineStageFlags.TransferBit) {
+        public StagingNode(Graphics graphics) : base(graphics.Device, graphics.TransferQueue, VkPipelineStageFlags.TransferBit) {
             if (graphics == null) throw new ArgumentNullException(nameof(graphics));
 
             allocator = graphics.Allocator;
             this.graphics = graphics;
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
-            info.queueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
+            info.queueFamilyIndex = graphics.TransferQueue.FamilyIndex;
             info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
 
             pool = new CommandPool(graphics.Device, info);

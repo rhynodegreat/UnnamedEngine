@@ -10,35 +10,32 @@ using UnnamedEngine.Utilities;
 namespace UnnamedEngine.Core {
     public class CommandGraph : IDisposable {
         bool disposed;
-        Graphics renderer;
-
-        Pool<Semaphore> pool;
-        HashSet<Semaphore> semaphores;
-        List<SubmitInfo> infos;
-        List<CommandNode> nodeList;
+        Graphics graphics;
+        
+        List<NodeInfo> nodeList;
+        List<Queue> queues;
         Dictionary<CommandNode, SubmitInfo> nodeMap;
+        Dictionary<Queue, List<SubmitInfo>> queueMap;
         ParallelOptions options;
-        Fence fence;
+        List<Fence> fences;
+
+        struct NodeInfo {
+            public CommandNode node;
+            public int submitIndex;
+        }
 
         public CommandGraph(Engine engine) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
-            renderer = engine.Graphics;
-            semaphores = new HashSet<Semaphore>();
-            pool = new Pool<Semaphore>(() => {
-                var sem = new Semaphore(engine.Graphics.Device);
-                semaphores.Add(sem);
-                return sem;
-            });
-            nodeList = new List<CommandNode>();
-            infos = new List<SubmitInfo>();
+            graphics = engine.Graphics;
+            nodeList = new List<NodeInfo>();
             options = new ParallelOptions();
             options.MaxDegreeOfParallelism = Environment.ProcessorCount;
             nodeMap = new Dictionary<CommandNode, SubmitInfo>();
+            queueMap = new Dictionary<Queue, List<SubmitInfo>>();
+            queues = new List<Queue>();
 
-            FenceCreateInfo info = new FenceCreateInfo();
-            info.Flags = VkFenceCreateFlags.SignaledBit;
-            fence = new Fence(renderer.Device, info);
+            fences = new List<Fence>();
         }
 
         public void Add(CommandNode node) {
@@ -71,14 +68,28 @@ namespace UnnamedEngine.Core {
                 Visit(stack, sortState, node);
             }
 
+            foreach (var infos in queueMap.Values) {
+                foreach (var info in infos) {
+                    Clear(info);
+                }
+                infos.Clear();
+            }
             nodeList.Clear();
-            infos.Clear();
 
             while (stack.Count > 0) {
                 var node = stack.Pop();
-                nodeList.Add(node);
-                infos.Add(nodeMap[node]);
-                Bake(node);
+
+                if (!queueMap.ContainsKey(node.Queue)) {
+                    queueMap.Add(node.Queue, new List<SubmitInfo>());
+                    queues.Add(node.Queue);
+
+                    FenceCreateInfo info = new FenceCreateInfo();
+                    info.Flags = VkFenceCreateFlags.SignaledBit;
+
+                    fences.Add(new Fence(graphics.Device, info));
+                }
+
+                nodeList.Add(new NodeInfo { node = node, submitIndex = Bake(node) });
             }
         }
 
@@ -102,22 +113,20 @@ namespace UnnamedEngine.Core {
         }
 
         public void Clear() {
-            foreach (var info in infos) {
-                Clear(info);
+            foreach (var infos in queueMap.Values) {
+                foreach (var info in infos) {
+                    Clear(info);
+                }
+                infos.Clear();
             }
-
-            infos.Clear();
             nodeList.Clear();
+
             nodeMap.Clear();
         }
 
         void Clear(SubmitInfo info) {
             foreach (var sem in info.signalSemaphores) {
-                if (semaphores.Contains(sem)) pool.Free(sem);
-            }
-
-            foreach (var sem in info.waitSemaphores) {
-                if (semaphores.Contains(sem)) pool.Free(sem);
+                sem.Dispose();
             }
 
             info.signalSemaphores.Clear();
@@ -125,11 +134,13 @@ namespace UnnamedEngine.Core {
             info.waitSemaphores.Clear();
         }
 
-        void Bake(CommandNode node) {
+        int Bake(CommandNode node) {
+            List<SubmitInfo> queueList = queueMap[node.Queue];
+
             var info = nodeMap[node];
 
             foreach (var input in node.Input) {
-                var sem = pool.Get();
+                var sem = new Semaphore(graphics.Device);
                 info.waitSemaphores.Add(sem);
                 info.waitDstStageMask.Add(input.SignalStage);
                 nodeMap[input].signalSemaphores.Add(sem);
@@ -143,28 +154,34 @@ namespace UnnamedEngine.Core {
             foreach (var output in node.ExtraOutput) {
                 info.signalSemaphores.Add(output);
             }
+
+            queueList.Add(info);
+            return queueList.Count - 1;
         }
         
         public void Submit() {
-            fence.Wait();
-            fence.Reset();
+            Fence.Wait(graphics.Device, fences, true, ulong.MaxValue);
+            Fence.Reset(graphics.Device, fences);
 
             for (int i = 0; i < nodeList.Count; i++) {
-                nodeList[i].PreRender();
+                nodeList[i].node.PreRender();
             }
 
             Parallel.For(0, nodeList.Count, options, Render);
-            renderer.GraphicsQueue.Submit(infos, fence);
+            for (int i = 0; i < queues.Count; i++) {
+                queues[i].Submit(queueMap[queues[i]], fences[i]);
+            }
 
             for (int i = 0; i < nodeList.Count; i++) {
-                nodeList[i].PostRender();
+                nodeList[i].node.PostRender();
             }
         }
 
         void Render(int i) {
-            infos[i].commandBuffers = null;
+            SubmitInfo info = queueMap[nodeList[i].node.Queue][nodeList[i].submitIndex];
+            info.commandBuffers = null;
             try {
-                infos[i].commandBuffers = nodeList[i].GetCommands();
+                info.commandBuffers = nodeList[i].node.GetCommands();
             }
             catch (Exception e) {
                 Console.WriteLine(e);
@@ -205,11 +222,11 @@ namespace UnnamedEngine.Core {
                 }
             }
 
-            foreach (var sem in semaphores) {
-                sem.Dispose();
+            foreach (var fence in fences) {
+                fence.Dispose();
             }
 
-            fence.Dispose();
+            Clear();
             
             disposed = true;
         }

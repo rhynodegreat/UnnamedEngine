@@ -24,7 +24,7 @@ namespace Test {
             }
         }
 
-        public AcquireImageNode(Engine engine, CommandPool commandPool) : base(engine.Graphics.Device, VkPipelineStageFlags.TransferBit) {
+        public AcquireImageNode(Engine engine, CommandPool commandPool) : base(engine.Graphics.Device, engine.Graphics.GraphicsQueue, VkPipelineStageFlags.TransferBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
             this.engine = engine;

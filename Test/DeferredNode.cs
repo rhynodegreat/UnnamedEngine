@@ -23,7 +23,7 @@ namespace Test {
 
         public event Action OnFramebufferChanged = delegate { };
 
-        public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.ColorAttachmentOutputBit) {
+        public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, engine.Graphics.GraphicsQueue, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (gbuffer == null) throw new ArgumentNullException(nameof(gbuffer));
 
