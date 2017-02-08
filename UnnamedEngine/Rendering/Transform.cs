@@ -19,12 +19,12 @@ namespace UnnamedEngine.Rendering {
             }
             set {
                 lock (this)
-                    lock (value) {
-                        if (value.IsDescendantOf(this)) throw new TransformException("Can not set parent of transform to it's descendant");
-                        parent.RemoveChild(this);
-                        parent = value;
-                        parent.AddChild(this);
-                    }
+                lock (value) {
+                    if (value.IsDescendantOf(this)) throw new TransformException("Can not set parent of transform to it's descendant");
+                    parent?.RemoveChild(this);
+                    parent = value;
+                    parent?.AddChild(this);
+                }
             }
         }
 
