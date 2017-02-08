@@ -82,10 +82,11 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
-                CommandGraph.Dispose();
                 Window.Dispose();
                 Graphics.Dispose();
             }
+
+            CommandGraph.Dispose();
 
             disposed = true;
         }
