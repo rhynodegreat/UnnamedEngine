@@ -78,6 +78,12 @@ namespace UnnamedEngine.Core {
             }
             nodeList.Clear();
 
+            foreach (var fence in fences) {
+                fence.Dispose();
+            }
+
+            fences.Clear();
+
             while (stack.Count > 0) {
                 var node = stack.Pop();
 
