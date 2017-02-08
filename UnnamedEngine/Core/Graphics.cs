@@ -63,12 +63,10 @@ namespace UnnamedEngine.Core {
             HashSet<uint> uniqueIndices = new HashSet<uint> { graphicsIndex, presentIndex };
             List<float> priorities = new List<float> { 1f };
             List<DeviceQueueCreateInfo> queueInfos = new List<DeviceQueueCreateInfo>(uniqueIndices.Count);
-
-            int j = 0;
+            
             foreach (var ind in uniqueIndices) {
                 var queueInfo = new DeviceQueueCreateInfo(ind, 1, priorities);
                 queueInfos.Add(queueInfo);
-                j++;
             }
 
             var info = new DeviceCreateInfo(new List<string>(deviceExtensions), queueInfos, features);
