@@ -70,6 +70,7 @@ namespace Test {
 
             deferred.OnFramebufferChanged += () => {
                 CreatePipeline();
+                dirty = true;
             };
         }
 
