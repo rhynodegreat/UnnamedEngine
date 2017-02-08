@@ -77,8 +77,8 @@ namespace Test {
                                         Quaternion.CreateFromYawPitchRoll(0, -(float)Math.PI * .25f, 0);
 
             Light light4 = new Light();
-            light4.Color = new CSGL.Graphics.Color(1, 1, 1, 0);
-            light4.Transform.Position = new Vector3(0, 0.75f, 0.75f);
+            light4.Color = new CSGL.Graphics.Color(0.125f, 0.125f, 0.125f, 0);
+            light4.Transform.Position = new Vector3(0, 0.6f, 0.25f);
 
             Ambient ambient = new Ambient(engine, deferred);
             deferred.Lighting.AddLighting(ambient);
