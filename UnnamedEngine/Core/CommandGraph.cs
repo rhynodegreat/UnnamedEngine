@@ -177,7 +177,8 @@ namespace UnnamedEngine.Core {
                 nodeList[i].node.PreRender();
             }
 
-            Parallel.For(0, nodeList.Count, options, Render);
+            Parallel.For(0, nodeList.Count, options, GetCommands);
+
             for (int i = 0; i < queues.Count; i++) {
                 queues[i].Submit(queueMap[queues[i]], fences[i]);
             }
@@ -187,7 +188,7 @@ namespace UnnamedEngine.Core {
             }
         }
 
-        void Render(int i) {
+        void GetCommands(int i) {
             SubmitInfo info = queueMap[nodeList[i].node.Queue][nodeList[i].submitIndex];
             info.commandBuffers = null;
             try {
