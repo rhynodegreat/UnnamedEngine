@@ -18,6 +18,7 @@ namespace UnnamedEngine.Core {
         Dictionary<Queue, List<SubmitInfo>> queueMap;
         ParallelOptions options;
         List<Fence> fences;
+        HashSet<Semaphore> localSemaphores;
 
         struct NodeInfo {
             public CommandNode node;
@@ -34,6 +35,7 @@ namespace UnnamedEngine.Core {
             nodeMap = new Dictionary<CommandNode, SubmitInfo>();
             queueMap = new Dictionary<Queue, List<SubmitInfo>>();
             queues = new List<Queue>();
+            localSemaphores = new HashSet<Semaphore>();
 
             fences = new List<Fence>();
         }
@@ -125,9 +127,10 @@ namespace UnnamedEngine.Core {
         }
 
         void Clear(SubmitInfo info) {
-            foreach (var sem in info.signalSemaphores) {
+            foreach (var sem in localSemaphores) {
                 sem.Dispose();
             }
+            localSemaphores.Clear();
 
             info.signalSemaphores.Clear();
             info.waitDstStageMask.Clear();
@@ -141,6 +144,7 @@ namespace UnnamedEngine.Core {
 
             foreach (var input in node.Input) {
                 var sem = new Semaphore(graphics.Device);
+                localSemaphores.Add(sem);
                 info.waitSemaphores.Add(sem);
                 info.waitDstStageMask.Add(input.SignalStage);
                 nodeMap[input].signalSemaphores.Add(sem);
