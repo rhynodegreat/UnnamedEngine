@@ -7,7 +7,7 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class DeferredNode : CommandNode, IDisposable {
+    public class DeferredNode : QueueNode, IDisposable {
         bool disposed;
         Engine engine;
 

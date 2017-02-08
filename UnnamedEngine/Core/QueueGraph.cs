@@ -8,31 +8,31 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.Core {
-    public class CommandGraph : IDisposable {
+    public class QueueGraph : IDisposable {
         bool disposed;
         Graphics graphics;
         
         List<NodeInfo> nodeList;
         List<Queue> queues;
-        Dictionary<CommandNode, SubmitInfo> nodeMap;
+        Dictionary<QueueNode, SubmitInfo> nodeMap;
         Dictionary<Queue, List<SubmitInfo>> queueMap;
         ParallelOptions options;
         List<Fence> fences;
         HashSet<Semaphore> localSemaphores;
 
         struct NodeInfo {
-            public CommandNode node;
+            public QueueNode node;
             public int submitIndex;
         }
 
-        public CommandGraph(Engine engine) {
+        public QueueGraph(Engine engine) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
             graphics = engine.Graphics;
             nodeList = new List<NodeInfo>();
             options = new ParallelOptions();
             options.MaxDegreeOfParallelism = Environment.ProcessorCount;
-            nodeMap = new Dictionary<CommandNode, SubmitInfo>();
+            nodeMap = new Dictionary<QueueNode, SubmitInfo>();
             queueMap = new Dictionary<Queue, List<SubmitInfo>>();
             queues = new List<Queue>();
             localSemaphores = new HashSet<Semaphore>();
@@ -40,7 +40,7 @@ namespace UnnamedEngine.Core {
             fences = new List<Fence>();
         }
 
-        public void Add(CommandNode node) {
+        public void Add(QueueNode node) {
             var info = new SubmitInfo();
             info.signalSemaphores = new List<Semaphore>();
             info.waitDstStageMask = new List<VkPipelineStageFlags>();
@@ -48,7 +48,7 @@ namespace UnnamedEngine.Core {
             nodeMap.Add(node, info);
         }
 
-        public void Remove(CommandNode node) {
+        public void Remove(QueueNode node) {
             nodeMap.Remove(node);
         }
 
@@ -59,8 +59,8 @@ namespace UnnamedEngine.Core {
 
         public void Bake() {
             //https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
-            Stack<CommandNode> stack = new Stack<CommandNode>();
-            Dictionary<CommandNode, SortState> sortState = new Dictionary<CommandNode, SortState>();
+            Stack<QueueNode> stack = new Stack<QueueNode>();
+            Dictionary<QueueNode, SortState> sortState = new Dictionary<QueueNode, SortState>();
 
             foreach (var node in nodeMap.Keys) {
                 sortState.Add(node, new SortState());
@@ -101,7 +101,7 @@ namespace UnnamedEngine.Core {
             }
         }
 
-        void Visit(Stack<CommandNode> stack, Dictionary<CommandNode, SortState> sortState, CommandNode node) {
+        void Visit(Stack<QueueNode> stack, Dictionary<QueueNode, SortState> sortState, QueueNode node) {
             if (sortState[node].open) throw new CommandGraphException("Nodes do not form Direct Acyclic Graph");
             if (!sortState[node].finished) {
                 var state = sortState[node];
@@ -143,7 +143,7 @@ namespace UnnamedEngine.Core {
             info.waitSemaphores.Clear();
         }
 
-        int Bake(CommandNode node) {
+        int Bake(QueueNode node) {
             List<SubmitInfo> queueList = queueMap[node.Queue];
 
             var info = nodeMap[node];
@@ -203,7 +203,7 @@ namespace UnnamedEngine.Core {
             public List<Semaphore> signalSemaphores;
             public SubmitInfo info;
 
-            public Node(Device device, CommandNode node) {
+            public Node(Device device, QueueNode node) {
                 signalSemaphores = new List<Semaphore>(node.Output.Count);
                 info = new SubmitInfo();
 
@@ -242,7 +242,7 @@ namespace UnnamedEngine.Core {
             disposed = true;
         }
 
-        ~CommandGraph() {
+        ~QueueGraph() {
             Dispose(false);
         }
     }

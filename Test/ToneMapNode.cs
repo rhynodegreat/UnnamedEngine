@@ -8,7 +8,7 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class ToneMapNode : CommandNode, IDisposable {
+    public class ToneMapNode : QueueNode, IDisposable {
         bool disposed;
 
         Engine engine;

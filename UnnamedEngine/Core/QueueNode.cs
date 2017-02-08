@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using CSGL.Vulkan;
 
 namespace UnnamedEngine.Core {
-    public abstract class CommandNode : IDisposable {
+    public abstract class QueueNode : IDisposable {
         bool disposed;
         protected Device device;
-        List<CommandNode> input;
-        List<CommandNode> output;
+        List<QueueNode> input;
+        List<QueueNode> output;
 
         public Queue Queue { get; private set; }
-        public IList<CommandNode> Input { get; private set; }
-        public IList<CommandNode> Output { get; private set; }
+        public IList<QueueNode> Input { get; private set; }
+        public IList<QueueNode> Output { get; private set; }
         public VkPipelineStageFlags SignalStage { get; protected set; }
 
         internal struct WaitPair {
@@ -28,12 +28,12 @@ namespace UnnamedEngine.Core {
         internal List<WaitPair> ExtraInput { get; private set; }
         internal List<Semaphore> ExtraOutput { get; private set; }
 
-        protected CommandNode(Device device, Queue queue, VkPipelineStageFlags stageFlags) {
+        protected QueueNode(Device device, Queue queue, VkPipelineStageFlags stageFlags) {
             this.device = device;
             Queue = queue;
             SignalStage = stageFlags;
-            input = new List<CommandNode>();
-            output = new List<CommandNode>();
+            input = new List<QueueNode>();
+            output = new List<QueueNode>();
             Input = input.AsReadOnly();
             Output = output.AsReadOnly();
             ExtraInput = new List<WaitPair>();
@@ -45,13 +45,13 @@ namespace UnnamedEngine.Core {
         public virtual void PreRender() { }
         public virtual void PostRender() { }
 
-        public void AddInput(CommandNode other) {
+        public void AddInput(QueueNode other) {
             if (input.Contains(other)) return;
             input.Add(other);
             other.output.Add(this);
         }
 
-        public void RemoveInput(CommandNode other) {
+        public void RemoveInput(QueueNode other) {
             if (input.Contains(other)) {
                 input.Remove(other);
             }

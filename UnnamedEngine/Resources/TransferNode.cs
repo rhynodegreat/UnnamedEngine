@@ -7,7 +7,7 @@ using Buffer = CSGL.Vulkan.Buffer;
 using UnnamedEngine.Core;
 
 namespace UnnamedEngine.Resources {
-    public abstract class TransferNode : CommandNode {
+    public abstract class TransferNode : QueueNode {
         protected TransferNode(Device device, Queue queue, VkPipelineStageFlags flags) : base(device, queue, flags) {
             SignalStage = flags;
         }

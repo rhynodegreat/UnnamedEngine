@@ -6,7 +6,7 @@ using CSGL.Vulkan;
 using UnnamedEngine.Core;
 
 namespace Test {
-    public class AcquireImageNode : CommandNode, IDisposable {
+    public class AcquireImageNode : QueueNode, IDisposable {
         bool disposed;
         Engine engine;
         Graphics graphics;

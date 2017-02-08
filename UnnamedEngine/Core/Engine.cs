@@ -15,7 +15,7 @@ namespace UnnamedEngine.Core {
         Camera camera;
 
         public Graphics Graphics { get; private set; }
-        public CommandGraph CommandGraph { get; private set; }
+        public QueueGraph CommandGraph { get; private set; }
         public FrameLoop FrameLoop { get; private set; }
         public Clock Clock { get; private set; }
 
@@ -45,7 +45,7 @@ namespace UnnamedEngine.Core {
             
             Graphics = graphics;
 
-            CommandGraph = new CommandGraph(this);
+            CommandGraph = new QueueGraph(this);
             FrameLoop = new FrameLoop();
             Clock = new Clock();
 
