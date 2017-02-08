@@ -159,7 +159,13 @@ namespace Test {
 
         void UpdateUniform() {
             for (int i = 0; i < lights.Count; i++) {
-                lightData[i] = new LightData { color = lights[i].Color, transform = lights[i].Transform.WorldTransform };
+                var color = lights[i].Color;
+                float brightness = Math.Max(color.r, Math.Max(color.g, color.b));
+                float radius = 16f * (float)Math.Sqrt(brightness / 5);  //(5/256) = brightness / (r^2)
+
+                lightData[i] = new LightData {
+                    color = color,
+                    transform = Matrix4x4.CreateScale(radius) * Matrix4x4.CreateTranslation(lights[i].Transform.Position) };
             }
 
             IntPtr ptr = uniformAllocation.memory.Map(uniformAllocation.offset, uniformAllocation.size);
