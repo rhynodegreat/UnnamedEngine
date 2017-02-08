@@ -18,7 +18,6 @@ namespace Test {
 
         Engine engine;
         DeferredNode deferred;
-        Camera camera;
         GBuffer gbuffer;
         RenderPass renderPass;
         uint subpassIndex;
@@ -42,14 +41,12 @@ namespace Test {
             public Vector4 direction;
         }
 
-        public Directional(Engine engine, DeferredNode deferred, Camera camera) {
+        public Directional(Engine engine, DeferredNode deferred) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
-            if (camera == null) throw new ArgumentNullException(nameof(camera));
 
             this.engine = engine;
             this.deferred = deferred;
-            this.camera = camera;
             gbuffer = deferred.GBuffer;
 
             lights = new List<Light>();
