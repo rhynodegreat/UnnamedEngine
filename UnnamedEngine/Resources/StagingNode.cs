@@ -11,7 +11,6 @@ using UnnamedEngine.Utilities;
 namespace UnnamedEngine.Resources {
     public class StagingNode : TransferNode, IDisposable {
         bool disposed;
-        Engine engine;
         VkAllocator allocator;
 
         CommandPool pool;
@@ -31,17 +30,15 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        public StagingNode(Engine engine) : base(engine.Graphics.Device, VkPipelineStageFlags.TransferBit) {
-            if (engine == null) throw new ArgumentNullException(nameof(engine));
-            allocator = engine.Graphics.Allocator;
-
-            this.engine = engine;
+        public StagingNode(Graphics graphics) : base(graphics.Device, VkPipelineStageFlags.TransferBit) {
+            if (graphics == null) throw new ArgumentNullException(nameof(graphics));
+            allocator = graphics.Allocator;
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
-            info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+            info.queueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
             info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
 
-            pool = new CommandPool(engine.Graphics.Device, info);
+            pool = new CommandPool(graphics.Device, info);
             buffer = pool.Allocate(VkCommandBufferLevel.Primary);
 
             transfers = new List<TransferOp>();

@@ -49,7 +49,7 @@ namespace UnnamedEngine.Core {
             FrameLoop = new FrameLoop();
             Clock = new Clock();
 
-            graphics.Init(this);
+            CommandGraph.Add(graphics.TransferNode);
         }
 
         public void Run() {

@@ -37,6 +37,7 @@ namespace UnnamedEngine.Core {
             CreateDevice();
 
             Allocator = new VkAllocator(Device, 16 * 1024 * 1024);
+            TransferNode = new StagingNode(this);
         }
 
         void CreateDevice() {
@@ -93,11 +94,6 @@ namespace UnnamedEngine.Core {
             GraphicsQueue = Device.GetQueue(graphicsIndex, 0);
             PresentQueue = Device.GetQueue(presentIndex, 0);
             TransferQueue = Device.GetQueue(transferIndex, 0);
-        }
-
-        internal void Init(Engine engine) {
-            TransferNode = new StagingNode(engine);
-            engine.CommandGraph.Add(TransferNode);
         }
 
         public void Dispose() {
