@@ -81,7 +81,7 @@ namespace Test {
 
             ambient.AddLight(light1);
 
-            Directional directional = new Directional(engine, deferred);
+            Directional directional = new Directional(engine, deferred, 32);
             deferred.Lighting.AddLighting(directional);
 
             directional.AddLight(light3);

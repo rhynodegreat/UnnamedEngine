@@ -22,6 +22,8 @@ namespace Test {
         RenderPass renderPass;
         uint subpassIndex;
 
+        int lightCount;
+
         List<Light> lights;
         List<uint> lightIndices;
         List<LightData> lightData;
@@ -41,14 +43,16 @@ namespace Test {
             public Vector4 direction;
         }
 
-        public Directional(Engine engine, DeferredNode deferred) {
+        public Directional(Engine engine, DeferredNode deferred, int lightCount) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
+            if (lightCount < 0) throw new ArgumentOutOfRangeException(nameof(lightCount));
 
             this.engine = engine;
             this.deferred = deferred;
             gbuffer = deferred.GBuffer;
 
+            this.lightCount = lightCount;
             lights = new List<Light>();
             lightIndices = new List<uint>();
             lightData = new List<LightData>();
@@ -72,6 +76,7 @@ namespace Test {
         public void AddLight(Light light) {
             if (light == null) throw new ArgumentNullException(nameof(light));
             if (lights.Contains(light)) return;
+            if (lights.Count == lightCount) throw new DirectionalException(nameof(lightCount));
 
             lights.Add(light);
             lightData.Add(new LightData());
@@ -117,7 +122,7 @@ namespace Test {
         void CreateBuffer() {
             BufferCreateInfo info = new BufferCreateInfo();
             info.usage = VkBufferUsageFlags.UniformBufferBit;
-            info.size = 1024;
+            info.size = 32 * (uint)lightCount;
             info.sharingMode = VkSharingMode.Exclusive;
 
             uniform = new Buffer(engine.Graphics.Device, info);
@@ -321,5 +326,9 @@ namespace Test {
         ~Directional() {
             Dispose(false);
         }
+    }
+
+    public class DirectionalException : Exception {
+        public DirectionalException(string message) : base(message) { }
     }
 }
