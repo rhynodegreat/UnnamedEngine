@@ -11,6 +11,7 @@ using UnnamedEngine.Utilities;
 namespace UnnamedEngine.Resources {
     public class StagingNode : TransferNode, IDisposable {
         bool disposed;
+        Graphics graphics;
         VkAllocator allocator;
 
         CommandPool pool;
@@ -19,6 +20,9 @@ namespace UnnamedEngine.Resources {
         List<TransferOp> completed;
         List<CommandBuffer> submitBuffers;
         CommandBufferBeginInfo beginInfo;
+
+        Pool<BufferMemoryBarrier> bufferBarrierPool;
+        List<BufferMemoryBarrier> bufferBarriers;
 
         struct TransferOp {
             public Buffer staging;
@@ -32,7 +36,9 @@ namespace UnnamedEngine.Resources {
 
         public StagingNode(Graphics graphics) : base(graphics.Device, VkPipelineStageFlags.TransferBit) {
             if (graphics == null) throw new ArgumentNullException(nameof(graphics));
+
             allocator = graphics.Allocator;
+            this.graphics = graphics;
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
             info.queueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
@@ -47,6 +53,11 @@ namespace UnnamedEngine.Resources {
 
             beginInfo = new CommandBufferBeginInfo();
             beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit | VkCommandBufferUsageFlags.OneTimeSubmitBit;
+
+            bufferBarrierPool = new Pool<BufferMemoryBarrier>(() => new BufferMemoryBarrier() {
+                size = ulong.MaxValue   //VK_WHOLE_SIZE
+            });
+            bufferBarriers = new List<BufferMemoryBarrier>();
         }
 
         public override void PreRender() {
@@ -64,20 +75,32 @@ namespace UnnamedEngine.Resources {
 
             lock (transfers) {
                 for (int i = 0; i < transfers.Count; i++) {
-                    VkBufferCopy region = new VkBufferCopy();
-                    region.srcOffset = 0;
-                    region.dstOffset = 0;
-                    region.size = transfers[i].dest.Size;
-
                     buffer.CopyBuffer(transfers[i].staging, transfers[i].dest);
                     completed.Add(transfers[i]);
+
+                    BufferMemoryBarrier barrier = bufferBarrierPool.Get();
+                    barrier.buffer = transfers[i].dest;
+                    barrier.dstQueueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
+                    barrier.srcQueueFamilyIndex = graphics.TransferQueue.FamilyIndex;
+
+                    bufferBarriers.Add(barrier);
                 }
                 transfers.Clear();
             }
 
+            buffer.PipelineBarrier(VkPipelineStageFlags.TransferBit, VkPipelineStageFlags.TransferBit, VkDependencyFlags.None, null, bufferBarriers, null);
+
             buffer.End();
 
             return submitBuffers;
+        }
+
+        public override void PostRender() {
+            for (int i = 0; i < bufferBarriers.Count; i++) {
+                bufferBarrierPool.Free(bufferBarriers[i]);
+            }
+
+            bufferBarriers.Clear();
         }
 
         public override void Transfer<T>(T[] data, Buffer buffer) {
