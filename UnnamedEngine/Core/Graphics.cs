@@ -65,6 +65,9 @@ namespace UnnamedEngine.Core {
                 }
             }
 
+            if (g == -1) throw new GraphicsException("Graphics operations not supported");
+            if (p == -1) throw new GraphicsException("Presentation not supported");
+
             graphicsIndex = (uint)g;
             presentIndex = (uint)p;
             if (t == -1) {
@@ -117,5 +120,9 @@ namespace UnnamedEngine.Core {
         ~Graphics() {
             Dispose(false);
         }
+    }
+
+    public class GraphicsException : Exception {
+        public GraphicsException(string message) : base(message) { }
     }
 }
