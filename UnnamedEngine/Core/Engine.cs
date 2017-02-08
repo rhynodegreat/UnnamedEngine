@@ -82,6 +82,7 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             if (disposing) {
+                Camera.Dispose();
                 Window.Dispose();
                 Graphics.Dispose();
             }
