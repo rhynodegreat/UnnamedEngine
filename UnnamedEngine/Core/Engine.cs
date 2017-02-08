@@ -81,13 +81,13 @@ namespace UnnamedEngine.Core {
         void Dispose(bool disposing) {
             if (disposed) return;
 
+            CommandGraph.Dispose();
+
             if (disposing) {
                 Camera.Dispose();
                 Window.Dispose();
                 Graphics.Dispose();
             }
-
-            CommandGraph.Dispose();
 
             disposed = true;
         }
