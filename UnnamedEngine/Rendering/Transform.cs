@@ -18,13 +18,10 @@ namespace UnnamedEngine.Rendering {
                 return parent;
             }
             set {
-                lock (this)
-                lock (value) {
-                    if (value.IsDescendantOf(this)) throw new TransformException("Can not set parent of transform to it's descendant");
-                    parent?.RemoveChild(this);
-                    parent = value;
-                    parent?.AddChild(this);
-                }
+                if (value.IsDescendantOf(this)) throw new TransformException("Can not set parent of transform to it's descendant");
+                parent?.RemoveChild(this);
+                parent = value;
+                parent?.AddChild(this);
             }
         }
 
@@ -33,10 +30,8 @@ namespace UnnamedEngine.Rendering {
                 return worldTransform;
             }
             set {
-                lock (this) {
-                    RecalcChildrenTransform(value);
-                    worldTransform = value;
-                }
+                RecalcChildrenTransform(value);
+                worldTransform = value;
             }
         }
 
@@ -48,9 +43,7 @@ namespace UnnamedEngine.Rendering {
                 return WorldTransform * invParent;
             }
             set {
-                lock (this) {
-                    WorldTransform = value * parent.WorldTransform;
-                }
+                WorldTransform = value * parent.WorldTransform;
             }
         }
 
@@ -61,10 +54,8 @@ namespace UnnamedEngine.Rendering {
             set {
                 Vector3 pos, scale;
                 Quaternion rot;
-                lock (this) {
-                    Matrix4x4.Decompose(WorldTransform, out scale, out rot, out pos);
-                    WorldTransform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(value);
-                }
+                Matrix4x4.Decompose(WorldTransform, out scale, out rot, out pos);
+                WorldTransform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(value);
             }
         }
 
@@ -78,10 +69,8 @@ namespace UnnamedEngine.Rendering {
             set {
                 Vector3 pos, scale;
                 Quaternion rot;
-                lock (this) {
-                    Matrix4x4.Decompose(WorldTransform, out scale, out rot, out pos);
-                    WorldTransform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(value) * Matrix4x4.CreateTranslation(pos);
-                }
+                Matrix4x4.Decompose(WorldTransform, out scale, out rot, out pos);
+                WorldTransform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(value) * Matrix4x4.CreateTranslation(pos);
             }
         }
 
@@ -95,10 +84,8 @@ namespace UnnamedEngine.Rendering {
             set {
                 Vector3 pos, scale;
                 Quaternion rot;
-                lock (this) {
-                    Matrix4x4.Decompose(WorldTransform, out scale, out rot, out pos);
-                    WorldTransform = Matrix4x4.CreateScale(value) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
-                }
+                Matrix4x4.Decompose(WorldTransform, out scale, out rot, out pos);
+                WorldTransform = Matrix4x4.CreateScale(value) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
             }
         }
 
@@ -109,10 +96,8 @@ namespace UnnamedEngine.Rendering {
             set {
                 Vector3 pos, scale;
                 Quaternion rot;
-                lock (this) {
-                    Matrix4x4.Decompose(LocalTransform, out scale, out rot, out pos);
-                    LocalTransform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(value);
-                }
+                Matrix4x4.Decompose(LocalTransform, out scale, out rot, out pos);
+                LocalTransform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(value);
             }
         }
 
@@ -126,10 +111,8 @@ namespace UnnamedEngine.Rendering {
             set {
                 Vector3 pos, scale;
                 Quaternion rot;
-                lock (this) {
-                    Matrix4x4.Decompose(LocalTransform, out scale, out rot, out pos);
-                    LocalTransform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(value) * Matrix4x4.CreateTranslation(pos);
-                }
+                Matrix4x4.Decompose(LocalTransform, out scale, out rot, out pos);
+                LocalTransform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(value) * Matrix4x4.CreateTranslation(pos);
             }
         }
 
@@ -143,10 +126,8 @@ namespace UnnamedEngine.Rendering {
             set {
                 Vector3 pos, scale;
                 Quaternion rot;
-                lock (this) {
-                    Matrix4x4.Decompose(LocalTransform, out scale, out rot, out pos);
-                    LocalTransform = Matrix4x4.CreateScale(value) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
-                }
+                Matrix4x4.Decompose(LocalTransform, out scale, out rot, out pos);
+                LocalTransform = Matrix4x4.CreateScale(value) * Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(pos);
             }
         }
 
