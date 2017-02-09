@@ -161,7 +161,7 @@ namespace Test {
             for (int i = 0; i < lights.Count; i++) {
                 var color = lights[i].Color;
                 float brightness = Math.Max(color.r, Math.Max(color.g, color.b));
-                float radius = 16f * (float)Math.Sqrt(brightness / 5);  //(5/256) = brightness / (r^2)
+                float radius = 16f * (float)Math.Sqrt(brightness);  //(1/256) = brightness / (r^2)
 
                 lightData[i] = new LightData {
                     color = color,
