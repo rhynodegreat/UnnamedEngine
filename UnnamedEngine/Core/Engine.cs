@@ -15,7 +15,7 @@ namespace UnnamedEngine.Core {
         Camera camera;
 
         public Graphics Graphics { get; private set; }
-        public QueueGraph CommandGraph { get; private set; }
+        public QueueGraph QueueGraph { get; private set; }
         public FrameLoop FrameLoop { get; private set; }
         public Clock Clock { get; private set; }
 
@@ -45,11 +45,11 @@ namespace UnnamedEngine.Core {
             
             Graphics = graphics;
 
-            CommandGraph = new QueueGraph(this);
+            QueueGraph = new QueueGraph(this);
             FrameLoop = new FrameLoop();
             Clock = new Clock();
 
-            CommandGraph.Add(graphics.TransferNode);
+            QueueGraph.Add(graphics.TransferNode);
         }
 
         public void Run() {
@@ -67,7 +67,7 @@ namespace UnnamedEngine.Core {
                 Window.Update();
                 Camera.Update();
 
-                CommandGraph.Submit();
+                QueueGraph.Submit();
             }
 
             Graphics.Device.WaitIdle();
@@ -81,7 +81,7 @@ namespace UnnamedEngine.Core {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            CommandGraph.Dispose();
+            QueueGraph.Dispose();
 
             if (disposing) {
                 Camera.Dispose();

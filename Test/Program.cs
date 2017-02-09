@@ -96,7 +96,7 @@ namespace Test {
 
             point.AddLight(light4);
 
-            QueueGraph graph = engine.CommandGraph;
+            QueueGraph graph = engine.QueueGraph;
             graph.Add(acquireImageNode);
             graph.Add(presentNode);
             graph.Add(deferred);
