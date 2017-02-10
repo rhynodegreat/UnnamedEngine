@@ -32,6 +32,7 @@ namespace UnnamedEngine.Core {
             waitEvents = new List<Event>();
         }
 
+        protected abstract void OnBake();
         public abstract CommandBuffer GetCommands();
 
         public void WaitEvents(CommandBuffer commandBuffer) {
@@ -61,6 +62,7 @@ namespace UnnamedEngine.Core {
             foreach (var node in input) {
                 waitEvents.Add(node.Event);
             }
+            OnBake();
         }
 
         public void Dispose() {

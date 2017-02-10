@@ -49,9 +49,12 @@ namespace Test {
             CreateRenderPass();
             CreateFramebuffers(engine.Window);
             CreatePipeline();
-            CreateCommandBuffer();
 
             gbuffer.OnSizeChanged += Recreate;
+        }
+
+        protected override void OnBake() {
+            CreateCommandBuffer();
         }
 
         void Recreate(int x, int y) {
