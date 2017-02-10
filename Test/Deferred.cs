@@ -7,13 +7,12 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class DeferredNode : QueueNode, IDisposable {
+    public class Deferred : CommandNode, IDisposable {
         bool disposed;
         Engine engine;
 
         CommandPool pool;
         CommandBuffer commandBuffer;
-        List<CommandBuffer> submitBuffers;
 
         public GBuffer GBuffer { get; private set; }
         public RenderGraph RenderGraph { get; private set; }
@@ -23,12 +22,16 @@ namespace Test {
 
         public event Action OnFramebufferChanged = delegate { };
 
-        public DeferredNode(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, engine.Graphics.GraphicsQueue, VkPipelineStageFlags.ColorAttachmentOutputBit) {
+        public Deferred(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (gbuffer == null) throw new ArgumentNullException(nameof(gbuffer));
 
             this.engine = engine;
-            this.GBuffer = gbuffer;
+            GBuffer = gbuffer;
+
+            EventStage = VkPipelineStageFlags.VertexInputBit | VkPipelineStageFlags.VertexShaderBit | VkPipelineStageFlags.FragmentShaderBit | VkPipelineStageFlags.ColorAttachmentOutputBit;
+            SrcStage = VkPipelineStageFlags.TopOfPipeBit;
+            DstStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
 
             gbuffer.OnSizeChanged += RecreateFramebuffer;
 
@@ -99,7 +102,7 @@ namespace Test {
 
             RenderGraph.AddNode(Opaque);
 
-            Lighting = new LightingNode(engine, GBuffer, this, pool);
+            Lighting = new LightingNode(engine, GBuffer, pool);
             Lighting.AddInput(albedo, VkImageLayout.ShaderReadOnlyOptimal);
             Lighting.AddInput(norm, VkImageLayout.ShaderReadOnlyOptimal);
             Lighting.AddInput(depth, VkImageLayout.DepthStencilReadOnlyOptimal);
@@ -141,8 +144,6 @@ namespace Test {
 
         void CreateCommandBuffer() {
             commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
-
-            submitBuffers = new List<CommandBuffer> { commandBuffer };
         }
 
         void RecordCommands() {
@@ -160,7 +161,7 @@ namespace Test {
                         float32_0 = 0,
                         float32_1 = 0,
                         float32_2 = 0,
-                        float32_3 = 1
+                        float32_3 = 0
                     }
                 },
                 new VkClearValue {
@@ -168,7 +169,7 @@ namespace Test {
                         float32_0 = 0,
                         float32_1 = 0,
                         float32_2 = 0,
-                        float32_3 = 1
+                        float32_3 = 0
                     }
                 },
                 new VkClearValue {
@@ -182,7 +183,7 @@ namespace Test {
                         float32_0 = 0,
                         float32_1 = 0,
                         float32_2 = 0,
-                        float32_3 = 1
+                        float32_3 = 0
                     }
                 },
             };
@@ -193,14 +194,18 @@ namespace Test {
 
             commandBuffer.Begin(beginInfo);
 
+            WaitEvents(commandBuffer);
+
             RenderGraph.Render(renderPassInfo, commandBuffer);
+
+            SetEvents(commandBuffer);
 
             commandBuffer.End();
         }
 
-        public override List<CommandBuffer> GetCommands() {
+        public override CommandBuffer GetCommands() {
             RecordCommands();
-            return submitBuffers;
+            return commandBuffer;
         }
 
         public new void Dispose() {
@@ -210,7 +215,7 @@ namespace Test {
 
         protected override void Dispose(bool disposing) {
             if (disposed) return;
-            
+
             base.Dispose(disposing);
 
             Framebuffer.Dispose();

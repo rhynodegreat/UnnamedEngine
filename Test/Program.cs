@@ -28,8 +28,8 @@ namespace Test {
             Instance instance = CreateInstance();
             PhysicalDevice physicalDevice = PickPhysicalDevice(instance);
 
-            Graphics renderer = new Graphics(instance, physicalDevice);
-            Engine engine = new Engine(renderer);
+            Graphics graphics = new Graphics(instance, physicalDevice);
+            Engine engine = new Engine(graphics);
 
             UWindow window = new UWindow(engine, 800, 600, "Test");
             engine.Window = window;
@@ -43,22 +43,23 @@ namespace Test {
             FreeCam freeCam = new FreeCam(engine);
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
-            info.queueFamilyIndex = renderer.GraphicsQueue.FamilyIndex;
-            CommandPool commandPool = new CommandPool(renderer.Device, info);
+            info.queueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
+            CommandPool commandPool = new CommandPool(graphics.Device, info);
 
-            AcquireImageNode acquireImageNode = new AcquireImageNode(engine, commandPool);
-            PresentNode presentNode = new PresentNode(engine, acquireImageNode, commandPool);
-            presentNode.AddInput(acquireImageNode);
-
-            DeferredNode deferred = new DeferredNode(engine, gbuffer);
-            ToneMapNode toneMap = new ToneMapNode(engine, acquireImageNode, gbuffer);
-            toneMap.AddInput(deferred);
-            presentNode.AddInput(toneMap);
-            
             Mesh mesh;
             using (var stream = File.OpenRead("box.mesh")) {
                 mesh = new Mesh(engine, stream);
             }
+
+            Renderer renderer = new Renderer(engine);
+            renderer.AddInput(engine.Graphics.TransferNode);
+
+            Deferred deferred = new Deferred(engine, gbuffer);
+            renderer.AddNode(deferred);
+
+            ToneMapper toneMapper = new ToneMapper(engine, renderer, gbuffer);
+            renderer.AddNode(toneMapper);
+            toneMapper.AddInput(deferred);
 
             TriangleRenderer triangle = new TriangleRenderer(engine, deferred);
             BasicRenderer basic = new BasicRenderer(engine, deferred, mesh);
@@ -96,11 +97,10 @@ namespace Test {
 
             point.AddLight(light4);
 
+            renderer.Bake();
+
             QueueGraph graph = engine.QueueGraph;
-            graph.Add(acquireImageNode);
-            graph.Add(presentNode);
-            graph.Add(deferred);
-            graph.Add(toneMap);
+            graph.Add(renderer);
             graph.Bake();
 
             Console.WriteLine(mesh.VertexData.VertexCount);

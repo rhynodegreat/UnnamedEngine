@@ -8,13 +8,12 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 
 namespace Test {
-    public class ToneMapNode : QueueNode, IDisposable {
+    public class ToneMapper : CommandNode, IDisposable {
         bool disposed;
 
         Engine engine;
-        AcquireImageNode acquire;
-        uint imageIndex;
         GBuffer gbuffer;
+        Renderer presentation;
 
         RenderPass renderPass;
         List<ImageView> imageViews;
@@ -25,16 +24,18 @@ namespace Test {
         List<CommandBuffer> commandBuffers;
         List<CommandBuffer> submitBuffers;
 
-        public ToneMapNode(Engine engine, AcquireImageNode acquire, GBuffer gbuffer) : base(engine.Graphics.Device, engine.Graphics.GraphicsQueue, VkPipelineStageFlags.ColorAttachmentOutputBit) {
+        public ToneMapper(Engine engine, Renderer presentation, GBuffer gbuffer) : base(engine.Graphics.Device) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            if (acquire == null) throw new ArgumentNullException(nameof(acquire));
             if (gbuffer == null) throw new ArgumentNullException(nameof(gbuffer));
+            if (presentation == null) throw new ArgumentNullException(nameof(presentation));
 
             this.engine = engine;
-            this.acquire = acquire;
             this.gbuffer = gbuffer;
+            this.presentation = presentation;
 
-            AddInput(acquire);
+            EventStage = VkPipelineStageFlags.BottomOfPipeBit;
+            SrcStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
+            DstStage = VkPipelineStageFlags.FragmentShaderBit;
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
@@ -46,14 +47,14 @@ namespace Test {
             framebuffers = new List<Framebuffer>();
 
             CreateRenderPass();
-            CreatePipeline();
             CreateFramebuffers(engine.Window);
+            CreatePipeline();
             CreateCommandBuffer();
 
-            gbuffer.OnSizeChanged += (int x, int y) => { Recreate(); };
+            gbuffer.OnSizeChanged += Recreate;
         }
 
-        void Recreate() {
+        void Recreate(int x, int y) {
             CreateFramebuffers(engine.Window);
             CreatePipeline();
             CreateCommandBuffer();
@@ -63,12 +64,12 @@ namespace Test {
             var colorAttachment = new AttachmentDescription();
             colorAttachment.format = engine.Window.SwapchainImageFormat;
             colorAttachment.samples = VkSampleCountFlags._1Bit;
-            colorAttachment.loadOp = VkAttachmentLoadOp.Load;
+            colorAttachment.loadOp = VkAttachmentLoadOp.Clear;
             colorAttachment.storeOp = VkAttachmentStoreOp.Store;
             colorAttachment.stencilLoadOp = VkAttachmentLoadOp.DontCare;
             colorAttachment.stencilStoreOp = VkAttachmentStoreOp.DontCare;
             colorAttachment.initialLayout = VkImageLayout.Undefined;
-            colorAttachment.finalLayout = VkImageLayout.ColorAttachmentOptimal;
+            colorAttachment.finalLayout = VkImageLayout.PresentSrcKhr;
 
             var colorAttachmentRef = new AttachmentReference();
             colorAttachmentRef.attachment = 0;
@@ -81,7 +82,7 @@ namespace Test {
             var dependency = new SubpassDependency();
             dependency.srcSubpass = uint.MaxValue;  //VK_SUBPASS_EXTERNAL
             dependency.dstSubpass = 0;
-            dependency.srcStageMask = VkPipelineStageFlags.BottomOfPipeBit;
+            dependency.srcStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
             dependency.srcAccessMask = VkAccessFlags.MemoryReadBit;
             dependency.dstStageMask = VkPipelineStageFlags.ColorAttachmentOutputBit;
             dependency.dstAccessMask = VkAccessFlags.ColorAttachmentReadBit
@@ -93,7 +94,7 @@ namespace Test {
             info.dependencies = new List<SubpassDependency> { dependency };
 
             renderPass?.Dispose();
-            renderPass = new RenderPass(device, info);
+            renderPass = new RenderPass(engine.Graphics.Device, info);
         }
 
         void CreateFramebuffers(Window window) {
@@ -112,7 +113,7 @@ namespace Test {
                 ivInfo.subresourceRange.baseArrayLayer = 0;
                 ivInfo.subresourceRange.layerCount = 1;
 
-                imageViews.Add(new ImageView(device, ivInfo));
+                imageViews.Add(new ImageView(engine.Graphics.Device, ivInfo));
 
                 FramebufferCreateInfo fbInfo = new FramebufferCreateInfo();
                 fbInfo.renderPass = renderPass;
@@ -121,7 +122,7 @@ namespace Test {
                 fbInfo.width = window.SwapchainExtent.width;
                 fbInfo.layers = 1;
 
-                framebuffers.Add(new Framebuffer(device, fbInfo));
+                framebuffers.Add(new Framebuffer(engine.Graphics.Device, fbInfo));
             }
         }
 
@@ -131,8 +132,8 @@ namespace Test {
         }
 
         void CreatePipeline() {
-            var vert = CreateShaderModule(device, File.ReadAllBytes("tonemap_vert.spv"));
-            var frag = CreateShaderModule(device, File.ReadAllBytes("tonemap_frag.spv"));
+            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("tonemap_vert.spv"));
+            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("tonemap_frag.spv"));
 
             var vertInfo = new PipelineShaderStageCreateInfo();
             vertInfo.stage = VkShaderStageFlags.VertexBit;
@@ -195,7 +196,7 @@ namespace Test {
 
             pipelineLayout?.Dispose();
 
-            pipelineLayout = new PipelineLayout(device, pipelineLayoutInfo);
+            pipelineLayout = new PipelineLayout(engine.Graphics.Device, pipelineLayoutInfo);
 
             var oldPipeline = pipeline;
 
@@ -213,7 +214,7 @@ namespace Test {
             info.basePipeline = pipeline;
             info.basePipelineIndex = -1;
 
-            pipeline = new Pipeline(device, info, null);
+            pipeline = new Pipeline(engine.Graphics.Device, info, null);
 
             oldPipeline?.Dispose();
 
@@ -234,8 +235,15 @@ namespace Test {
                 renderPassInfo.renderPass = renderPass;
                 renderPassInfo.framebuffer = framebuffers[i];
                 renderPassInfo.renderArea.extent = engine.Window.SwapchainExtent;
+                renderPassInfo.clearValues = new List<VkClearValue> {
+                    new VkClearValue {
+                        color = new VkClearColorValue()
+                    }
+                };
 
                 commandBuffers[i].Begin(beginInfo);
+
+                WaitEvents(commandBuffers[i]);
                 commandBuffers[i].BeginRenderPass(renderPassInfo, VkSubpassContents.Inline);
 
                 commandBuffers[i].BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
@@ -243,19 +251,15 @@ namespace Test {
                 commandBuffers[i].Draw(6, 1, 0, 0);
 
                 commandBuffers[i].EndRenderPass();
+                SetEvents(commandBuffers[i]);
                 commandBuffers[i].End();
             }
 
             submitBuffers = new List<CommandBuffer> { null };
         }
 
-        public override void PreRender() {
-            imageIndex = acquire.ImageIndex;
-        }
-
-        public override List<CommandBuffer> GetCommands() {
-            submitBuffers[0] = commandBuffers[(int)imageIndex];
-            return submitBuffers;
+        public override CommandBuffer GetCommands() {
+            return commandBuffers[(int)presentation.ImageIndex];
         }
 
         public new void Dispose() {
@@ -273,12 +277,14 @@ namespace Test {
             renderPass.Dispose();
             pool.Dispose();
 
+            gbuffer.OnSizeChanged -= Recreate;
+
             base.Dispose(disposing);
 
             disposed = true;
         }
 
-        ~ToneMapNode() {
+        ~ToneMapper() {
             Dispose(false);
         }
     }

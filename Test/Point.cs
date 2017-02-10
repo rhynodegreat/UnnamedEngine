@@ -19,7 +19,7 @@ namespace Test {
         bool disposed;
 
         Engine engine;
-        DeferredNode deferred;
+        Deferred deferred;
         GBuffer gbuffer;
         RenderPass renderPass;
         uint subpassIndex;
@@ -50,7 +50,7 @@ namespace Test {
             public Matrix4x4 transform;
         }
 
-        public Point(Engine engine, DeferredNode deferred, Camera camera, int lightCount) {
+        public Point(Engine engine, Deferred deferred, Camera camera, int lightCount) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
             if (lightCount < 0) throw new ArgumentOutOfRangeException(nameof(lightCount));

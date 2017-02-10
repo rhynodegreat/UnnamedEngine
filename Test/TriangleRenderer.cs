@@ -17,7 +17,7 @@ namespace Test {
         bool disposed;
         Engine engine;
         TransferNode transferNode;
-        DeferredNode deferredNode;
+        Deferred deferred;
         Camera camera;
         RenderPass renderPass;
         uint subpassIndex;
@@ -38,22 +38,22 @@ namespace Test {
             new Vertex(new Vector3(-1, -1, -.1f), new Vector3(0, 0, 1), new Vector3(0, 0, -1)),
         };
 
-        public TriangleRenderer(Engine engine, DeferredNode deferredNode) {
+        public TriangleRenderer(Engine engine, Deferred deferred) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
-            if (deferredNode == null) throw new ArgumentNullException(nameof(deferredNode));
+            if (deferred == null) throw new ArgumentNullException(nameof(deferred));
 
             this.engine = engine;
             transferNode = engine.Graphics.TransferNode;
-            this.deferredNode = deferredNode;
+            this.deferred = deferred;
             camera = engine.Camera;
 
             CreateVertexBuffer(engine.Graphics);
             CreateCommandPool(engine);
 
-            deferredNode.Opaque.AddRenderer(this);
+            deferred.Opaque.AddRenderer(this);
 
-            deferredNode.OnFramebufferChanged += () => {
+            deferred.OnFramebufferChanged += () => {
                 CreatePipeline();
                 CreateCommandBuffers();
             };
@@ -110,14 +110,14 @@ namespace Test {
             inputAssembly.topology = VkPrimitiveTopology.TriangleList;
 
             var viewport = new VkViewport();
-            viewport.width = deferredNode.GBuffer.Width;
-            viewport.height = deferredNode.GBuffer.Height;
+            viewport.width = deferred.GBuffer.Width;
+            viewport.height = deferred.GBuffer.Height;
             viewport.minDepth = 0f;
             viewport.maxDepth = 1f;
 
             var scissor = new VkRect2D();
-            scissor.extent.width = (uint)deferredNode.GBuffer.Width;
-            scissor.extent.height = (uint)deferredNode.GBuffer.Height;
+            scissor.extent.width = (uint)deferred.GBuffer.Width;
+            scissor.extent.height = (uint)deferred.GBuffer.Height;
 
             var viewportState = new PipelineViewportStateCreateInfo();
             viewportState.viewports = new List<VkViewport> { viewport };
@@ -261,7 +261,7 @@ namespace Test {
             pipelineLayout.Dispose();
             engine.Graphics.Allocator.Free(vertexAllocation);
 
-            deferredNode.OnFramebufferChanged -= CreateCommandBuffers;
+            deferred.OnFramebufferChanged -= CreateCommandBuffers;
 
             disposed = true;
         }

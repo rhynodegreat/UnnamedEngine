@@ -13,7 +13,7 @@ namespace Test {
         bool disposed;
 
         Engine engine;
-        DeferredNode deferred;
+        Deferred deferred;
         GBuffer gbuffer;
         RenderPass renderPass;
         uint subpassIndex;
@@ -24,7 +24,7 @@ namespace Test {
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
 
-        public Ambient(Engine engine, DeferredNode deferred) {
+        public Ambient(Engine engine, Deferred deferred) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
 

@@ -16,16 +16,14 @@ namespace Test {
         GBuffer gbuffer;
         RenderPass renderPass;
         uint subpassIndex;
-        DeferredNode deferred;
         
         List<CommandBuffer> submitBuffers;
         List<ISubpass> subpasses;
 
-        public LightingNode(Engine engine, GBuffer gbuffer, DeferredNode deferred, CommandPool pool) {
+        public LightingNode(Engine engine, GBuffer gbuffer, CommandPool pool) {
             this.engine = engine;
             this.pool = pool;
             this.gbuffer = gbuffer;
-            this.deferred = deferred;
 
             submitBuffers = new List<CommandBuffer>();
             subpasses = new List<ISubpass>();

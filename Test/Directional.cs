@@ -17,7 +17,7 @@ namespace Test {
         bool disposed;
 
         Engine engine;
-        DeferredNode deferred;
+        Deferred deferred;
         GBuffer gbuffer;
         RenderPass renderPass;
         uint subpassIndex;
@@ -43,7 +43,7 @@ namespace Test {
             public Vector4 direction;
         }
 
-        public Directional(Engine engine, DeferredNode deferred, int lightCount) {
+        public Directional(Engine engine, Deferred deferred, int lightCount) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
             if (lightCount < 0) throw new ArgumentOutOfRangeException(nameof(lightCount));
