@@ -40,6 +40,10 @@ namespace Test {
             presentInfo.swapchains = new List<Swapchain> { window.Swapchain };
             presentInfo.waitSemaphores = new List<Semaphore> { renderDoneSemaphore };
             presentInfo.imageIndices = new List<uint> { 0 };
+
+            window.OnSizeChanged += (int x, int y) => {
+                presentInfo.swapchains[0] = window.Swapchain;
+            };
         }
 
         public void Bake() {
