@@ -222,7 +222,7 @@ namespace Test {
             RenderGraph.Dispose();
             pool.Dispose();
 
-            GBuffer.OnSizeChanged -= CreateFramebuffer;
+            GBuffer.OnSizeChanged -= RecreateFramebuffer;
 
             disposed = true;
         }
