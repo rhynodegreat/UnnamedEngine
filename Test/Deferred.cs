@@ -29,7 +29,7 @@ namespace Test {
             this.engine = engine;
             GBuffer = gbuffer;
 
-            EventStage = VkPipelineStageFlags.VertexInputBit | VkPipelineStageFlags.VertexShaderBit | VkPipelineStageFlags.FragmentShaderBit | VkPipelineStageFlags.ColorAttachmentOutputBit;
+            EventStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
             SrcStage = VkPipelineStageFlags.TopOfPipeBit;
             DstStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
 
