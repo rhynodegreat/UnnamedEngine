@@ -68,7 +68,7 @@ namespace UnnamedEngine.Core {
             Input = new Input(window);
 
             CreateSurface();
-            CreateSwapchain(engine.Graphics);
+            CreateSwapchain();
         }
 
        internal void Update() {
@@ -77,7 +77,7 @@ namespace UnnamedEngine.Core {
                 width = newWidth;
                 height = newHeight;
 
-                CreateSwapchain(engine.Graphics);
+                CreateSwapchain();
 
                 OnSizeChanged(newWidth, newHeight);
                 sizeChanged = false;
@@ -99,7 +99,7 @@ namespace UnnamedEngine.Core {
             }
         }
 
-        void CreateSwapchain(Graphics renderer) {
+        void CreateSwapchain() {
             var cap = Surface.Capabilities;
             var format = ChooseSwapSurfaceFormat(Surface.Formats);
             var mode = ChooseSwapPresentMode(Surface.PresentModes);
@@ -119,9 +119,9 @@ namespace UnnamedEngine.Core {
             info.imageArrayLayers = 1;
             info.imageUsage = VkImageUsageFlags.ColorAttachmentBit;
 
-            var queueFamilyIndices = new List<uint> { renderer.GraphicsQueue.FamilyIndex,  renderer.PresentQueue.FamilyIndex };
+            var queueFamilyIndices = new List<uint> { engine.Graphics.GraphicsQueue.FamilyIndex,  engine.Graphics.PresentQueue.FamilyIndex };
 
-            if (renderer.GraphicsQueue.FamilyIndex != renderer.PresentQueue.FamilyIndex) {
+            if (engine.Graphics.GraphicsQueue.FamilyIndex != engine.Graphics.PresentQueue.FamilyIndex) {
                 info.imageSharingMode = VkSharingMode.Concurrent;
                 info.queueFamilyIndices = queueFamilyIndices;
             } else {
@@ -133,7 +133,7 @@ namespace UnnamedEngine.Core {
             info.presentMode = mode;
             info.clipped = true;
 
-            Swapchain = new Swapchain(renderer.Device, info);
+            Swapchain = new Swapchain(engine.Graphics.Device, info);
             oldSwapchain?.Dispose();
 
             SwapchainImageFormat = format.format;
