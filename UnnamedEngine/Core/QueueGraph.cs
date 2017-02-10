@@ -70,13 +70,7 @@ namespace UnnamedEngine.Core {
                 Visit(stack, sortState, node);
             }
 
-            foreach (var infos in queueMap.Values) {
-                foreach (var info in infos) {
-                    Clear(info);
-                }
-                infos.Clear();
-            }
-            nodeList.Clear();
+            ClearInternal();
 
             foreach (var fence in fences) {
                 fence.Dispose();
@@ -121,22 +115,27 @@ namespace UnnamedEngine.Core {
         }
 
         public void Clear() {
+            ClearInternal();
+            nodeMap.Clear();
+        }
+
+        void ClearInternal() {
+            foreach (var sem in localSemaphores) {
+                sem.Dispose();
+            }
+            localSemaphores.Clear();
+
             foreach (var infos in queueMap.Values) {
                 foreach (var info in infos) {
                     Clear(info);
                 }
                 infos.Clear();
             }
-            nodeList.Clear();
 
-            nodeMap.Clear();
+            nodeList.Clear();
         }
 
         void Clear(SubmitInfo info) {
-            foreach (var sem in localSemaphores) {
-                sem.Dispose();
-            }
-            localSemaphores.Clear();
 
             info.signalSemaphores.Clear();
             info.waitDstStageMask.Clear();
