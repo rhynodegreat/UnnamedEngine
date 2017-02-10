@@ -35,7 +35,7 @@ namespace UnnamedEngine.Core {
         public abstract CommandBuffer GetCommands();
 
         public void WaitEvents(CommandBuffer commandBuffer) {
-            commandBuffer.WaitEvents(waitEvents, SrcStage, DstStage, MemoryBarriers, BufferMemoryBarriers, ImageMemoryBarriers);
+            if (waitEvents.Count > 0) commandBuffer.WaitEvents(waitEvents, SrcStage, DstStage, MemoryBarriers, BufferMemoryBarriers, ImageMemoryBarriers);
         }
 
         public void SetEvents(CommandBuffer commandBuffer) {
