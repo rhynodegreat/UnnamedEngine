@@ -68,6 +68,7 @@
     <Compile Include="Resources\TransferNode.cs" />
     <Compile Include="Resources\VertexData.cs" />
     <Compile Include="UI\Label.cs" />
+    <Compile Include="UI\TextRenderer.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="Utilities\OpenList.cs" />
     <Compile Include="Utilities\Pool.cs" />
