@@ -64,6 +64,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IRenderer.cs" />
     <Compile Include="StarRenderer.cs" />
+    <Compile Include="TextRenderer.cs" />
     <Compile Include="ToneMapper.cs" />
     <Compile Include="TriangleRenderer.cs" />
   </ItemGroup>
