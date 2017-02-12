@@ -67,6 +67,8 @@
     <Compile Include="Resources\StagingNode.cs" />
     <Compile Include="Resources\TransferNode.cs" />
     <Compile Include="Resources\VertexData.cs" />
+    <Compile Include="UI\Label.cs" />
+    <Compile Include="UI\UIElement.cs" />
     <Compile Include="Utilities\OpenList.cs" />
     <Compile Include="Utilities\Pool.cs" />
     <Compile Include="Utilities\VkAlloc\Heap.cs" />
@@ -89,7 +91,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
