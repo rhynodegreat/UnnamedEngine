@@ -16,6 +16,8 @@ namespace UnnamedEngine.UI {
 
         public TextRenderer(Engine engine) : base(engine.Graphics.Device) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
+
+            this.engine = engine;
             device = engine.Graphics.Device;
 
             CreateCommandPool();
