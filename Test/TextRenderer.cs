@@ -5,7 +5,7 @@ using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
 
-namespace UnnamedEngine.UI {
+namespace Test {
     public class TextRenderer : CommandNode {
         bool disposed;
         Engine engine;
