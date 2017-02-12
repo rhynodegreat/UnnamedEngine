@@ -39,7 +39,7 @@ namespace Test {
         bool dirty = true;
 
         struct LightData {
-            public Color color;
+            public Color4 color;
             public Vector4 direction;
         }
 

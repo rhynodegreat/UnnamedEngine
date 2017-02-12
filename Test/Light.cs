@@ -13,7 +13,7 @@ namespace Test {
 
     public class Light {
         public LightType Type { get; set; }
-        public Color Color { get; set; }
+        public Color4 Color { get; set; }
         public Transform Transform { get; set; }
 
         public Light() {

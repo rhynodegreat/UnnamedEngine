@@ -66,19 +66,19 @@ namespace Test {
             StarRenderer stars = new StarRenderer(engine, deferred);
 
             Light light1 = new Light();
-            light1.Color = new CSGL.Graphics.Color(0.125f, 0.125f, 0.125f, 0);
+            light1.Color = new CSGL.Graphics.Color4(0.125f, 0.125f, 0.125f, 0);
 
             Light light2 = new Light();
-            light2.Color = new CSGL.Graphics.Color(0.5f, 0.5f, 0.5f, 0);
+            light2.Color = new CSGL.Graphics.Color4(0.5f, 0.5f, 0.5f, 0);
             
             Light light3 = new Light();
-            light3.Color = new CSGL.Graphics.Color(0.25f, 0.25f, 0.25f, 0);
+            light3.Color = new CSGL.Graphics.Color4(0.25f, 0.25f, 0.25f, 0);
 
             light3.Transform.Rotation = Quaternion.CreateFromYawPitchRoll((float)Math.PI * .65f, 0, 0) *
                                         Quaternion.CreateFromYawPitchRoll(0, -(float)Math.PI * .25f, 0);
 
             Light light4 = new Light();
-            light4.Color = new CSGL.Graphics.Color(0.125f, 0.125f, 0.125f, 0);
+            light4.Color = new CSGL.Graphics.Color4(0.125f, 0.125f, 0.125f, 0);
             light4.Transform.Position = new Vector3(0, 0.6f, 0.25f);
 
             Ambient ambient = new Ambient(engine, deferred);

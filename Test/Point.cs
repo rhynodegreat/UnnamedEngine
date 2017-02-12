@@ -45,7 +45,7 @@ namespace Test {
         [StructLayout(LayoutKind.Explicit, Size = 80)]
         struct LightData {
             [FieldOffset(0)]
-            public Color color;
+            public Color4 color;
             [FieldOffset(16)]
             public Matrix4x4 transform;
         }
