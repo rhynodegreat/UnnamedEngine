@@ -39,8 +39,9 @@ namespace UnnamedEngine.UI.Text {
 
         Glyph LoadGlyph(int codepoint) {
             lock (face) {
+                int glyphIndex = (int)face.GetCharIndex((uint)codepoint);
                 Shape shape = MSDF.LoadGlyph(face, codepoint);
-                Glyph result = new Glyph(this, shape, codepoint);
+                Glyph result = new Glyph(this, shape, codepoint, glyphIndex);
                 glyphMap.Add(codepoint, result);
 
                 return result;

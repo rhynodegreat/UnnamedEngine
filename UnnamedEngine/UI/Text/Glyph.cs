@@ -8,11 +8,13 @@ namespace UnnamedEngine.UI.Text {
         public Font Font { get; private set; }
         public Shape Shape { get; private set; }
         public int Codepoint { get; private set; }
+        public int GlyphIndex { get; private set; }
 
-        internal Glyph(Font font, Shape shape, int codepoint) {
+        internal Glyph(Font font, Shape shape, int codepoint, int glyphIndex) {
             Font = font;
             Shape = shape;
             Codepoint = codepoint;
+            GlyphIndex = glyphIndex;
         }
     }
 }
