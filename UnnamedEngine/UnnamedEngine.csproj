@@ -79,6 +79,7 @@
     <Compile Include="UI\Text\FontCache.cs" />
     <Compile Include="UI\Label.cs" />
     <Compile Include="UI\Text\FontCachePage.cs" />
+    <Compile Include="UI\Text\Glyph.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="Utilities\OpenList.cs" />
     <Compile Include="Utilities\Pool.cs" />
