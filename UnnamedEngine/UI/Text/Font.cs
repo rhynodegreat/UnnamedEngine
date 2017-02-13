@@ -41,7 +41,17 @@ namespace UnnamedEngine.UI.Text {
             lock (face) {
                 int glyphIndex = (int)face.GetCharIndex((uint)codepoint);
                 Shape shape = MSDF.LoadGlyph(face, codepoint);
-                Glyph result = new Glyph(this, shape, codepoint, glyphIndex);
+
+                GlyphMetrics metrics = face.Glyph.Metrics;
+                float width = metrics.Width.ToSingle();
+                float height = metrics.Height.ToSingle();
+                float bearingX = metrics.HorizontalBearingX.ToSingle();
+                float bearingY = metrics.HorizontalBearingY.ToSingle();
+                float advance = metrics.HorizontalAdvance.ToSingle();
+
+                Metrics info = new Metrics(width, height, bearingX, bearingY, advance);
+
+                Glyph result = new Glyph(this, shape, codepoint, glyphIndex, info);
                 glyphMap.Add(codepoint, result);
 
                 return result;
