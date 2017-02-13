@@ -64,6 +64,8 @@ namespace UnnamedEngine.UI.Text {
             Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X) + padding, (int)Math.Ceiling(info.size.Y) + padding);
 
             AddToPage(glyph, ref info, ref rect);
+
+            infoMap.Add(pair, info);
         }
 
         void AddToPage(Glyph glyph, ref GlyphInfo info, ref Rectanglei rect) {
@@ -76,6 +78,7 @@ namespace UnnamedEngine.UI.Text {
             }
 
             FontCachePage newPage = new FontCachePage(pageSize, pageSize);
+            newPage.AttemptAdd(ref rect);
             MSDF.GenerateMSDF(newPage.Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, -info.offset, 1.000001);
             info.uvPosition = new Vector3(rect.X, rect.Y, pages.Count);
             pages.Add(newPage);
