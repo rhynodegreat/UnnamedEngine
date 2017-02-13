@@ -6,7 +6,7 @@ using CSGL.Math;
 
 namespace UnnamedEngine.UI.Text {
     internal class FontCachePage {
-        bool[] free;
+        List<Rectanglei> free;
         int width;
         int height;
 
@@ -17,19 +17,34 @@ namespace UnnamedEngine.UI.Text {
             this.height = height;
 
             Bitmap = new Bitmap<Color3>(width, height);
-            free = new bool[width * height];
+            free = new List<Rectanglei>();
+        }
 
-            for (int i = 0; i < width * height; i++) {
-                free[i] = true;
+        public bool AttemptAdd(ref Rectanglei rect) {
+            for (int i = 0; i < free.Count; i++) {
+                if (free[i].Width <= rect.Width && free[i].Height <= rect.Height) {
+                    Rectanglei node = free[i];
+                    free.RemoveAt(i);
+
+                    int freeRight = node.Width - rect.Width;
+                    int freeBottom = node.Height - rect.Height;
+
+                    if (freeRight > 0) {
+                        free.Add(new Rectanglei(node.X + rect.Width, node.Y, freeRight, rect.Height + freeBottom));
+                    }
+
+                    if (freeBottom > 0) {
+                        free.Add(new Rectanglei(node.X, node.Y + rect.Height, rect.Width, freeBottom));
+                    }
+
+                    rect.X = node.X;
+                    rect.Y = node.Y;
+
+                    return true;
+                }
             }
-        }
 
-        int GetIndex(int x, int y) {
-            return x + y * width;
-        }
-
-        public bool CanAdd(Rectangle rect) {
-            return true;
+            return false;
         }
     }
 }
