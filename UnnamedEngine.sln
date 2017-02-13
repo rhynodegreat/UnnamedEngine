@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSGL.Vulkan", "..\CSharpGam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{7CCBEC77-4EEB-4A6D-85A1-1416A7B3686C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSDFGen", "..\CSharpGameLibrary\MSDFGen\MSDFGen.csproj", "{C54DAD5A-6E13-47AF-856B-BF5CC4C519B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{7CCBEC77-4EEB-4A6D-85A1-1416A7B3686C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CCBEC77-4EEB-4A6D-85A1-1416A7B3686C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CCBEC77-4EEB-4A6D-85A1-1416A7B3686C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C54DAD5A-6E13-47AF-856B-BF5CC4C519B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C54DAD5A-6E13-47AF-856B-BF5CC4C519B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C54DAD5A-6E13-47AF-856B-BF5CC4C519B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C54DAD5A-6E13-47AF-856B-BF5CC4C519B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
