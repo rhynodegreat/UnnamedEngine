@@ -18,11 +18,12 @@ namespace UnnamedEngine.UI.Text {
 
             Bitmap = new Bitmap<Color3>(width, height);
             free = new List<Rectanglei>();
+            free.Add(new Rectanglei(0, 0, width, height));
         }
 
         public bool AttemptAdd(ref Rectanglei rect) {
             for (int i = 0; i < free.Count; i++) {
-                if (free[i].Width <= rect.Width && free[i].Height <= rect.Height) {
+                if (free[i].Width >= rect.Width && free[i].Height >= rect.Height) {
                     Rectanglei node = free[i];
                     free.RemoveAt(i);
 
