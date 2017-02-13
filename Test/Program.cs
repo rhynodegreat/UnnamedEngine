@@ -4,12 +4,14 @@ using System.Numerics;
 using System.IO;
 
 using CSGL.GLFW;
+using CSGL.Graphics;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
 using UWindow = UnnamedEngine.Core.Window;
 using UnnamedEngine.Resources;
 using UnnamedEngine.Rendering;
+using UnnamedEngine.UI.Text;
 
 namespace Test {
     class Program {
@@ -105,6 +107,31 @@ namespace Test {
 
             Console.WriteLine(mesh.VertexData.VertexCount);
             Console.WriteLine(mesh.IndexData.IndexCount);
+
+            FontCache cache = new FontCache(engine);
+            Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
+            string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,<>\"'?/:;\\+-*/_[]{}|!@#$%^&*()`~";
+            foreach (char c in letters) {
+                cache.AddGlyph(font, c);
+            }
+            Bitmap<Color3> bitmap = cache.Bitmaps[0];
+
+            System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);
+            for (int x = 0; x < bitmap.Width; x++) {
+                for (int y = 0; y < bitmap.Height; y++) {
+                    float red = bitmap[x, y].r * 255;
+                    float green = bitmap[x, y].g * 255;
+                    float blue = bitmap[x, y].b * 255;
+
+                    int r = (int)Math.Min(Math.Max(red, 0), 255);
+                    int g = (int)Math.Min(Math.Max(green, 0), 255);
+                    int b = (int)Math.Min(Math.Max(blue, 0), 255);
+
+                    output.SetPixel(x, y, System.Drawing.Color.FromArgb(r, g, b));
+                }
+            }
+
+            output.Save("output.png");
 
             using (engine)
             using (commandPool)
