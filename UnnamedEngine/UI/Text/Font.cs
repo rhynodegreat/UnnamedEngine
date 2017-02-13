@@ -41,6 +41,7 @@ namespace UnnamedEngine.UI.Text {
             lock (face) {
                 int glyphIndex = (int)face.GetCharIndex((uint)codepoint);
                 Shape shape = MSDF.LoadGlyph(face, codepoint);
+                MSDF.EdgeColoringSimple(shape, 3, 0);
 
                 GlyphMetrics metrics = face.Glyph.Metrics;
                 float width = metrics.Width.ToSingle();
