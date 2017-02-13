@@ -11,6 +11,7 @@ namespace UnnamedEngine.UI.Text {
 
         static Library library;
         Face face;
+        Dictionary<int, Glyph> glyphMap;
 
         public Font(byte[] data, int faceIndex) {
             if (library == null) {
@@ -20,11 +21,31 @@ namespace UnnamedEngine.UI.Text {
             lock (library) {
                 face = new Face(library, data, faceIndex);
             }
+
+            glyphMap = new Dictionary<int, Glyph>();
         }
 
         public Font(byte[] data) : this(data, 0) { }
         public Font(string path) : this(File.ReadAllBytes(path), 0) { }
         public Font(string path, int faceIndex) : this(File.ReadAllBytes(path), faceIndex) { }
+
+        public Glyph GetGlyph(int codepoint) {
+            if (glyphMap.ContainsKey(codepoint)) {
+                return glyphMap[codepoint];
+            } else {
+                return LoadGlyph(codepoint);
+            }
+        }
+
+        Glyph LoadGlyph(int codepoint) {
+            lock (face) {
+                Shape shape = MSDF.LoadGlyph(face, codepoint);
+                Glyph result = new Glyph(this, shape, codepoint);
+                glyphMap.Add(codepoint, result);
+
+                return result;
+            }
+        }
 
         public void Dispose() {
             Dispose(false);
