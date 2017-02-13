@@ -75,6 +75,7 @@
     <Compile Include="Resources\StagingNode.cs" />
     <Compile Include="Resources\TransferNode.cs" />
     <Compile Include="Resources\VertexData.cs" />
+    <Compile Include="UI\Text\Font.cs" />
     <Compile Include="UI\Text\FontCache.cs" />
     <Compile Include="UI\Label.cs" />
     <Compile Include="UI\Text\FontCachePage.cs" />
