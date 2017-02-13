@@ -41,6 +41,7 @@ namespace UnnamedEngine.UI.Text {
         int padding = 2;
         double range = 4;
         int pageSize = 1024;
+        public List<Bitmap<Color3>> Bitmaps { get; private set; }
 
         public FontCache(Engine engine) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -48,6 +49,7 @@ namespace UnnamedEngine.UI.Text {
             this.engine = engine;
             pages = new List<FontCachePage>();
             infoMap = new Dictionary<GlyphPair, GlyphInfo>();
+            Bitmaps = new List<Bitmap<Color3>>();
         }
 
         public void AddGlyph(Font font, int codepoint) {
@@ -77,6 +79,7 @@ namespace UnnamedEngine.UI.Text {
             MSDF.GenerateMSDF(newPage.Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, -info.offset, 1.000001);
             info.uvPosition = new Vector3(rect.X, rect.Y, pages.Count);
             pages.Add(newPage);
+            Bitmaps.Add(newPage.Bitmap);
         }
 
         public GlyphInfo GetInfo(Font font, int codepoint) {
