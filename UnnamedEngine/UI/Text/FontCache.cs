@@ -15,7 +15,6 @@ namespace UnnamedEngine.UI.Text {
         public Vector2 offset;
         public Vector2 size;
         public Vector3 uvPosition;
-        public Vector2 uvExtent;
     }
 
     public class FontCache : IDisposable {
@@ -71,18 +70,21 @@ namespace UnnamedEngine.UI.Text {
         void AddToPage(Glyph glyph, ref GlyphInfo info, ref Rectanglei rect) {
             for (int i = 0; i < pages.Count; i++) {
                 if (pages[i].AttemptAdd(ref rect)) {
-                    MSDF.GenerateMSDF(pages[i].Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, -info.offset, 1.000001);
-                    info.uvPosition = new Vector3(rect.X, rect.Y, i);
+                    Render(pages[i], i, glyph, ref info, rect);
                     return;
                 }
             }
 
             FontCachePage newPage = new FontCachePage(pageSize, pageSize);
             newPage.AttemptAdd(ref rect);
-            MSDF.GenerateMSDF(newPage.Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, -info.offset, 1.000001);
-            info.uvPosition = new Vector3(rect.X, rect.Y, pages.Count);
             pages.Add(newPage);
             Bitmaps.Add(newPage.Bitmap);
+            Render(newPage, pages.Count - 1, glyph, ref info, rect);
+        }
+
+        void Render(FontCachePage page, int pageIndex, Glyph glyph, ref GlyphInfo info, Rectanglei rect) {
+            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, -info.offset, 1.000001);
+            info.uvPosition = new Vector3(rect.X, rect.Y, pageIndex);
         }
 
         public GlyphInfo GetInfo(Font font, int codepoint) {
