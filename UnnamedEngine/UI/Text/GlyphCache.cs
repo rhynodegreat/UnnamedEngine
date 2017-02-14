@@ -37,6 +37,7 @@ namespace UnnamedEngine.UI.Text {
         Engine engine;
         List<GlyphCachePage> pages;
         Dictionary<GlyphPair, GlyphInfo> infoMap;
+        int padding = 1;
         double range = 4;
         int pageSize = 1024;
         public List<Bitmap<Color3>> Bitmaps { get; private set; }
@@ -74,7 +75,7 @@ namespace UnnamedEngine.UI.Text {
             info.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY);
             info.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height);
 
-            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X), (int)Math.Ceiling(info.size.Y));
+            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X) + padding * 2, (int)Math.Ceiling(info.size.Y) + padding * 2);
 
             AddToPage(glyph, ref info, ref rect);
 
@@ -97,7 +98,7 @@ namespace UnnamedEngine.UI.Text {
         }
 
         void Render(GlyphCachePage page, int pageIndex, Glyph glyph, ref GlyphInfo info, Rectanglei rect) {
-            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, -info.offset, 1.000001);
+            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, new Vector2(-info.offset.X + padding, info.offset.Y + padding), 1.000001);
             info.uvPosition = new Vector3(rect.X, rect.Y, pageIndex);
         }
 
