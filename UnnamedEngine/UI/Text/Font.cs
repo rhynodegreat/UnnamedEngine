@@ -12,6 +12,7 @@ namespace UnnamedEngine.UI.Text {
         static Library library;
         Face face;
         Dictionary<int, Glyph> glyphMap;
+        Glyph unknownGlyph;
 
         public Font(byte[] data, int faceIndex) {
             if (library == null) {
@@ -40,6 +41,10 @@ namespace UnnamedEngine.UI.Text {
         Glyph LoadGlyph(int codepoint) {
             lock (face) {
                 int glyphIndex = (int)face.GetCharIndex((uint)codepoint);
+                if (glyphIndex == 0 && unknownGlyph != null) {
+                    glyphMap.Add(codepoint, unknownGlyph);
+                }
+
                 Shape shape = MSDF.LoadGlyph(face, codepoint);
                 MSDF.EdgeColoringSimple(shape, 3, 0);
 
@@ -54,6 +59,7 @@ namespace UnnamedEngine.UI.Text {
 
                 Glyph result = new Glyph(this, shape, codepoint, glyphIndex, info);
                 glyphMap.Add(codepoint, result);
+                if (glyphIndex == 0) unknownGlyph = result;
 
                 return result;
             }
