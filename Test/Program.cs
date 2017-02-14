@@ -109,28 +109,18 @@ namespace Test {
             Console.WriteLine(mesh.IndexData.IndexCount);
 
             float range = 4;
-            float bias = 0.5f;
+            int bias = 127;
             GlyphCache cache = new GlyphCache(engine, 1024, range);
             Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
             for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
                 cache.AddChar(font, i);
             }
-            Bitmap<Color3> bitmap = cache.Bitmaps[0];
+            Bitmap<Color3b> bitmap = cache.Bitmaps[0];
 
             System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);
             for (int x = 0; x < bitmap.Width; x++) {
                 for (int y = 0; y < bitmap.Height; y++) {
-                    float red = DistVal(bitmap[x, y].r, bias, range) * 255;
-                    float green = DistVal(bitmap[x, y].g, bias, range)* 255;
-                    float blue = DistVal(bitmap[x, y].b, bias, range) * 255;
-
-                    int r = Math.Min(Math.Max((int)red, 0), 255);
-                    int g = Math.Min(Math.Max((int)green, 0), 255);
-                    int b = Math.Min(Math.Max((int)blue, 0), 255);
-
-                    int m = Median(r, g, b);
-
-                    output.SetPixel(x, y, System.Drawing.Color.FromArgb(m, m, m));
+                    output.SetPixel(x, y, System.Drawing.Color.FromArgb(bitmap[x, y].r, bitmap[x, y].g, bitmap[x, y].b));
                 }
             }
 
@@ -146,9 +136,13 @@ namespace Test {
             GLFW.Terminate();
         }
 
-        float DistVal(float dist, float bias, float range) {
-            if (range == 0) return (dist > .5f) ? 1 : 0;
-            return Math.Min(Math.Max((dist - bias) * range + bias, 0), 1);
+        //float DistVal(float dist, float bias, float range) {
+        //    if (range == 0) return (dist > .5f) ? 1 : 0;
+        //    return Math.Min(Math.Max((dist - bias) * range + bias, 0), 1);
+        //}
+
+        int DistVal(int dist, int bias, float range) {
+            return Math.Min(Math.Max((int)((dist - bias) * range + bias), 0), 255);
         }
 
         int Median(int a, int b, int c) {

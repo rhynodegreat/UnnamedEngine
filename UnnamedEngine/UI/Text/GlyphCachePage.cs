@@ -10,13 +10,13 @@ namespace UnnamedEngine.UI.Text {
         int width;
         int height;
 
-        public Bitmap<Color3> Bitmap { get; private set; }
+        public Bitmap<Color3b> Bitmap { get; private set; }
 
         public GlyphCachePage(int width, int height) {
             this.width = width;
             this.height = height;
 
-            Bitmap = new Bitmap<Color3>(width, height);
+            Bitmap = new Bitmap<Color3b>(width, height);
             free = new List<Rectanglei>();
             free.Add(new Rectanglei(0, 0, width, height));
         }

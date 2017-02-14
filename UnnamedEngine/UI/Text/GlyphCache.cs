@@ -38,7 +38,7 @@ namespace UnnamedEngine.UI.Text {
         List<GlyphCachePage> pages;
         Dictionary<GlyphPair, GlyphInfo> infoMap;
         int padding = 1;
-        public List<Bitmap<Color3>> Bitmaps { get; private set; }
+        public List<Bitmap<Color3b>> Bitmaps { get; private set; }
 
         public int PageSize { get; private set; }
         public float Range { get; private set; }
@@ -49,7 +49,7 @@ namespace UnnamedEngine.UI.Text {
             this.engine = engine;
             pages = new List<GlyphCachePage>();
             infoMap = new Dictionary<GlyphPair, GlyphInfo>();
-            Bitmaps = new List<Bitmap<Color3>>();
+            Bitmaps = new List<Bitmap<Color3b>>();
             PageSize = pageSize;
             Range = range;
         }
