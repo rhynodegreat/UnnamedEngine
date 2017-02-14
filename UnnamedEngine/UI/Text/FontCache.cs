@@ -51,7 +51,22 @@ namespace UnnamedEngine.UI.Text {
             Bitmaps = new List<Bitmap<Color3>>();
         }
 
-        public void AddGlyph(Font font, int codepoint) {
+        public void Add(Font font, string s) {
+            for (int i = 0; i < s.Length; i++) {
+                if (char.IsHighSurrogate(s[i])) continue;
+                int c;
+                if (char.IsLowSurrogate(s[i])) {
+                    if (i == 0) continue;
+                    c = char.ConvertToUtf32(s[i - 1], s[i]);
+                } else {
+                    c = s[i];
+                }
+
+                AddGlyph(font, c);
+            }
+        }
+
+        void AddGlyph(Font font, int codepoint) {
             var pair = new GlyphPair(font, codepoint);
             if (infoMap.ContainsKey(pair)) return;
 
