@@ -108,14 +108,14 @@ namespace Test {
             Console.WriteLine(mesh.VertexData.VertexCount);
             Console.WriteLine(mesh.IndexData.IndexCount);
 
-            GlyphCache cache = new GlyphCache(engine);
+            float range = 4;
+            float bias = 0.5f;
+            GlyphCache cache = new GlyphCache(engine, 1024, range);
             Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
             for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
                 cache.AddChar(font, i);
             }
             Bitmap<Color3> bitmap = cache.Bitmaps[0];
-            float range = 4;
-            float bias = 0.5f;
 
             System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);
             for (int x = 0; x < bitmap.Width; x++) {

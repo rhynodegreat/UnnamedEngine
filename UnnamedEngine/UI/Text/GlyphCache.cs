@@ -38,17 +38,20 @@ namespace UnnamedEngine.UI.Text {
         List<GlyphCachePage> pages;
         Dictionary<GlyphPair, GlyphInfo> infoMap;
         int padding = 1;
-        double range = 4;
-        int pageSize = 1024;
         public List<Bitmap<Color3>> Bitmaps { get; private set; }
 
-        public GlyphCache(Engine engine) {
+        public int PageSize { get; private set; }
+        public float Range { get; private set; }
+
+        public GlyphCache(Engine engine, int pageSize, float range) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
             this.engine = engine;
             pages = new List<GlyphCachePage>();
             infoMap = new Dictionary<GlyphPair, GlyphInfo>();
             Bitmaps = new List<Bitmap<Color3>>();
+            PageSize = pageSize;
+            Range = range;
         }
 
         public void AddString(Font font, string s) {
@@ -90,7 +93,7 @@ namespace UnnamedEngine.UI.Text {
                 }
             }
 
-            GlyphCachePage newPage = new GlyphCachePage(pageSize, pageSize);
+            GlyphCachePage newPage = new GlyphCachePage(PageSize, PageSize);
             newPage.AttemptAdd(ref rect);
             pages.Add(newPage);
             Bitmaps.Add(newPage.Bitmap);
@@ -98,7 +101,7 @@ namespace UnnamedEngine.UI.Text {
         }
 
         void Render(GlyphCachePage page, int pageIndex, Glyph glyph, ref GlyphInfo info, Rectanglei rect) {
-            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, new Vector2(-info.offset.X + padding, info.offset.Y + padding), 1.000001);
+            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), Range, Vector2.One, new Vector2(-info.offset.X + padding, info.offset.Y + padding), 1.000001);
             info.uvPosition = new Vector3(rect.X, rect.Y, pageIndex);
         }
 
