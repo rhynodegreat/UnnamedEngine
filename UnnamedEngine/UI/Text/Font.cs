@@ -46,6 +46,7 @@ namespace UnnamedEngine.UI.Text {
                 }
 
                 Shape shape = MSDF.LoadGlyph(face, codepoint);
+                shape.InverseYAxis = true;
                 MSDF.EdgeColoringSimple(shape, 3, 0);
 
                 GlyphMetrics metrics = face.Glyph.Metrics;
