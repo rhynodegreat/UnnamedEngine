@@ -110,22 +110,25 @@ namespace Test {
 
             GlyphCache cache = new GlyphCache(engine);
             Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
-            string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,<>\"'?/:;\\+-*/_[]{}|!@#$%^&*()`~";
-            cache.AddString(font, letters);
+            for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
+                cache.AddChar(font, i);
+            }
             Bitmap<Color3> bitmap = cache.Bitmaps[0];
 
             System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);
             for (int x = 0; x < bitmap.Width; x++) {
                 for (int y = 0; y < bitmap.Height; y++) {
-                    float red = bitmap[x, y].r * 255;
-                    float green = bitmap[x, y].g * 255;
-                    float blue = bitmap[x, y].b * 255;
+                    float red = DistVal(bitmap[x, y].r, 4) * 255;
+                    float green = DistVal(bitmap[x, y].g, 4) * 255;
+                    float blue = DistVal(bitmap[x, y].b, 4) * 255;
 
-                    int r = (int)Math.Min(Math.Max(red, 0), 255);
-                    int g = (int)Math.Min(Math.Max(green, 0), 255);
-                    int b = (int)Math.Min(Math.Max(blue, 0), 255);
+                    int r = Math.Min(Math.Max((int)red, 0), 255);
+                    int g = Math.Min(Math.Max((int)green, 0), 255);
+                    int b = Math.Min(Math.Max((int)blue, 0), 255);
 
-                    output.SetPixel(x, y, System.Drawing.Color.FromArgb(r, g, b));
+                    int m = Median(r, g, b);
+
+                    output.SetPixel(x, y, System.Drawing.Color.FromArgb(m, m, m));
                 }
             }
 
@@ -139,6 +142,15 @@ namespace Test {
             }
 
             GLFW.Terminate();
+        }
+
+        float DistVal(float dist, float range) {
+            if (range == 0) return (dist > .5f) ? 1 : 0;
+            return Math.Min(Math.Max((dist - 0.5f) * range + 0.5f, 0), 1);
+        }
+
+        int Median(int a, int b, int c) {
+            return Math.Max(Math.Min(a, b), Math.Min(Math.Max(a, b), c));
         }
 
         Instance CreateInstance() {
