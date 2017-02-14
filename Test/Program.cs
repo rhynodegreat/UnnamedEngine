@@ -111,7 +111,7 @@ namespace Test {
             GlyphCache cache = new GlyphCache(engine);
             Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
             string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,<>\"'?/:;\\+-*/_[]{}|!@#$%^&*()`~";
-            cache.Add(font, letters);
+            cache.AddString(font, letters);
             Bitmap<Color3> bitmap = cache.Bitmaps[0];
 
             System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);

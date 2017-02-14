@@ -37,7 +37,6 @@ namespace UnnamedEngine.UI.Text {
         Engine engine;
         List<GlyphCachePage> pages;
         Dictionary<GlyphPair, GlyphInfo> infoMap;
-        int padding = 2;
         double range = 4;
         int pageSize = 1024;
         public List<Bitmap<Color3>> Bitmaps { get; private set; }
@@ -51,7 +50,7 @@ namespace UnnamedEngine.UI.Text {
             Bitmaps = new List<Bitmap<Color3>>();
         }
 
-        public void Add(Font font, string s) {
+        public void AddString(Font font, string s) {
             for (int i = 0; i < s.Length; i++) {
                 if (char.IsHighSurrogate(s[i])) continue;
                 int c;
@@ -62,11 +61,11 @@ namespace UnnamedEngine.UI.Text {
                     c = s[i];
                 }
 
-                AddGlyph(font, c);
+                AddChar(font, c);
             }
         }
 
-        void AddGlyph(Font font, int codepoint) {
+        public void AddChar(Font font, int codepoint) {
             var pair = new GlyphPair(font, codepoint);
             if (infoMap.ContainsKey(pair)) return;
 
@@ -75,7 +74,7 @@ namespace UnnamedEngine.UI.Text {
             info.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY);
             info.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height);
 
-            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X) + padding, (int)Math.Ceiling(info.size.Y) + padding);
+            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X), (int)Math.Ceiling(info.size.Y));
 
             AddToPage(glyph, ref info, ref rect);
 
