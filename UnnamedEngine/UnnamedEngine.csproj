@@ -76,9 +76,9 @@
     <Compile Include="Resources\TransferNode.cs" />
     <Compile Include="Resources\VertexData.cs" />
     <Compile Include="UI\Text\Font.cs" />
-    <Compile Include="UI\Text\FontCache.cs" />
+    <Compile Include="UI\Text\GlyphCache.cs" />
     <Compile Include="UI\Label.cs" />
-    <Compile Include="UI\Text\FontCachePage.cs" />
+    <Compile Include="UI\Text\GlyphCachePage.cs" />
     <Compile Include="UI\Text\Glyph.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="Utilities\OpenList.cs" />

@@ -5,14 +5,14 @@ using CSGL.Graphics;
 using CSGL.Math;
 
 namespace UnnamedEngine.UI.Text {
-    internal class FontCachePage {
+    internal class GlyphCachePage {
         List<Rectanglei> free;
         int width;
         int height;
 
         public Bitmap<Color3> Bitmap { get; private set; }
 
-        public FontCachePage(int width, int height) {
+        public GlyphCachePage(int width, int height) {
             this.width = width;
             this.height = height;
 

@@ -17,7 +17,7 @@ namespace UnnamedEngine.UI.Text {
         public Vector3 uvPosition;
     }
 
-    public class FontCache : IDisposable {
+    public class GlyphCache : IDisposable {
         struct GlyphPair {
             public Font font;
             public int codepoint;
@@ -35,18 +35,18 @@ namespace UnnamedEngine.UI.Text {
         bool disposed;
 
         Engine engine;
-        List<FontCachePage> pages;
+        List<GlyphCachePage> pages;
         Dictionary<GlyphPair, GlyphInfo> infoMap;
         int padding = 2;
         double range = 4;
         int pageSize = 1024;
         public List<Bitmap<Color3>> Bitmaps { get; private set; }
 
-        public FontCache(Engine engine) {
+        public GlyphCache(Engine engine) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
             this.engine = engine;
-            pages = new List<FontCachePage>();
+            pages = new List<GlyphCachePage>();
             infoMap = new Dictionary<GlyphPair, GlyphInfo>();
             Bitmaps = new List<Bitmap<Color3>>();
         }
@@ -90,14 +90,14 @@ namespace UnnamedEngine.UI.Text {
                 }
             }
 
-            FontCachePage newPage = new FontCachePage(pageSize, pageSize);
+            GlyphCachePage newPage = new GlyphCachePage(pageSize, pageSize);
             newPage.AttemptAdd(ref rect);
             pages.Add(newPage);
             Bitmaps.Add(newPage.Bitmap);
             Render(newPage, pages.Count - 1, glyph, ref info, rect);
         }
 
-        void Render(FontCachePage page, int pageIndex, Glyph glyph, ref GlyphInfo info, Rectanglei rect) {
+        void Render(GlyphCachePage page, int pageIndex, Glyph glyph, ref GlyphInfo info, Rectanglei rect) {
             MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), range, Vector2.One, -info.offset, 1.000001);
             info.uvPosition = new Vector3(rect.X, rect.Y, pageIndex);
         }
@@ -117,7 +117,7 @@ namespace UnnamedEngine.UI.Text {
             disposed = true;
         }
 
-        ~FontCache() {
+        ~GlyphCache() {
             Dispose(false);
         }
     }

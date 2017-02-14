@@ -108,7 +108,7 @@ namespace Test {
             Console.WriteLine(mesh.VertexData.VertexCount);
             Console.WriteLine(mesh.IndexData.IndexCount);
 
-            FontCache cache = new FontCache(engine);
+            GlyphCache cache = new GlyphCache(engine);
             Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
             string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,<>\"'?/:;\\+-*/_[]{}|!@#$%^&*()`~";
             cache.Add(font, letters);
