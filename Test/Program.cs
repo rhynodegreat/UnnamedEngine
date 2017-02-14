@@ -114,13 +114,15 @@ namespace Test {
                 cache.AddChar(font, i);
             }
             Bitmap<Color3> bitmap = cache.Bitmaps[0];
+            float range = 4;
+            float bias = 0.5f;
 
             System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);
             for (int x = 0; x < bitmap.Width; x++) {
                 for (int y = 0; y < bitmap.Height; y++) {
-                    float red = DistVal(bitmap[x, y].r, 4) * 255;
-                    float green = DistVal(bitmap[x, y].g, 4) * 255;
-                    float blue = DistVal(bitmap[x, y].b, 4) * 255;
+                    float red = DistVal(bitmap[x, y].r, bias, range) * 255;
+                    float green = DistVal(bitmap[x, y].g, bias, range)* 255;
+                    float blue = DistVal(bitmap[x, y].b, bias, range) * 255;
 
                     int r = Math.Min(Math.Max((int)red, 0), 255);
                     int g = Math.Min(Math.Max((int)green, 0), 255);
@@ -144,9 +146,9 @@ namespace Test {
             GLFW.Terminate();
         }
 
-        float DistVal(float dist, float range) {
+        float DistVal(float dist, float bias, float range) {
             if (range == 0) return (dist > .5f) ? 1 : 0;
-            return Math.Min(Math.Max((dist - 0.5f) * range + 0.5f, 0), 1);
+            return Math.Min(Math.Max((dist - bias) * range + bias, 0), 1);
         }
 
         int Median(int a, int b, int c) {
