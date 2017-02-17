@@ -104,9 +104,6 @@ namespace UnnamedEngine.Resources {
         }
 
         Buffer CreateStaging(ulong size, Buffer dest, out VkaAllocation alloc) {
-            if (dest == null) throw new ArgumentNullException(nameof(dest));
-            if ((dest.Usage & VkBufferUsageFlags.TransferDstBit) == 0) throw new TransferException("Buffer.Usage must include TransferDstBit");
-
             var info = new BufferCreateInfo();
             info.size = size;
             info.usage = VkBufferUsageFlags.TransferSrcBit;
@@ -121,6 +118,7 @@ namespace UnnamedEngine.Resources {
 
         public override void Transfer(IntPtr data, ulong size, Buffer buffer) {
             if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            if ((buffer.Usage & VkBufferUsageFlags.TransferDstBit) == 0) throw new TransferException("Buffer.Usage must include TransferDstBit");
 
             VkaAllocation alloc;
             Buffer staging = CreateStaging(size, buffer, out alloc);
