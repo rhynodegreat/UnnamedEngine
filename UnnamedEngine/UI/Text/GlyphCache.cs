@@ -9,6 +9,7 @@ using CSGL.Math;
 using MSDFGen;
 
 using UnnamedEngine.Core;
+using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.UI.Text {
     public struct GlyphInfo {
@@ -48,21 +49,29 @@ namespace UnnamedEngine.UI.Text {
 
         Engine engine;
         List<GlyphCachePage> pages;
+        HashSet<int> pageUpdates;
         Dictionary<GlyphPair, GlyphInfo> infoMap;
-        public List<Bitmap<Color3b>> Bitmaps { get; private set; }
+        VkaAllocation alloc;
+        public List<Bitmap<Color4b>> Bitmaps { get; private set; }
 
         public int PageSize { get; private set; }
+        public int PageCount { get; private set; }
         public float Range { get; private set; }
+        public Image Image { get; private set; }
 
-        public GlyphCache(Engine engine, int pageSize, float range) {
+        public GlyphCache(Engine engine, int pageSize, int pageCount, float range) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
             this.engine = engine;
             pages = new List<GlyphCachePage>();
             infoMap = new Dictionary<GlyphPair, GlyphInfo>();
-            Bitmaps = new List<Bitmap<Color3b>>();
+            pageUpdates = new HashSet<int>();
+            Bitmaps = new List<Bitmap<Color4b>>();
             PageSize = pageSize;
             Range = range;
+            PageCount = pageCount;
+
+            CreateImage();
         }
 
         public void AddString(Font font, string s) {
@@ -115,10 +124,58 @@ namespace UnnamedEngine.UI.Text {
 
         void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphInfo info, Rectanglei rect) {
             MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), Range, Vector2.One, new Vector2(-info.offset.X, info.offset.Y), 1.000001);
+            pageUpdates.Add(pageIndex);
         }
 
         public GlyphInfo GetInfo(Font font, int codepoint) {
             return infoMap[new GlyphPair(font, codepoint)];
+        }
+
+        public void Update() {
+            if (PageCount < pages.Count) {
+                PageCount *= 2;
+                CreateImage();
+
+                pageUpdates.Clear();    //since image was recreated, all pages have been updated
+                return;
+            }
+
+            foreach (int index in pageUpdates) {
+                VkImageCopy region = new VkImageCopy();
+                region.dstSubresource.aspectMask = VkImageAspectFlags.ColorBit;
+                region.dstSubresource.baseArrayLayer = (uint)index;
+                region.dstSubresource.layerCount = 1;
+                region.dstSubresource.mipLevel = 0;
+
+                engine.Graphics.TransferNode.Transfer(pages[index].Bitmap, Image, region, VkImageLayout.ShaderReadOnlyOptimal);
+            }
+
+            pageUpdates.Clear();
+        }
+
+        void CreateImage() {
+            Image?.Dispose();
+
+            ImageCreateInfo info = new ImageCreateInfo();
+            info.imageType = VkImageType._2d;
+            info.format = VkFormat.R8g8b8a8Unorm;
+            info.extent.width = (uint)PageSize;
+            info.extent.height = (uint)PageSize;
+            info.extent.depth = 1;
+            info.mipLevels = 1;
+            info.arrayLayers = (uint)PageCount;
+            info.samples = VkSampleCountFlags._1Bit;
+            info.tiling = VkImageTiling.Optimal;
+            info.usage = VkImageUsageFlags.SampledBit | VkImageUsageFlags.TransferDstBit;
+            info.sharingMode = VkSharingMode.Exclusive;
+            info.initialLayout = VkImageLayout.Undefined;
+
+            Image = new Image(engine.Graphics.Device, info);
+
+            engine.Graphics.Allocator.Free(alloc);
+            alloc = engine.Graphics.Allocator.Alloc(Image.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+
+            Image.Bind(alloc.memory, alloc.offset);
         }
 
         public void Dispose() {
@@ -128,6 +185,9 @@ namespace UnnamedEngine.UI.Text {
 
         void Dispose(bool disposing) {
             if (disposed) return;
+
+            Image.Dispose();
+            engine.Graphics.Allocator.Free(alloc);
 
             disposed = true;
         }
