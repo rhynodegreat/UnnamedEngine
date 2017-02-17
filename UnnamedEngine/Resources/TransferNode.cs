@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using CSGL;
+using CSGL.Graphics;
 using CSGL.Vulkan;
 using Buffer = CSGL.Vulkan.Buffer;
 
@@ -31,7 +32,21 @@ namespace UnnamedEngine.Resources {
             Transfer(Interop.GetInternalArray(data), data.Count, buffer);
         }
 
-        //public abstract void Transfer(IntPtr data, ulong size, Image image, VkImageCopy region);
+        public abstract void Transfer(IntPtr data, uint width, uint height, ulong size, Image image, VkImageCopy region, VkImageLayout destLayout);
+
+        public void Transfer<T>(Bitmap<T> bitmap, Image image, VkImageCopy region, VkImageLayout destLayout) where T : struct {
+            if (bitmap == null) throw new ArgumentNullException(nameof(bitmap));
+
+            uint width = (uint)bitmap.Width;
+            uint height = (uint)bitmap.Height;
+            ulong size = width * height * (uint)Interop.SizeOf<T>();
+
+            GCHandle handle = GCHandle.Alloc(bitmap.Data, GCHandleType.Pinned);
+
+            Transfer(handle.AddrOfPinnedObject(), width, height, size, image, region, destLayout);
+
+            handle.Free();
+        }
     }
 
     public class TransferException : Exception {
