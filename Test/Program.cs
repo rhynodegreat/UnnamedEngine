@@ -110,7 +110,7 @@ namespace Test {
 
             float range = 4;
             int bias = 127;
-            GlyphCache cache = new GlyphCache(engine, 1024, range);
+            GlyphCache cache = new GlyphCache(engine, 1024, 1, range);
             Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
             for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
                 cache.AddChar(font, i);
@@ -129,7 +129,8 @@ namespace Test {
             using (engine)
             using (commandPool)
             using (camera)
-            using (gbuffer) {
+            using (gbuffer)
+            using (cache) {
                 engine.Run();
             }
 
