@@ -80,15 +80,16 @@ namespace UnnamedEngine.UI.Text {
 
             Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X) + padding * 2, (int)Math.Ceiling(info.size.Y) + padding * 2);
 
-            AddToPage(glyph, ref info, ref rect);
+            AddToPage(glyph, ref info, rect);
 
             infoMap.Add(pair, info);
         }
 
-        void AddToPage(Glyph glyph, ref GlyphInfo info, ref Rectanglei rect) {
+        void AddToPage(Glyph glyph, ref GlyphInfo info, Rectanglei rect) {
             for (int i = 0; i < pages.Count; i++) {
                 if (pages[i].AttemptAdd(ref rect)) {
-                    Render(pages[i], i, glyph, ref info, rect);
+                    Render(pages[i], i, glyph, info, rect);
+                    info.uvPosition = new Vector3(rect.X, rect.Y, i);
                     return;
                 }
             }
@@ -97,12 +98,12 @@ namespace UnnamedEngine.UI.Text {
             newPage.AttemptAdd(ref rect);
             pages.Add(newPage);
             Bitmaps.Add(newPage.Bitmap);
-            Render(newPage, pages.Count - 1, glyph, ref info, rect);
+            Render(newPage, pages.Count - 1, glyph, info, rect);
+            info.uvPosition = new Vector3(rect.X, rect.Y, pages.Count - 1);
         }
 
-        void Render(GlyphCachePage page, int pageIndex, Glyph glyph, ref GlyphInfo info, Rectanglei rect) {
+        void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphInfo info, Rectanglei rect) {
             MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), Range, Vector2.One, new Vector2(-info.offset.X + padding, info.offset.Y + padding), 1.000001);
-            info.uvPosition = new Vector3(rect.X, rect.Y, pageIndex);
         }
 
         public GlyphInfo GetInfo(Font font, int codepoint) {
