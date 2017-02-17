@@ -103,7 +103,7 @@ namespace UnnamedEngine.Resources {
             bufferBarriers.Clear();
         }
 
-        Buffer CreateStaging(uint size, Buffer dest, out VkaAllocation alloc) {
+        Buffer CreateStaging(ulong size, Buffer dest, out VkaAllocation alloc) {
             if (dest == null) throw new ArgumentNullException(nameof(dest));
             if ((dest.Usage & VkBufferUsageFlags.TransferDstBit) == 0) throw new TransferException("Buffer.Usage must include TransferDstBit");
 
@@ -119,44 +119,14 @@ namespace UnnamedEngine.Resources {
             return staging;
         }
 
-        public override void Transfer<T>(T[] data, Buffer buffer) {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            VkaAllocation alloc;
-            Buffer staging = CreateStaging((uint)Interop.SizeOf(data), buffer, out alloc);
-
-            IntPtr ptr = alloc.memory.Map(alloc.offset, alloc.size);
-            Interop.Copy(data, ptr);
-            alloc.memory.Unmap();
-
-            lock (transfers) {
-                transfers.Add(new TransferOp(staging, buffer));
-            }
-        }
-
-        public override void Transfer<T>(List<T> data, Buffer buffer) {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
-            VkaAllocation alloc;
-            Buffer staging = CreateStaging((uint)Interop.SizeOf(data), buffer, out alloc);
-
-            IntPtr ptr = alloc.memory.Map(alloc.offset, alloc.size);
-            Interop.Copy(data, ptr);
-            alloc.memory.Unmap();
-
-            lock (transfers) {
-                transfers.Add(new TransferOp(staging, buffer));
-            }
-        }
-
-        public override void Transfer(IntPtr data, uint size, Buffer buffer) {
+        public override void Transfer(IntPtr data, ulong size, Buffer buffer) {
             if (buffer == null) throw new ArgumentNullException(nameof(buffer));
 
             VkaAllocation alloc;
             Buffer staging = CreateStaging(size, buffer, out alloc);
 
             IntPtr ptr = alloc.memory.Map(alloc.offset, alloc.size);
-            Interop.Copy(data, ptr, size);
+            Interop.Copy(data, ptr, (long)size);
             alloc.memory.Unmap();
 
             lock (transfers) {
