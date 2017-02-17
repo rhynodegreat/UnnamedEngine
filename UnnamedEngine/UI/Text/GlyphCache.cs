@@ -18,7 +18,7 @@ namespace UnnamedEngine.UI.Text {
     }
 
     public class GlyphCache : IDisposable {
-        struct GlyphPair {
+        struct GlyphPair : IEquatable<GlyphPair> {
             public Font font;
             public int codepoint;
 
@@ -29,6 +29,18 @@ namespace UnnamedEngine.UI.Text {
 
             public override int GetHashCode() {
                 return font.GetHashCode() ^ codepoint.GetHashCode();
+            }
+
+            public override bool Equals(object other) {
+                if (other is GlyphPair) {
+                    return Equals((GlyphPair)other);
+                }
+
+                return false;
+            }
+
+            public bool Equals(GlyphPair other) {
+                return codepoint == other.codepoint && font == other.font;
             }
         }
 
