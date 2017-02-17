@@ -140,6 +140,11 @@ namespace UnnamedEngine.Resources {
                 }
 
                 buffer.PipelineBarrier(VkPipelineStageFlags.TopOfPipeBit, VkPipelineStageFlags.TopOfPipeBit, VkDependencyFlags.None, null, null, imageBarriers);
+
+                for (int i = 0; i < imageBarriers.Count; i++) {
+                    imageBarriersPool.Free(imageBarriers[i]);
+                }
+
                 imageBarriers.Clear();
 
                 //copy images
