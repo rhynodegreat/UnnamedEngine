@@ -150,7 +150,6 @@ namespace UnnamedEngine.Resources {
                 //copy images
                 for (int i = 0; i < imageTransfers.Count; i++) {
                     VkImageCopy region = imageTransfers[i].region;
-                    region.srcOffset = new VkOffset3D();
                     region.srcSubresource.aspectMask = VkImageAspectFlags.ColorBit;
                     region.srcSubresource.mipLevel = 0;
                     region.srcSubresource.baseArrayLayer = 0;
