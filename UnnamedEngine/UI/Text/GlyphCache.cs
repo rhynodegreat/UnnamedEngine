@@ -141,7 +141,9 @@ namespace UnnamedEngine.UI.Text {
         public void Update() {
             if (PageCount < pages.Count) {
                 PageCount *= 2;
+
                 CreateImage();
+                UpdateDescriptor();
 
                 pageUpdates.Clear();    //since image was recreated, all pages have been updated
                 return;
@@ -249,6 +251,32 @@ namespace UnnamedEngine.UI.Text {
             setInfo.setLayouts = new List<DescriptorSetLayout> { DescriptorLayout };
 
             Descriptor = pool.Allocate(setInfo)[0];
+        }
+
+        void UpdateDescriptor() {
+            DescriptorSet.Update(engine.Graphics.Device, new List<WriteDescriptorSet> {
+                new WriteDescriptorSet {
+                    dstBinding = 0,
+                    dstSet = Descriptor,
+                    descriptorType = VkDescriptorType.SampledImage,
+                    imageInfo = new List<DescriptorImageInfo> {
+                        new DescriptorImageInfo {
+                            imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
+                            imageView = imageView,
+                        }
+                    }
+                },
+                new WriteDescriptorSet {
+                    dstBinding = 1,
+                    dstSet = Descriptor,
+                    descriptorType = VkDescriptorType.Sampler,
+                    imageInfo = new List<DescriptorImageInfo> {
+                        new DescriptorImageInfo {
+                            sampler = sampler
+                        }
+                    }
+                }
+            });
         }
 
         public void Dispose() {
