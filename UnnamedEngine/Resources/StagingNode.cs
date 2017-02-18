@@ -191,8 +191,8 @@ namespace UnnamedEngine.Resources {
 
                     imageBarriers.Add(barrier); //barrier submitted below
                 }
+                imageTransfers.Clear();
             }
-            imageTransfers.Clear();
 
             lock (bufferTransfers) {
                 for (int i = 0; i < bufferTransfers.Count; i++) {
