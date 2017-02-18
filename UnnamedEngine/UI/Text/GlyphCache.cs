@@ -52,12 +52,15 @@ namespace UnnamedEngine.UI.Text {
         HashSet<int> pageUpdates;
         Dictionary<GlyphPair, GlyphInfo> infoMap;
         VkaAllocation alloc;
+        DescriptorPool pool;
         public List<Bitmap<Color4b>> Bitmaps { get; private set; }
 
         public int PageSize { get; private set; }
         public int PageCount { get; private set; }
         public float Range { get; private set; }
         public Image Image { get; private set; }
+        public DescriptorSetLayout DescriptorLayout { get; private set; }
+        public DescriptorSet Descriptor { get; private set; }
 
         public GlyphCache(Engine engine, int pageSize, int pageCount, float range) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -72,6 +75,7 @@ namespace UnnamedEngine.UI.Text {
             PageCount = pageCount;
 
             CreateImage();
+            CreateDescriptors();
         }
 
         public void AddString(Font font, string s) {
@@ -178,6 +182,47 @@ namespace UnnamedEngine.UI.Text {
             Image.Bind(alloc.memory, alloc.offset);
         }
 
+        void CreateDescriptors() {
+            DescriptorSetLayoutCreateInfo layoutInfo = new DescriptorSetLayoutCreateInfo();
+            layoutInfo.bindings = new List<VkDescriptorSetLayoutBinding> {
+                new VkDescriptorSetLayoutBinding {
+                    binding = 0,
+                    descriptorCount = 1,
+                    descriptorType = VkDescriptorType.SampledImage,
+                    stageFlags = VkShaderStageFlags.FragmentBit
+                },
+                new VkDescriptorSetLayoutBinding {
+                    binding = 1,
+                    descriptorCount = 1,
+                    descriptorType = VkDescriptorType.Sampler,
+                    stageFlags = VkShaderStageFlags.FragmentBit
+                }
+            };
+
+            DescriptorLayout = new DescriptorSetLayout(engine.Graphics.Device, layoutInfo);
+
+            DescriptorPoolCreateInfo poolInfo = new DescriptorPoolCreateInfo();
+            poolInfo.maxSets = 1;
+            poolInfo.poolSizes = new List<VkDescriptorPoolSize> {
+                new VkDescriptorPoolSize {
+                    descriptorCount = 1,
+                    type = VkDescriptorType.SampledImage
+                },
+                new VkDescriptorPoolSize {
+                    descriptorCount = 1,
+                    type = VkDescriptorType.Sampler
+                }
+            };
+
+            pool = new DescriptorPool(engine.Graphics.Device, poolInfo);
+
+            DescriptorSetAllocateInfo setInfo = new DescriptorSetAllocateInfo();
+            setInfo.descriptorSetCount = 1;
+            setInfo.setLayouts = new List<DescriptorSetLayout> { DescriptorLayout };
+
+            Descriptor = pool.Allocate(setInfo)[0];
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -186,6 +231,8 @@ namespace UnnamedEngine.UI.Text {
         void Dispose(bool disposing) {
             if (disposed) return;
 
+            pool.Dispose();
+            DescriptorLayout.Dispose();
             Image.Dispose();
             engine.Graphics.Allocator.Free(alloc);
 
