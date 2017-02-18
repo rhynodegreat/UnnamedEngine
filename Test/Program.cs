@@ -115,6 +115,7 @@ namespace Test {
             for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
                 cache.AddChar(font, i);
             }
+            cache.Update();
             Bitmap<Color4b> bitmap = cache.Bitmaps[0];
 
             System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);
