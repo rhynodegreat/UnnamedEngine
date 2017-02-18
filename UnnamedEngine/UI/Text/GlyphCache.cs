@@ -53,6 +53,7 @@ namespace UnnamedEngine.UI.Text {
         Dictionary<GlyphPair, GlyphInfo> infoMap;
         VkaAllocation alloc;
         DescriptorPool pool;
+        ImageView imageView;
         public List<Bitmap<Color4b>> Bitmaps { get; private set; }
 
         public int PageSize { get; private set; }
@@ -180,6 +181,18 @@ namespace UnnamedEngine.UI.Text {
             alloc = engine.Graphics.Allocator.Alloc(Image.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
 
             Image.Bind(alloc.memory, alloc.offset);
+
+            ImageViewCreateInfo viewInfo = new ImageViewCreateInfo();
+            viewInfo.image = Image;
+            viewInfo.viewType = VkImageViewType._2dArray;
+            viewInfo.format = VkFormat.R8g8b8a8Unorm;
+            viewInfo.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = (uint)PageCount;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+
+            imageView = new ImageView(engine.Graphics.Device, viewInfo);
         }
 
         void CreateDescriptors() {
@@ -233,6 +246,7 @@ namespace UnnamedEngine.UI.Text {
 
             pool.Dispose();
             DescriptorLayout.Dispose();
+            imageView.Dispose();
             Image.Dispose();
             engine.Graphics.Allocator.Free(alloc);
 
