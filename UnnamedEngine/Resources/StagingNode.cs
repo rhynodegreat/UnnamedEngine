@@ -93,6 +93,12 @@ namespace UnnamedEngine.Resources {
             }
 
             bufferCompleted.Clear();
+
+            for (int i = 0; i < imageCompleted.Count; i++) {
+                imageCompleted[i].staging.Dispose();
+            }
+
+            imageCompleted.Clear();
         }
 
         public override List<CommandBuffer> GetCommands() {
