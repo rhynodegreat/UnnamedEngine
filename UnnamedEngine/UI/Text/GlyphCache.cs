@@ -54,6 +54,7 @@ namespace UnnamedEngine.UI.Text {
         VkaAllocation alloc;
         DescriptorPool pool;
         ImageView imageView;
+        Sampler sampler;
         public List<Bitmap<Color4b>> Bitmaps { get; private set; }
 
         public int PageSize { get; private set; }
@@ -75,6 +76,7 @@ namespace UnnamedEngine.UI.Text {
             Range = range;
             PageCount = pageCount;
 
+            CreateSampler();
             CreateImage();
             CreateDescriptors();
         }
@@ -156,6 +158,19 @@ namespace UnnamedEngine.UI.Text {
             }
 
             pageUpdates.Clear();
+        }
+
+        void CreateSampler() {
+            SamplerCreateInfo info = new SamplerCreateInfo();
+            info.magFilter = VkFilter.Linear;
+            info.minFilter = VkFilter.Linear;
+            info.mipmapMode = VkSamplerMipmapMode.Nearest;
+            info.addressModeU = VkSamplerAddressMode.MirroredRepeat;
+            info.addressModeV = VkSamplerAddressMode.MirroredRepeat;
+            info.addressModeW = VkSamplerAddressMode.MirroredRepeat;
+            info.unnormalizedCoordinates = true;
+
+            sampler = new Sampler(engine.Graphics.Device, info);
         }
 
         void CreateImage() {
@@ -249,6 +264,7 @@ namespace UnnamedEngine.UI.Text {
             imageView.Dispose();
             Image.Dispose();
             engine.Graphics.Allocator.Free(alloc);
+            sampler.Dispose();
 
             disposed = true;
         }
