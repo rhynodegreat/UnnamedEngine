@@ -79,8 +79,7 @@ namespace UnnamedEngine.UI.Text {
             CreateSampler();
             CreateImage();
             CreateDescriptors();
-
-            Update();
+            UpdateDescriptor();
         }
 
         public void AddString(Font font, string s) {
