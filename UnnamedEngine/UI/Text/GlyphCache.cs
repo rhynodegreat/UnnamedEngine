@@ -79,6 +79,8 @@ namespace UnnamedEngine.UI.Text {
             CreateSampler();
             CreateImage();
             CreateDescriptors();
+
+            Update();
         }
 
         public void AddString(Font font, string s) {
@@ -145,21 +147,29 @@ namespace UnnamedEngine.UI.Text {
                 CreateImage();
                 UpdateDescriptor();
 
+                for (int i = 0; i < pages.Count; i++) {
+                    UpdatePage(i);
+                }
+
                 pageUpdates.Clear();    //since image was recreated, all pages have been updated
                 return;
             }
 
             foreach (int index in pageUpdates) {
-                VkImageCopy region = new VkImageCopy();
-                region.dstSubresource.aspectMask = VkImageAspectFlags.ColorBit;
-                region.dstSubresource.baseArrayLayer = (uint)index;
-                region.dstSubresource.layerCount = 1;
-                region.dstSubresource.mipLevel = 0;
-
-                engine.Graphics.TransferNode.Transfer(pages[index].Bitmap, Image, region, VkImageLayout.ShaderReadOnlyOptimal);
+                UpdatePage(index);
             }
 
             pageUpdates.Clear();
+        }
+
+        void UpdatePage(int index) {
+            VkImageCopy region = new VkImageCopy();
+            region.dstSubresource.aspectMask = VkImageAspectFlags.ColorBit;
+            region.dstSubresource.baseArrayLayer = (uint)index;
+            region.dstSubresource.layerCount = 1;
+            region.dstSubresource.mipLevel = 0;
+
+            engine.Graphics.TransferNode.Transfer(pages[index].Bitmap, Image, region, VkImageLayout.ShaderReadOnlyOptimal);
         }
 
         void CreateSampler() {
