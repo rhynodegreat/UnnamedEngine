@@ -173,7 +173,7 @@ namespace UnnamedEngine.Core {
             Fence.Reset(graphics.Device, fences);
 
             for (int i = 0; i < nodeList.Count; i++) {
-                nodeList[i].node.PreRender();
+                nodeList[i].node.PreSubmit();
             }
 
             Parallel.For(0, nodeList.Count, options, GetCommands);
@@ -183,7 +183,7 @@ namespace UnnamedEngine.Core {
             }
 
             for (int i = 0; i < nodeList.Count; i++) {
-                nodeList[i].node.PostRender();
+                nodeList[i].node.PostSubmit();
             }
         }
 

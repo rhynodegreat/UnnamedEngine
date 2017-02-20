@@ -87,7 +87,7 @@ namespace UnnamedEngine.Resources {
             imageBarriers = new List<ImageMemoryBarrier>();
         }
 
-        public override void PreRender() {
+        public override void PreSubmit() {
             for (int i = 0; i < bufferCompleted.Count; i++) {
                 bufferCompleted[i].staging.Dispose();
             }
@@ -216,7 +216,7 @@ namespace UnnamedEngine.Resources {
             return submitBuffers;
         }
 
-        public override void PostRender() {
+        public override void PostSubmit() {
             for (int i = 0; i < bufferBarriers.Count; i++) {
                 bufferBarrierPool.Free(bufferBarriers[i]);
             }

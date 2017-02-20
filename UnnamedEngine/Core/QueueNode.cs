@@ -42,8 +42,8 @@ namespace UnnamedEngine.Core {
 
         public abstract List<CommandBuffer> GetCommands();
         
-        public virtual void PreRender() { }
-        public virtual void PostRender() { }
+        public virtual void PreSubmit() { }
+        public virtual void PostSubmit() { }
 
         public void AddInput(QueueNode other) {
             if (input.Contains(other)) return;

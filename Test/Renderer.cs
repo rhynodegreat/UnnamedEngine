@@ -58,11 +58,11 @@ namespace Test {
             graph.RemoveNode(node);
         }
 
-        public override void PreRender() {
+        public override void PreSubmit() {
             var result = window.Swapchain.AcquireNextImage(ulong.MaxValue, acquireImageSemaphore, out imageIndex);
         }
 
-        public override void PostRender() {
+        public override void PostSubmit() {
             presentInfo.imageIndices[0] = ImageIndex;
             engine.Graphics.PresentQueue.Present(presentInfo);
         }
