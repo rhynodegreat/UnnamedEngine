@@ -227,13 +227,7 @@ namespace UnnamedEngine.UI.Text {
                 new VkDescriptorSetLayoutBinding {
                     binding = 0,
                     descriptorCount = 1,
-                    descriptorType = VkDescriptorType.SampledImage,
-                    stageFlags = VkShaderStageFlags.FragmentBit
-                },
-                new VkDescriptorSetLayoutBinding {
-                    binding = 1,
-                    descriptorCount = 1,
-                    descriptorType = VkDescriptorType.Sampler,
+                    descriptorType = VkDescriptorType.CombinedImageSampler,
                     stageFlags = VkShaderStageFlags.FragmentBit
                 }
             };
@@ -245,11 +239,7 @@ namespace UnnamedEngine.UI.Text {
             poolInfo.poolSizes = new List<VkDescriptorPoolSize> {
                 new VkDescriptorPoolSize {
                     descriptorCount = 1,
-                    type = VkDescriptorType.SampledImage
-                },
-                new VkDescriptorPoolSize {
-                    descriptorCount = 1,
-                    type = VkDescriptorType.Sampler
+                    type = VkDescriptorType.CombinedImageSampler
                 }
             };
 
@@ -267,20 +257,11 @@ namespace UnnamedEngine.UI.Text {
                 new WriteDescriptorSet {
                     dstBinding = 0,
                     dstSet = Descriptor,
-                    descriptorType = VkDescriptorType.SampledImage,
+                    descriptorType = VkDescriptorType.CombinedImageSampler,
                     imageInfo = new List<DescriptorImageInfo> {
                         new DescriptorImageInfo {
                             imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
                             imageView = imageView,
-                        }
-                    }
-                },
-                new WriteDescriptorSet {
-                    dstBinding = 1,
-                    dstSet = Descriptor,
-                    descriptorType = VkDescriptorType.Sampler,
-                    imageInfo = new List<DescriptorImageInfo> {
-                        new DescriptorImageInfo {
                             sampler = sampler
                         }
                     }
