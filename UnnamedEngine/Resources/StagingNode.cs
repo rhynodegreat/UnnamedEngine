@@ -115,8 +115,8 @@ namespace UnnamedEngine.Resources {
                     stagingBarrier.dstAccessMask = VkAccessFlags.TransferReadBit;
                     stagingBarrier.oldLayout = VkImageLayout.Preinitialized;
                     stagingBarrier.newLayout = VkImageLayout.TransferSrcOptimal;
-                    stagingBarrier.srcQueueFamilyIndex = uint.MaxValue; //VK_QUEUE_FAMILY_IGNORED
-                    stagingBarrier.dstQueueFamilyIndex = uint.MaxValue;
+                    stagingBarrier.srcQueueFamilyIndex = graphics.TransferQueue.FamilyIndex;
+                    stagingBarrier.dstQueueFamilyIndex = graphics.TransferQueue.FamilyIndex;
                     stagingBarrier.image = imageTransfers[i].staging;
                     stagingBarrier.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
                     stagingBarrier.subresourceRange.baseMipLevel = 0;
@@ -129,13 +129,13 @@ namespace UnnamedEngine.Resources {
                     Image dest = imageTransfers[i].dest;
 
                     ImageMemoryBarrier destBarrier = imageBarriersPool.Get();
-                    destBarrier.srcAccessMask = VkAccessFlags.HostWriteBit;
+                    destBarrier.srcAccessMask = VkAccessFlags.None;
                     destBarrier.dstAccessMask = VkAccessFlags.TransferWriteBit;
                     destBarrier.oldLayout = VkImageLayout.Undefined;
                     destBarrier.newLayout = VkImageLayout.TransferDstOptimal;
-                    destBarrier.srcQueueFamilyIndex = uint.MaxValue;   //VK_QUEUE_FAMILY_IGNORED
-                    destBarrier.dstQueueFamilyIndex = uint.MaxValue;
-                    destBarrier.image = imageTransfers[i].dest;
+                    destBarrier.srcQueueFamilyIndex = graphics.TransferQueue.FamilyIndex;
+                    destBarrier.dstQueueFamilyIndex = graphics.TransferQueue.FamilyIndex;
+                    destBarrier.image = dest;
                     destBarrier.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
                     destBarrier.subresourceRange.baseMipLevel = 0;
                     destBarrier.subresourceRange.levelCount = dest.MipLevels;
@@ -182,7 +182,7 @@ namespace UnnamedEngine.Resources {
                     barrier.newLayout = imageTransfers[i].destLayout;
                     barrier.srcQueueFamilyIndex = graphics.TransferQueue.FamilyIndex;
                     barrier.dstQueueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
-                    barrier.image = imageTransfers[i].dest;
+                    barrier.image = image;
                     barrier.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
                     barrier.subresourceRange.baseMipLevel = 0;
                     barrier.subresourceRange.levelCount = image.MipLevels;
@@ -209,7 +209,7 @@ namespace UnnamedEngine.Resources {
                 bufferTransfers.Clear();
             }
 
-            buffer.PipelineBarrier(VkPipelineStageFlags.TransferBit, VkPipelineStageFlags.TransferBit, VkDependencyFlags.None, null, bufferBarriers, imageBarriers);
+            buffer.PipelineBarrier(VkPipelineStageFlags.TransferBit, VkPipelineStageFlags.BottomOfPipeBit, VkDependencyFlags.None, null, bufferBarriers, imageBarriers);
 
             buffer.End();
 
