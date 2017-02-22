@@ -185,6 +185,7 @@ namespace UnnamedEngine.UI.Text {
         }
 
         void CreateImage() {
+            imageView?.Dispose();
             Image?.Dispose();
 
             ImageCreateInfo info = new ImageCreateInfo();
