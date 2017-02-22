@@ -167,6 +167,9 @@ namespace UnnamedEngine.UI.Text {
             region.dstSubresource.baseArrayLayer = (uint)index;
             region.dstSubresource.layerCount = 1;
             region.dstSubresource.mipLevel = 0;
+            region.extent.width = (uint)PageSize;
+            region.extent.height = (uint)PageSize;
+            region.extent.depth = 1;
 
             engine.Graphics.TransferNode.Transfer(pages[index].Bitmap, Image, region, VkImageLayout.ShaderReadOnlyOptimal);
         }
