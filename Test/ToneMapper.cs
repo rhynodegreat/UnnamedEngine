@@ -33,9 +33,9 @@ namespace Test {
             this.gbuffer = gbuffer;
             this.presentation = presentation;
 
-            EventStage = VkPipelineStageFlags.BottomOfPipeBit;
+            EventStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
             SrcStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
-            DstStage = VkPipelineStageFlags.FragmentShaderBit;
+            DstStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
@@ -72,7 +72,7 @@ namespace Test {
             colorAttachment.stencilLoadOp = VkAttachmentLoadOp.DontCare;
             colorAttachment.stencilStoreOp = VkAttachmentStoreOp.DontCare;
             colorAttachment.initialLayout = VkImageLayout.Undefined;
-            colorAttachment.finalLayout = VkImageLayout.PresentSrcKhr;
+            colorAttachment.finalLayout = VkImageLayout.ColorAttachmentOptimal;
 
             var colorAttachmentRef = new AttachmentReference();
             colorAttachmentRef.attachment = 0;

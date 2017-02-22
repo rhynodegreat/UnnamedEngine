@@ -114,6 +114,13 @@
     <None Include="stars_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="text.vert" />
+    <None Include="text_frag.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="text_vert.spv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="tonemap_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -46,7 +46,6 @@ namespace Test {
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
             info.queueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
-            CommandPool commandPool = new CommandPool(graphics.Device, info);
 
             Mesh mesh;
             using (var stream = File.OpenRead("box.mesh")) {
@@ -99,6 +98,30 @@ namespace Test {
 
             point.AddLight(light4);
 
+            float range = 4;
+            int bias = 127;
+            GlyphCache cache = new GlyphCache(engine, 1024, 1, range);
+            Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
+            for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
+                cache.AddChar(font, i);
+            }
+            cache.Update();
+            //Bitmap<Color4b> bitmap = cache.Bitmaps[0];
+
+            //System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);
+            //for (int x = 0; x < bitmap.Width; x++) {
+            //    for (int y = 0; y < bitmap.Height; y++) {
+            //        output.SetPixel(x, y, System.Drawing.Color.FromArgb(bitmap[x, y].r, bitmap[x, y].g, bitmap[x, y].b));
+            //    }
+            //}
+
+            //output.Save("output.png");
+
+            TextRenderer text = new TextRenderer(engine, renderer, cache);
+            text.AddInput(toneMapper);
+
+            renderer.AddNode(text);
+
             renderer.Bake();
 
             QueueGraph graph = engine.QueueGraph;
@@ -108,27 +131,7 @@ namespace Test {
             Console.WriteLine(mesh.VertexData.VertexCount);
             Console.WriteLine(mesh.IndexData.IndexCount);
 
-            float range = 4;
-            int bias = 127;
-            GlyphCache cache = new GlyphCache(engine, 1024, 1, range);
-            Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
-            for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
-                cache.AddChar(font, i);
-            }
-            cache.Update();
-            Bitmap<Color4b> bitmap = cache.Bitmaps[0];
-
-            System.Drawing.Bitmap output = new System.Drawing.Bitmap(bitmap.Width, bitmap.Height);
-            for (int x = 0; x < bitmap.Width; x++) {
-                for (int y = 0; y < bitmap.Height; y++) {
-                    output.SetPixel(x, y, System.Drawing.Color.FromArgb(bitmap[x, y].r, bitmap[x, y].g, bitmap[x, y].b));
-                }
-            }
-
-            output.Save("output.png");
-
             using (engine)
-            using (commandPool)
             using (camera)
             using (gbuffer)
             using (cache) {
