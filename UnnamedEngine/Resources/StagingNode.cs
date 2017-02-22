@@ -275,7 +275,7 @@ namespace UnnamedEngine.Resources {
             info.initialLayout = VkImageLayout.Preinitialized;
 
             Image staging = new Image(device, info);
-            alloc = allocator.AllocTemp(staging.MemoryRequirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
+            alloc = allocator.AllocTemp(staging.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
             staging.Bind(alloc.memory, alloc.offset);
 
             return staging;
