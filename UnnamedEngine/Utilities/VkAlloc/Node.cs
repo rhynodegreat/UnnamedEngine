@@ -23,14 +23,15 @@ namespace UnnamedEngine.Utilities {
                 //this node can potentially be split into three if start and size defines a space in the middle of the node
 
                 if (start == offset && this.size == size) {
-                    //entire node was taken, so mark this a not free
+                    //entire node was taken, so mark this as not free
                     free = false;
                 } else if (start > offset) {
-                    //some space was left in the beginning, so use this node for that and mark as new one a not free
+                    //some space was left in the beginning, so use this node for that and mark new one as not free
                     ulong startSpace = start - offset;
+                    ulong middleSpace = this.size - startSpace;
                     this.size = startSpace;
 
-                    Node middle = new Node(start, size);
+                    Node middle = new Node(start, middleSpace);
                     middle.next = next;
                     next = middle;
 
@@ -41,6 +42,7 @@ namespace UnnamedEngine.Utilities {
                     free = false;
                     ulong endOffset = start + size;
                     ulong endSpace = (offset + this.size) - endOffset;
+                    this.size = size;
 
                     Node end = new Node(endOffset, endSpace);
                     end.next = next;
