@@ -228,7 +228,7 @@ namespace UnnamedEngine.Rendering {
             albedoInfo.format = AlbedoFormat;
 
             Albedo = new Image(engine.Graphics.Device, albedoInfo);
-            albedoAlloc = engine.Graphics.Allocator.Alloc(Albedo.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            albedoAlloc = engine.Graphics.Allocator.Alloc(Albedo.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
             Albedo.Bind(albedoAlloc.memory, albedoAlloc.offset);
 
             ImageViewCreateInfo albedoViewInfo = new ImageViewCreateInfo(Albedo);
@@ -262,7 +262,7 @@ namespace UnnamedEngine.Rendering {
             normInfo.format = NormFormat;
 
             Norm = new Image(engine.Graphics.Device, normInfo);
-            normAlloc = engine.Graphics.Allocator.Alloc(Norm.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            normAlloc = engine.Graphics.Allocator.Alloc(Norm.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
             Norm.Bind(normAlloc.memory, normAlloc.offset);
 
             ImageViewCreateInfo normViewInfo = new ImageViewCreateInfo(Norm);
