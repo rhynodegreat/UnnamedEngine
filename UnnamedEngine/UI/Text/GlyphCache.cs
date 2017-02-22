@@ -205,7 +205,7 @@ namespace UnnamedEngine.UI.Text {
             Image = new Image(engine.Graphics.Device, info);
 
             engine.Graphics.Allocator.Free(alloc);
-            alloc = engine.Graphics.Allocator.Alloc(Image.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            alloc = engine.Graphics.Allocator.Alloc(Image.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
 
             Image.Bind(alloc.memory, alloc.offset);
 

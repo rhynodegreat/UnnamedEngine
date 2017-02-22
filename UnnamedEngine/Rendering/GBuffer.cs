@@ -310,7 +310,7 @@ namespace UnnamedEngine.Rendering {
             depthInfo.format = DepthFormat;
 
             Depth = new Image(engine.Graphics.Device, depthInfo);
-            depthAlloc = engine.Graphics.Allocator.Alloc(Depth.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            depthAlloc = engine.Graphics.Allocator.Alloc(Depth.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
             Depth.Bind(depthAlloc.memory, depthAlloc.offset);
 
             ImageViewCreateInfo depthViewInfo = new ImageViewCreateInfo(Depth);
@@ -349,7 +349,7 @@ namespace UnnamedEngine.Rendering {
             lightInfo.format = LightFormat;
 
             Light = new Image(engine.Graphics.Device, lightInfo);
-            lightAlloc = engine.Graphics.Allocator.Alloc(Light.MemoryRequirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            lightAlloc = engine.Graphics.Allocator.Alloc(Light.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
             Light.Bind(lightAlloc.memory, lightAlloc.offset);
 
             ImageViewCreateInfo lightViewInfo = new ImageViewCreateInfo(Light);
