@@ -13,12 +13,14 @@ namespace Test {
     public class TextRenderer : CommandNode {
         struct FontMetrics {
             Vector4 color;
-            float bias;
+            Vector4 outlineColor;
+            float outlineThickness;
             float scale;
 
-            public FontMetrics(Vector4 color, float bias, float scale) {
+            public FontMetrics(Vector4 color, Vector4 outlineColor, float outlineThickness, float scale) {
                 this.color = color;
-                this.bias = bias;
+                this.outlineColor = outlineColor;
+                this.outlineThickness = outlineThickness;
                 this.scale = scale;
             }
         }
@@ -276,9 +278,7 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, glyphCache.Descriptor);
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(0, 0, 0, 0), 0.125f, 1f));
-            commandBuffer.Draw(6, 1, 0, 0);
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1, 1, 1, 0), 0.5f, 1f));
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1, 1, 1, 0), new Vector4(0, 0, 0, 0), 0.125f, 2f));
             commandBuffer.Draw(6, 1, 0, 0);
 
             commandBuffer.EndRenderPass();
