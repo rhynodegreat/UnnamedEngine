@@ -142,7 +142,9 @@ namespace UnnamedEngine.UI.Text {
 
         public void Update() {
             if (PageCount < pages.Count) {
-                PageCount *= 2;
+                while (PageCount < pages.Count) {
+                    PageCount *= 2;
+                }
 
                 CreateImage();
                 UpdateDescriptor();
