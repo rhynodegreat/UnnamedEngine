@@ -55,7 +55,9 @@ namespace UnnamedEngine.UI.Text {
         DescriptorPool pool;
         ImageView imageView;
         Sampler sampler;
-        public List<Bitmap<Color4b>> Bitmaps { get; private set; }
+
+        int padding = 1;
+        int expand = 1;
 
         public int PageSize { get; private set; }
         public int PageCount { get; private set; }
@@ -71,7 +73,6 @@ namespace UnnamedEngine.UI.Text {
             pages = new List<GlyphCachePage>();
             infoMap = new Dictionary<GlyphPair, GlyphInfo>();
             pageUpdates = new HashSet<int>();
-            Bitmaps = new List<Bitmap<Color4b>>();
             PageSize = pageSize;
             Range = range;
             PageCount = pageCount;
@@ -106,7 +107,7 @@ namespace UnnamedEngine.UI.Text {
             info.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY);
             info.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height);
 
-            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X), (int)Math.Ceiling(info.size.Y));
+            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X) + padding * 2 + expand * 2, (int)Math.Ceiling(info.size.Y) + padding * 2 + expand * 2);
 
             AddToPage(glyph, ref info, rect);
 
@@ -125,13 +126,13 @@ namespace UnnamedEngine.UI.Text {
             GlyphCachePage newPage = new GlyphCachePage(PageSize, PageSize);
             newPage.AttemptAdd(ref rect);
             pages.Add(newPage);
-            Bitmaps.Add(newPage.Bitmap);
             Render(newPage, pages.Count - 1, glyph, info, rect);
             info.uvPosition = new Vector3(rect.X, rect.Y, pages.Count - 1);
         }
 
         void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphInfo info, Rectanglei rect) {
-            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, new Rectangle(rect), Range, Vector2.One, new Vector2(-info.offset.X, info.offset.Y), 1.000001);
+            Rectangle rectf = new Rectangle(rect.X + padding, rect.Y + padding, rect.Width - padding, rect.Height - padding);
+            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, Vector2.One, new Vector2(-info.offset.X + padding * 2, info.offset.Y + padding * 2), 1.000001);
             pageUpdates.Add(pageIndex);
         }
 

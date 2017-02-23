@@ -196,6 +196,13 @@ namespace Test {
                                                 | VkColorComponentFlags.GBit
                                                 | VkColorComponentFlags.BBit
                                                 | VkColorComponentFlags.ABit;
+            colorBlendAttachment.blendEnable = true;
+            colorBlendAttachment.colorBlendOp = VkBlendOp.Add;
+            colorBlendAttachment.srcColorBlendFactor = VkBlendFactor.SrcAlpha;
+            colorBlendAttachment.dstColorBlendFactor = VkBlendFactor.OneMinusSrcAlpha;
+            colorBlendAttachment.alphaBlendOp = VkBlendOp.Add;
+            colorBlendAttachment.srcAlphaBlendFactor = VkBlendFactor.One;
+            colorBlendAttachment.dstAlphaBlendFactor = VkBlendFactor.Zero;
 
             var colorBlending = new PipelineColorBlendStateCreateInfo();
             colorBlending.logicOp = VkLogicOp.Copy;
