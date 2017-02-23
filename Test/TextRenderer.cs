@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Numerics;
 using System.Collections.Generic;
 
+using CSGL;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
@@ -9,6 +11,18 @@ using UnnamedEngine.UI.Text;
 
 namespace Test {
     public class TextRenderer : CommandNode {
+        struct FontMetrics {
+            Vector4 color;
+            float bias;
+            float scale;
+
+            public FontMetrics(Vector4 color, float bias, float scale) {
+                this.color = color;
+                this.bias = bias;
+                this.scale = scale;
+            }
+        }
+
         bool disposed;
         Engine engine;
         Device device;
@@ -210,6 +224,13 @@ namespace Test {
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
             pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { glyphCache.DescriptorLayout };
+            pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
+                new VkPushConstantRange {
+                    offset = 0,
+                    size = (uint)Interop.SizeOf<FontMetrics>(),
+                    stageFlags = VkShaderStageFlags.FragmentBit
+                }
+            };
 
             pipelineLayout?.Dispose();
 
@@ -255,6 +276,9 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, glyphCache.Descriptor);
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(0, 0, 0, 0), 0.125f, 1f));
+            commandBuffer.Draw(6, 1, 0, 0);
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1, 1, 1, 0), 0.5f, 1f));
             commandBuffer.Draw(6, 1, 0, 0);
 
             commandBuffer.EndRenderPass();
