@@ -49,7 +49,7 @@ namespace UnnamedEngine.UI.Text {
                 shape.InverseYAxis = true;
                 MSDF.EdgeColoringSimple(shape, 3, 0);
 
-                GlyphMetrics metrics = face.Glyph.Metrics;
+                SharpFont.GlyphMetrics metrics = face.Glyph.Metrics;
                 float width = metrics.Width.ToSingle();
                 float height = metrics.Height.ToSingle();
                 float bearingX = metrics.HorizontalBearingX.ToSingle();

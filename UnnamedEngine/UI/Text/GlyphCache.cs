@@ -12,7 +12,7 @@ using UnnamedEngine.Core;
 using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.UI.Text {
-    public struct GlyphInfo {
+    public struct GlyphMetrics {
         public Vector2 offset;
         public Vector2 size;
         public Vector3 uvPosition;
@@ -45,12 +45,27 @@ namespace UnnamedEngine.UI.Text {
             }
         }
 
+        struct GlyphInfo {
+            public Font font;
+            public int codepoint;
+            public Glyph glyph;
+            public GlyphMetrics metrics;
+
+            public GlyphInfo(Font font, int codepoint, Glyph glyph, GlyphMetrics metrics) {
+                this.font = font;
+                this.codepoint = codepoint;
+                this.glyph = glyph;
+                this.metrics = metrics;
+            }
+        }
+
         bool disposed;
 
         Engine engine;
         List<GlyphCachePage> pages;
         HashSet<int> pageUpdates;
-        Dictionary<GlyphPair, GlyphInfo> infoMap;
+        List<GlyphInfo> glyphUpdates;
+        Dictionary<GlyphPair, GlyphMetrics> infoMap;
         VkaAllocation alloc;
         DescriptorPool pool;
         ImageView imageView;
@@ -71,8 +86,9 @@ namespace UnnamedEngine.UI.Text {
 
             this.engine = engine;
             pages = new List<GlyphCachePage>();
-            infoMap = new Dictionary<GlyphPair, GlyphInfo>();
+            infoMap = new Dictionary<GlyphPair, GlyphMetrics>();
             pageUpdates = new HashSet<int>();
+            glyphUpdates = new List<GlyphInfo>();
             PageSize = pageSize;
             Range = range;
             PageCount = pageCount;
@@ -103,18 +119,27 @@ namespace UnnamedEngine.UI.Text {
             if (infoMap.ContainsKey(pair)) return;
 
             Glyph glyph = font.GetGlyph(codepoint);
-            GlyphInfo info = new GlyphInfo();
-            info.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY) * scale;
-            info.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height) * scale;
+            GlyphMetrics metrics = new GlyphMetrics();
+            metrics.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY) * scale;
+            metrics.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height) * scale;
 
-            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.size.X + Range * scale) + padding * 2, (int)Math.Ceiling(info.size.Y + Range * scale) + padding * 2);
-
-            AddToPage(glyph, ref info, rect);
-
-            infoMap.Add(pair, info);
+            glyphUpdates.Add(new GlyphInfo(font, codepoint, glyph, metrics));
         }
 
-        void AddToPage(Glyph glyph, ref GlyphInfo info, Rectanglei rect) {
+        void AddGlyph(GlyphInfo info) {
+            Font font = info.font;
+            int codepoint = info.codepoint;
+            Glyph glyph = info.glyph;
+            GlyphMetrics metrics = info.metrics;
+
+            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(metrics.size.X + Range * scale) + padding * 2, (int)Math.Ceiling(metrics.size.Y + Range * scale) + padding * 2);
+
+            AddToPage(glyph, ref metrics, rect);
+
+            infoMap.Add(new GlyphPair(info.font, info.codepoint), metrics);
+        }
+
+        void AddToPage(Glyph glyph, ref GlyphMetrics info, Rectanglei rect) {
             for (int i = 0; i < pages.Count; i++) {
                 if (pages[i].AttemptAdd(ref rect)) {
                     Render(pages[i], i, glyph, info, rect);
@@ -130,17 +155,30 @@ namespace UnnamedEngine.UI.Text {
             info.uvPosition = new Vector3(rect.X, rect.Y, pages.Count - 1);
         }
 
-        void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphInfo info, Rectanglei rect) {
+        void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphMetrics info, Rectanglei rect) {
             Rectangle rectf = new Rectangle(rect.X + padding, rect.Y + padding, rect.Width - padding, rect.Height - padding);
             MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, new Vector2(scale, scale), new Vector2(-info.offset.X + padding + Range * scale / 2, info.offset.Y + padding + Range * scale / 2), 1.000001);
             pageUpdates.Add(pageIndex);
         }
 
-        public GlyphInfo GetInfo(Font font, int codepoint) {
+        public GlyphMetrics GetInfo(Font font, int codepoint) {
             return infoMap[new GlyphPair(font, codepoint)];
         }
 
         public void Update() {
+            if (glyphUpdates.Count > 0) {
+                glyphUpdates.Sort((GlyphInfo a, GlyphInfo b) => {
+                    float aArea = a.metrics.size.X * a.metrics.size.Y;
+                    float bArea = b.metrics.size.X * b.metrics.size.Y;
+                    return bArea.CompareTo(aArea);
+                });
+
+                for (int i = 0; i < glyphUpdates.Count; i++) {
+                    AddGlyph(glyphUpdates[i]);
+                }
+
+                glyphUpdates.Clear();
+            }
             if (PageCount < pages.Count) {
                 while (PageCount < pages.Count) {
                     PageCount *= 2;
