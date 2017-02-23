@@ -31,11 +31,15 @@ namespace UnnamedEngine.UI.Text {
                     int freeBottom = node.Height - rect.Height;
 
                     if (freeRight > 0) {
-                        free.Add(new Rectanglei(node.X + rect.Width, node.Y, freeRight, rect.Height + freeBottom));
+                        free.Add(new Rectanglei(node.X + rect.Width, node.Y, freeRight, rect.Height));
                     }
 
                     if (freeBottom > 0) {
                         free.Add(new Rectanglei(node.X, node.Y + rect.Height, rect.Width, freeBottom));
+                    }
+
+                    if (freeRight > 0 && freeBottom > 0) {
+                        free.Add(new Rectanglei(node.X + rect.Width, node.Y + rect.Height, freeRight, freeBottom));
                     }
 
                     rect.X = node.X;
