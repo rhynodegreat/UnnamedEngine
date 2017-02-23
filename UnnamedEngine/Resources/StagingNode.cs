@@ -126,7 +126,7 @@ namespace UnnamedEngine.Resources {
 
                     imageBarriers.Add(stagingBarrier);
 
-                    Image dest = imageTransfers[i].dest;
+                    ImageTransfer transfer = imageTransfers[i];
 
                     ImageMemoryBarrier destBarrier = imageBarriersPool.Get();
                     destBarrier.srcAccessMask = VkAccessFlags.None;
@@ -135,12 +135,12 @@ namespace UnnamedEngine.Resources {
                     destBarrier.newLayout = VkImageLayout.TransferDstOptimal;
                     destBarrier.srcQueueFamilyIndex = uint.MaxValue;
                     destBarrier.dstQueueFamilyIndex = uint.MaxValue;
-                    destBarrier.image = dest;
+                    destBarrier.image = transfer.dest;
                     destBarrier.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
-                    destBarrier.subresourceRange.baseMipLevel = 0;
-                    destBarrier.subresourceRange.levelCount = dest.MipLevels;
-                    destBarrier.subresourceRange.baseArrayLayer = 0;
-                    destBarrier.subresourceRange.layerCount = dest.ArrayLayers;
+                    destBarrier.subresourceRange.baseMipLevel = transfer.region.dstSubresource.mipLevel;
+                    destBarrier.subresourceRange.levelCount = 1;
+                    destBarrier.subresourceRange.baseArrayLayer = transfer.region.dstSubresource.baseArrayLayer;
+                    destBarrier.subresourceRange.layerCount = transfer.region.dstSubresource.layerCount;
 
                     imageBarriers.Add(destBarrier);
                 }
@@ -173,7 +173,7 @@ namespace UnnamedEngine.Resources {
 
                 //transition dest images to their dest layouts
                 for (int i = 0; i < imageTransfers.Count; i++) {
-                    Image image = imageTransfers[i].dest;
+                    ImageTransfer transfer = imageTransfers[i];
 
                     ImageMemoryBarrier barrier = imageBarriersPool.Get();
                     barrier.srcAccessMask = VkAccessFlags.TransferWriteBit;
@@ -182,12 +182,12 @@ namespace UnnamedEngine.Resources {
                     barrier.newLayout = imageTransfers[i].destLayout;
                     barrier.srcQueueFamilyIndex = uint.MaxValue;
                     barrier.dstQueueFamilyIndex = uint.MaxValue;
-                    barrier.image = image;
+                    barrier.image = transfer.dest;
                     barrier.subresourceRange.aspectMask = VkImageAspectFlags.ColorBit;
-                    barrier.subresourceRange.baseMipLevel = 0;
-                    barrier.subresourceRange.levelCount = image.MipLevels;
-                    barrier.subresourceRange.baseArrayLayer = 0;
-                    barrier.subresourceRange.layerCount = image.ArrayLayers;
+                    barrier.subresourceRange.baseMipLevel = transfer.region.dstSubresource.mipLevel;
+                    barrier.subresourceRange.levelCount = 1;
+                    barrier.subresourceRange.baseArrayLayer = transfer.region.dstSubresource.baseArrayLayer;
+                    barrier.subresourceRange.layerCount = transfer.region.dstSubresource.layerCount;
 
                     imageBarriers.Add(barrier); //barrier submitted below
                 }
