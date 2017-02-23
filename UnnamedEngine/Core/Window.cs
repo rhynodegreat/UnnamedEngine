@@ -87,6 +87,7 @@ namespace UnnamedEngine.Core {
         }
 
         void SizeChanged(int x, int y) {
+            if (x == 0 || y == 0) return;
             sizeChanged = true;
             newWidth = x;
             newHeight = y;
