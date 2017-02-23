@@ -9,6 +9,8 @@ namespace UnnamedEngine.Core {
         protected Device device;
         List<QueueNode> input;
         List<QueueNode> output;
+        List<CommandBuffer> internalCommands;
+        Queue<CommandBuffer> oneTimeCommands;
 
         public Queue Queue { get; private set; }
         public IList<QueueNode> Input { get; private set; }
@@ -38,12 +40,35 @@ namespace UnnamedEngine.Core {
             Output = output.AsReadOnly();
             ExtraInput = new List<WaitPair>();
             ExtraOutput = new List<Semaphore>();
+            internalCommands = new List<CommandBuffer>();
+            oneTimeCommands = new Queue<CommandBuffer>();
         }
 
         public abstract List<CommandBuffer> GetCommands();
         
         public virtual void PreSubmit() { }
         public virtual void PostSubmit() { }
+
+        internal List<CommandBuffer> InternalGetCommands() {
+            internalCommands.Clear();
+            lock (oneTimeCommands) {
+                while (oneTimeCommands.Count > 0) internalCommands.Add(oneTimeCommands.Dequeue());
+            }
+
+            List<CommandBuffer> derivedCommands = GetCommands();
+
+            for (int i = 0; i < derivedCommands.Count; i++) {
+                internalCommands.Add(derivedCommands[i]);
+            }
+
+            return internalCommands;
+        }
+
+        public void SubmitOnce(CommandBuffer commandBuffer) {
+            lock (oneTimeCommands) {
+                oneTimeCommands.Enqueue(commandBuffer);
+            }
+        }
 
         public void AddInput(QueueNode other) {
             if (input.Contains(other)) return;
