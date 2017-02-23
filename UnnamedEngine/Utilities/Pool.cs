@@ -31,8 +31,8 @@ namespace UnnamedEngine.Utilities {
             if (stack.Count == 0) {
                 for (int i = 0; i < size; i++) {
                     stack.Push(create());
-                    size *= 2;
                 }
+                size *= 2;
             }
             return stack.Pop();
         }
