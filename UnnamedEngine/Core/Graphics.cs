@@ -22,7 +22,6 @@ namespace UnnamedEngine.Core {
 
         public Queue GraphicsQueue { get; private set; }
         public Queue PresentQueue { get; private set; }
-        public Queue TransferQueue { get; private set; }
 
         public VkAllocator Allocator { get; private set; }
         public TransferNode TransferNode { get; private set; }
@@ -46,7 +45,6 @@ namespace UnnamedEngine.Core {
             uint transferIndex;
             int g = -1;
             int p = -1;
-            int t = -1;
 
             for (int i = 0; i < PhysicalDevice.QueueFamilies.Count; i++) {
                 var family = PhysicalDevice.QueueFamilies[i];
@@ -57,13 +55,6 @@ namespace UnnamedEngine.Core {
                 if (p == -1 && GLFW.GetPhysicalDevicePresentationSupport(Instance.Native.native, PhysicalDevice.Native.native, (uint)i)) {
                     p = i;
                 }
-
-                if (t == -1 &&
-                    (family.Flags & VkQueueFlags.TransferBit) != 0 &&   //supports transfer but is not graphics or compute
-                    (family.Flags & VkQueueFlags.GraphicsBit) == 0 &&
-                    (family.Flags & VkQueueFlags.ComputeBit) == 0) {
-                    t = i;
-                }
             }
 
             if (g == -1) throw new GraphicsException("Graphics operations not supported");
@@ -71,15 +62,10 @@ namespace UnnamedEngine.Core {
 
             graphicsIndex = (uint)g;
             presentIndex = (uint)p;
-            if (t == -1) {
-                transferIndex = (uint)g;
-            } else {
-                transferIndex = (uint)t;
-            }
 
             var features = PhysicalDevice.Features;
 
-            HashSet<uint> uniqueIndices = new HashSet<uint> { graphicsIndex, presentIndex, transferIndex };
+            HashSet<uint> uniqueIndices = new HashSet<uint> { graphicsIndex, presentIndex };
             List<float> priorities = new List<float> { 1f };
             List<DeviceQueueCreateInfo> queueInfos = new List<DeviceQueueCreateInfo>(uniqueIndices.Count);
             
@@ -93,7 +79,6 @@ namespace UnnamedEngine.Core {
 
             GraphicsQueue = Device.GetQueue(graphicsIndex, 0);
             PresentQueue = Device.GetQueue(presentIndex, 0);
-            TransferQueue = Device.GetQueue(transferIndex, 0);
         }
 
         public void Dispose() {
