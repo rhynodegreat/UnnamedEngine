@@ -117,9 +117,6 @@ namespace Test {
             graph.Add(renderer);
             graph.Bake();
 
-            Console.WriteLine(mesh.VertexData.VertexCount);
-            Console.WriteLine(mesh.IndexData.IndexCount);
-
             using (engine)
             using (camera)
             using (gbuffer)
