@@ -42,7 +42,7 @@ namespace UnnamedEngine.Core {
         void CreateDevice() {
             uint graphicsIndex;
             uint presentIndex;
-            uint transferIndex;
+
             int g = -1;
             int p = -1;
 
