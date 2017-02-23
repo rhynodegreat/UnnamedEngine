@@ -255,7 +255,7 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, glyphCache.Descriptor);
-            commandBuffer.Draw(3, 1, 0, 0);
+            commandBuffer.Draw(6, 1, 0, 0);
 
             commandBuffer.EndRenderPass();
 
