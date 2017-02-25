@@ -72,18 +72,18 @@ namespace UnnamedEngine.UI.Text {
         ImageView imageView;
         Sampler sampler;
 
-        int padding = 1;
-        float scale = 2f;
-        float threshold = 1.000001f;
 
         public int PageSize { get; private set; }
         public int PageCount { get; private set; }
         public float Range { get; private set; }
+        public int Padding { get; private set; }
+        public float Scale { get; private set; }
+        public float Threshold { get; private set; }
         public Image Image { get; private set; }
         public DescriptorSetLayout DescriptorLayout { get; private set; }
         public DescriptorSet Descriptor { get; private set; }
 
-        public GlyphCache(Engine engine, int pageSize, int pageCount, float range) {
+        public GlyphCache(Engine engine, int pageCount, int pageSize, float range, int padding, float scale, float threshold) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
             this.engine = engine;
@@ -95,6 +95,9 @@ namespace UnnamedEngine.UI.Text {
             PageSize = pageSize;
             Range = range;
             PageCount = pageCount;
+            Padding = padding;
+            Scale = scale;
+            Threshold = threshold;
 
             CreateSampler();
             CreateImage();
@@ -126,8 +129,8 @@ namespace UnnamedEngine.UI.Text {
 
             Glyph glyph = font.GetGlyph(codepoint);
             GlyphMetrics metrics = new GlyphMetrics();
-            metrics.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY) * scale;
-            metrics.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height) * scale;
+            metrics.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY) * Scale;
+            metrics.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height) * Scale;
 
             glyphUpdates.Add(new GlyphInfo(font, codepoint, glyph, metrics));
         }
@@ -138,7 +141,7 @@ namespace UnnamedEngine.UI.Text {
             Glyph glyph = info.glyph;
             GlyphMetrics metrics = info.metrics;
 
-            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(metrics.size.X + Range * scale / 2) + padding * 2, (int)Math.Ceiling(metrics.size.Y + Range * scale / 2) + padding * 2);
+            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(metrics.size.X + Range * Scale / 2) + Padding * 2, (int)Math.Ceiling(metrics.size.Y + Range * Scale / 2) + Padding * 2);
 
             AddToPage(glyph, ref metrics, rect);
 
@@ -162,8 +165,8 @@ namespace UnnamedEngine.UI.Text {
         }
 
         void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphMetrics info, Rectanglei rect) {
-            Rectangle rectf = new Rectangle(rect.X + padding, rect.Y + padding, rect.Width - padding, rect.Height - padding);
-            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, new Vector2(scale, scale), new Vector2(-info.offset.X + padding + Range * scale / 4, info.offset.Y + padding + Range * scale / 4), threshold);
+            Rectangle rectf = new Rectangle(rect.X + Padding, rect.Y + Padding, rect.Width - Padding, rect.Height - Padding);
+            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, new Vector2(Scale, Scale), new Vector2(-info.offset.X + Padding + Range * Scale / 4, info.offset.Y + Padding + Range * Scale / 4), Threshold);
             pageUpdates.Add(pageIndex);
         }
 
@@ -210,7 +213,7 @@ namespace UnnamedEngine.UI.Text {
         }
 
         void UpdatePage(int index) {
-            float errorThreshold = (float)threshold / (scale * Range);
+            float errorThreshold = (float)Threshold / (Scale * Range);
             MSDF.CorrectErrors(pages[index].Bitmap, new Vector2(errorThreshold, errorThreshold));
 
             VkImageCopy region = new VkImageCopy();

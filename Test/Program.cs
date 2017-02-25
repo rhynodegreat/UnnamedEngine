@@ -98,8 +98,13 @@ namespace Test {
 
             point.AddLight(light4);
 
+            int pageSize = 1024;
             float range = 4;
-            GlyphCache cache = new GlyphCache(engine, 1024, 1, range);
+            int padding = 1;
+            float scale = 2;
+            float threshold = 1.000001f;
+
+            GlyphCache cache = new GlyphCache(engine, 1, pageSize, range, padding, scale, threshold);
             Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
             for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
                 cache.AddChar(font, i);
