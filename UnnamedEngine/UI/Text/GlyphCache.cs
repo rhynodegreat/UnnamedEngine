@@ -132,7 +132,7 @@ namespace UnnamedEngine.UI.Text {
             Glyph glyph = info.glyph;
             GlyphMetrics metrics = info.metrics;
 
-            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(metrics.size.X + Range * scale) + padding * 2, (int)Math.Ceiling(metrics.size.Y + Range * scale) + padding * 2);
+            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(metrics.size.X + Range * scale / 2) + padding * 2, (int)Math.Ceiling(metrics.size.Y + Range * scale / 2) + padding * 2);
 
             AddToPage(glyph, ref metrics, rect);
 
@@ -157,7 +157,7 @@ namespace UnnamedEngine.UI.Text {
 
         void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphMetrics info, Rectanglei rect) {
             Rectangle rectf = new Rectangle(rect.X + padding, rect.Y + padding, rect.Width - padding, rect.Height - padding);
-            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, new Vector2(scale, scale), new Vector2(-info.offset.X + padding + Range * scale / 2, info.offset.Y + padding + Range * scale / 2), 1.000001);
+            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, new Vector2(scale, scale), new Vector2(-info.offset.X + padding + Range * scale / 4, info.offset.Y + padding + Range * scale / 4), 1.000001);
             pageUpdates.Add(pageIndex);
         }
 
