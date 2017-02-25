@@ -72,7 +72,6 @@ namespace UnnamedEngine.UI.Text {
         ImageView imageView;
         Sampler sampler;
 
-
         public int PageSize { get; private set; }
         public int PageCount { get; private set; }
         public float Range { get; private set; }
