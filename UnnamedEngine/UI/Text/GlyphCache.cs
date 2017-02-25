@@ -65,6 +65,7 @@ namespace UnnamedEngine.UI.Text {
         List<GlyphCachePage> pages;
         HashSet<int> pageUpdates;
         List<GlyphInfo> glyphUpdates;
+        HashSet<GlyphPair> glyphUpdateSet;
         Dictionary<GlyphPair, GlyphMetrics> infoMap;
         VkaAllocation alloc;
         DescriptorPool pool;
@@ -89,6 +90,7 @@ namespace UnnamedEngine.UI.Text {
             infoMap = new Dictionary<GlyphPair, GlyphMetrics>();
             pageUpdates = new HashSet<int>();
             glyphUpdates = new List<GlyphInfo>();
+            glyphUpdateSet = new HashSet<GlyphPair>();
             PageSize = pageSize;
             Range = range;
             PageCount = pageCount;
@@ -117,6 +119,9 @@ namespace UnnamedEngine.UI.Text {
         public void AddChar(Font font, int codepoint) {
             var pair = new GlyphPair(font, codepoint);
             if (infoMap.ContainsKey(pair)) return;
+            if (glyphUpdateSet.Contains(pair)) return;
+
+            glyphUpdateSet.Add(pair);
 
             Glyph glyph = font.GetGlyph(codepoint);
             GlyphMetrics metrics = new GlyphMetrics();
@@ -200,6 +205,7 @@ namespace UnnamedEngine.UI.Text {
             }
 
             pageUpdates.Clear();
+            glyphUpdateSet.Clear();
         }
 
         void UpdatePage(int index) {
