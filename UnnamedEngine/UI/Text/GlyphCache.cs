@@ -74,6 +74,7 @@ namespace UnnamedEngine.UI.Text {
 
         int padding = 1;
         float scale = 2f;
+        float threshold = 1.000001f;
 
         public int PageSize { get; private set; }
         public int PageCount { get; private set; }
@@ -162,7 +163,7 @@ namespace UnnamedEngine.UI.Text {
 
         void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphMetrics info, Rectanglei rect) {
             Rectangle rectf = new Rectangle(rect.X + padding, rect.Y + padding, rect.Width - padding, rect.Height - padding);
-            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, new Vector2(scale, scale), new Vector2(-info.offset.X + padding + Range * scale / 4, info.offset.Y + padding + Range * scale / 4), 1.000001);
+            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, new Vector2(scale, scale), new Vector2(-info.offset.X + padding + Range * scale / 4, info.offset.Y + padding + Range * scale / 4), threshold);
             pageUpdates.Add(pageIndex);
         }
 
@@ -209,6 +210,9 @@ namespace UnnamedEngine.UI.Text {
         }
 
         void UpdatePage(int index) {
+            float errorThreshold = (float)threshold / (scale * Range);
+            MSDF.CorrectErrors(pages[index].Bitmap, new Vector2(errorThreshold, errorThreshold));
+
             VkImageCopy region = new VkImageCopy();
             region.dstSubresource.aspectMask = VkImageAspectFlags.ColorBit;
             region.dstSubresource.baseArrayLayer = (uint)index;
