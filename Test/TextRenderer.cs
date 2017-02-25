@@ -305,6 +305,8 @@ namespace Test {
             pipeline.Dispose();
             pipelineLayout.Dispose();
 
+            engine.Window.OnSizeChanged -= Recreate;
+
             disposed = true;
         }
     }
