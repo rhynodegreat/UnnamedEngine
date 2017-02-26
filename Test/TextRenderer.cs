@@ -179,6 +179,28 @@ namespace Test {
             fragInfo.module = frag;
             fragInfo.name = "main";
 
+            SpecializationInfo specialization = new SpecializationInfo();
+            specialization.mapEntries = new List<VkSpecializationMapEntry> {
+                new VkSpecializationMapEntry {
+                    constantID = 0,
+                    offset = 0,
+                    size = 4
+                },
+                new VkSpecializationMapEntry {
+                    constantID = 1,
+                    offset = 4,
+                    size = 4
+                }
+            };
+
+            byte[] specializationData = new byte[8];
+            Interop.Copy(glyphCache.Range, specializationData, 0);
+            Interop.Copy(glyphCache.PageSize, specializationData, 4);
+
+            specialization.data = specializationData;
+
+            fragInfo.specializationInfo = specialization;
+
             var shaderStages = new List<PipelineShaderStageCreateInfo> { vertInfo, fragInfo };
 
             var vertexInputInfo = new PipelineVertexInputStateCreateInfo();
@@ -280,7 +302,7 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, glyphCache.Descriptor);
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1, 1, 1, 1), new Vector4(0, 0, 0, 1), 0f, 2.5f, 0.25f));
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1, 1, 1, 1), new Vector4(0, 0, 0, 1), 0f, 2.5f, 0.0625f));
             commandBuffer.Draw(6, 1, 0, 0);
 
             commandBuffer.EndRenderPass();
