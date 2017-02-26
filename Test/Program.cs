@@ -132,19 +132,6 @@ namespace Test {
             GLFW.Terminate();
         }
 
-        //float DistVal(float dist, float bias, float range) {
-        //    if (range == 0) return (dist > .5f) ? 1 : 0;
-        //    return Math.Min(Math.Max((dist - bias) * range + bias, 0), 1);
-        //}
-
-        int DistVal(int dist, int bias, float range) {
-            return Math.Min(Math.Max((int)((dist - bias) * range + bias), 0), 255);
-        }
-
-        int Median(int a, int b, int c) {
-            return Math.Max(Math.Min(a, b), Math.Min(Math.Max(a, b), c));
-        }
-
         Instance CreateInstance() {
             ApplicationInfo appInfo = new ApplicationInfo(new VkVersion(1, 0, 0), new VkVersion(0, 0, 0), new VkVersion(0, 1, 0), "Test", "Unnamed Engine");
             InstanceCreateInfo info = new InstanceCreateInfo(appInfo, new List<string>(GLFW.GetRequiredInstanceExceptions()), new List<string>(layers));
