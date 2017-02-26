@@ -302,7 +302,7 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, glyphCache.Descriptor);
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1, 1, 1, 1), new Vector4(0, 0, 0, 1), 0f, 2.5f, 0.0625f));
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1, 1, 1, 1), new Vector4(0, 0, 0, 1), 0f, 2.5f, 0.25f));
             commandBuffer.Draw(6, 1, 0, 0);
 
             commandBuffer.EndRenderPass();
