@@ -198,6 +198,28 @@ namespace Test {
             fragInfo.module = frag;
             fragInfo.name = "main";
 
+            SpecializationInfo specialization = new SpecializationInfo();
+            specialization.mapEntries = new List<VkSpecializationMapEntry> {
+                new VkSpecializationMapEntry {
+                    constantID = 0,
+                    offset = 0,
+                    size = 4,
+                },
+                new VkSpecializationMapEntry {
+                    constantID = 1,
+                    offset = 4,
+                    size = 4
+                }
+            };
+
+            byte[] specializationData = new byte[8];
+            Interop.Copy(gbuffer.Width, specializationData, 0);
+            Interop.Copy(gbuffer.Height, specializationData, 4);
+
+            specialization.data = specializationData;
+
+            fragInfo.specializationInfo = specialization;
+
             var shaderStages = new List<PipelineShaderStageCreateInfo> { vertInfo, fragInfo };
 
             var vertexInputInfo = new PipelineVertexInputStateCreateInfo();
@@ -249,13 +271,6 @@ namespace Test {
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
             pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { gbuffer.InputLayout, descriptorLayout, camera.Layout };
-            pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
-                new VkPushConstantRange {
-                    offset = 0,
-                    size = 8,
-                    stageFlags = VkShaderStageFlags.FragmentBit
-                }
-            };
 
             pipelineLayout?.Dispose();
 
@@ -313,7 +328,6 @@ namespace Test {
             commandBuffer.BindIndexBuffer(mesh.IndexBuffer, 0, mesh.IndexData.IndexType);
 
             for (uint i = 0; i < lights.Count; i++) {
-                commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new Vector2(gbuffer.Width, gbuffer.Height));
                 commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, set, i * 80);
                 commandBuffer.DrawIndexed((uint)mesh.IndexData.IndexCount, 1, 0, 0, 0);
             }
