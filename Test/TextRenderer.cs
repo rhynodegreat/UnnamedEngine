@@ -185,17 +185,11 @@ namespace Test {
                     constantID = 0,
                     offset = 0,
                     size = 4
-                },
-                new VkSpecializationMapEntry {
-                    constantID = 1,
-                    offset = 4,
-                    size = 4
                 }
             };
 
-            byte[] specializationData = new byte[8];
+            byte[] specializationData = new byte[4];
             Interop.Copy(glyphCache.Range, specializationData, 0);
-            Interop.Copy(glyphCache.PageSize, specializationData, 4);
 
             specialization.data = specializationData;
 
