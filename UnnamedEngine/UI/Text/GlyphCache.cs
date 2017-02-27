@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Threading.Tasks;
 
 using CSGL.Graphics;
 using CSGL.Vulkan;
@@ -59,6 +60,20 @@ namespace UnnamedEngine.UI.Text {
             }
         }
 
+        struct RenderInfo {
+            public int pageIndex;
+            public Glyph glyph;
+            public GlyphMetrics metrics;
+            public Rectanglei rect;
+
+            public RenderInfo(int pageIndex, Glyph glyph, GlyphMetrics metrics, Rectanglei rect) {
+                this.pageIndex = pageIndex;
+                this.glyph = glyph;
+                this.metrics = metrics;
+                this.rect = rect;
+            }
+        }
+
         bool disposed;
 
         Engine engine;
@@ -67,10 +82,12 @@ namespace UnnamedEngine.UI.Text {
         List<GlyphInfo> glyphUpdates;
         HashSet<GlyphPair> glyphUpdateSet;
         Dictionary<GlyphPair, GlyphMetrics> infoMap;
+        List<RenderInfo> renderQueue;
         VkaAllocation alloc;
         DescriptorPool pool;
         ImageView imageView;
         Sampler sampler;
+        float errorThreshold;
 
         public int PageSize { get; private set; }
         public int PageCount { get; private set; }
@@ -91,12 +108,15 @@ namespace UnnamedEngine.UI.Text {
             pageUpdates = new HashSet<int>();
             glyphUpdates = new List<GlyphInfo>();
             glyphUpdateSet = new HashSet<GlyphPair>();
+            renderQueue = new List<RenderInfo>();
             PageSize = pageSize;
             Range = range;
             PageCount = pageCount;
             Padding = padding;
             Scale = scale;
             Threshold = threshold;
+
+            errorThreshold = Threshold / (Scale * Range);
 
             CreateSampler();
             CreateImage();
@@ -150,7 +170,7 @@ namespace UnnamedEngine.UI.Text {
         void AddToPage(Glyph glyph, ref GlyphMetrics info, Rectanglei rect) {
             for (int i = 0; i < pages.Count; i++) {
                 if (pages[i].AttemptAdd(ref rect)) {
-                    Render(pages[i], i, glyph, info, rect);
+                    QueueRender(i, glyph, info, rect);
                     info.uvPosition = new Vector3(rect.X, rect.Y, i);
                     return;
                 }
@@ -159,13 +179,25 @@ namespace UnnamedEngine.UI.Text {
             GlyphCachePage newPage = new GlyphCachePage(PageSize, PageSize);
             newPage.AttemptAdd(ref rect);
             pages.Add(newPage);
-            Render(newPage, pages.Count - 1, glyph, info, rect);
+            QueueRender(pages.Count - 1, glyph, info, rect);
             info.uvPosition = new Vector3(rect.X, rect.Y, pages.Count - 1);
         }
 
-        void Render(GlyphCachePage page, int pageIndex, Glyph glyph, GlyphMetrics info, Rectanglei rect) {
+        void QueueRender(int pageIndex, Glyph glyph, GlyphMetrics metrics, Rectanglei rect) {
+            renderQueue.Add(new RenderInfo(pageIndex, glyph, metrics, rect));
+        }
+
+        void Render(int i) {
+            RenderInfo info = renderQueue[i];
+            int pageIndex = info.pageIndex;
+            Glyph glyph = info.glyph;
+            GlyphMetrics metrics = info.metrics;
+            Rectanglei rect = info.rect;
+
             Rectangle rectf = new Rectangle(rect.X + Padding, rect.Y + Padding, rect.Width - Padding, rect.Height - Padding);
-            MSDF.GenerateMSDF(page.Bitmap, glyph.Shape, rectf, Range, new Vector2(Scale, Scale), new Vector2(-info.offset.X + Padding + Range * Scale / 4, info.offset.Y + Padding + Range * Scale / 4), Threshold);
+            MSDF.GenerateMSDF(pages[pageIndex].Bitmap, glyph.Shape, rectf, Range, new Vector2(Scale, Scale), new Vector2(-metrics.offset.X + Padding + Range * Scale / 4, metrics.offset.Y + Padding + Range * Scale / 4), Threshold);
+            MSDF.CorrectErrors(pages[pageIndex].Bitmap, rect, new Vector2(errorThreshold, errorThreshold));
+
             pageUpdates.Add(pageIndex);
         }
 
@@ -185,8 +217,12 @@ namespace UnnamedEngine.UI.Text {
                     AddGlyph(glyphUpdates[i]);
                 }
 
+                Parallel.For(0, renderQueue.Count, Render);
+
+                renderQueue.Clear();
                 glyphUpdates.Clear();
             }
+
             if (PageCount < pages.Count) {
                 while (PageCount < pages.Count) {
                     PageCount *= 2;
@@ -212,8 +248,6 @@ namespace UnnamedEngine.UI.Text {
         }
 
         void UpdatePage(int index) {
-            float errorThreshold = (float)Threshold / (Scale * Range);
-            MSDF.CorrectErrors(pages[index].Bitmap, new Vector2(errorThreshold, errorThreshold));
 
             VkImageCopy region = new VkImageCopy();
             region.dstSubresource.aspectMask = VkImageAspectFlags.ColorBit;
