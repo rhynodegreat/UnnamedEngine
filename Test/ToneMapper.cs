@@ -135,8 +135,8 @@ namespace Test {
         }
 
         void CreatePipeline() {
-            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("tonemap_vert.spv"));
-            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("tonemap_frag.spv"));
+            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("shaders/tonemap_vert.spv"));
+            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("shaders/tonemap_frag.spv"));
 
             var vertInfo = new PipelineShaderStageCreateInfo();
             vertInfo.stage = VkShaderStageFlags.VertexBit;

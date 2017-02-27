@@ -69,67 +69,60 @@
     <Compile Include="TriangleRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ambient_frag.spv">
+    <None Include="shaders\ambient_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="ambient_vert.spv">
+    <None Include="shaders\ambient_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="App.config" />
-    <None Include="basic_frag.spv">
+    <None Include="shaders\basic_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="basic_vert.spv">
+    <None Include="shaders\basic_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="box.mesh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="deferred_frag.spv">
+    <None Include="shaders\directional_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="deferred_vert.spv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="directional_frag.spv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="directional_vert.spv">
+    <None Include="shaders\directional_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <None Include="pointLight.mesh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="point_frag.spv">
+    <None Include="shaders\point_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="point_vert.spv">
+    <None Include="shaders\point_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="stars_frag.spv">
+    <None Include="shaders\stars_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="stars_vert.spv">
+    <None Include="shaders\stars_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="text.vert" />
-    <None Include="text_frag.spv">
+    <None Include="shaders\text_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="text_vert.spv">
+    <None Include="shaders\text_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tonemap_frag.spv">
+    <None Include="shaders\tonemap_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tonemap_vert.spv">
+    <None Include="shaders\tonemap_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tri_frag.spv">
+    <None Include="shaders\tri_frag.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tri_vert.spv">
+    <None Include="shaders\tri_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -185,8 +185,8 @@ namespace Test {
         }
 
         void CreatePipeline() {
-            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("point_vert.spv"));
-            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("point_frag.spv"));
+            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("shaders/point_vert.spv"));
+            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("shaders/point_frag.spv"));
 
             var vertInfo = new PipelineShaderStageCreateInfo();
             vertInfo.stage = VkShaderStageFlags.VertexBit;

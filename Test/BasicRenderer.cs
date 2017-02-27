@@ -65,8 +65,8 @@ namespace Test {
         }
 
         void CreatePipeline() {
-            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("basic_vert.spv"));
-            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("basic_frag.spv"));
+            var vert = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("shaders/basic_vert.spv"));
+            var frag = CreateShaderModule(engine.Graphics.Device, File.ReadAllBytes("shaders/basic_frag.spv"));
 
             var vertInfo = new PipelineShaderStageCreateInfo();
             vertInfo.stage = VkShaderStageFlags.VertexBit;
