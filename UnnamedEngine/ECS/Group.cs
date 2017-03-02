@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 
 namespace UnnamedEngine.ECS {
-    public class Group {
+    public class Group : IDisposable {
+        bool disposed;
+
+        EntityManager manager;
         HashSet<Type> typesSet;
         Dictionary<Type, IList<object>> componentMap;
         Dictionary<Type, List<object>> realComponentMap;
@@ -16,6 +19,8 @@ namespace UnnamedEngine.ECS {
         public Group(EntityManager manager, params Type[] types) {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
             if (types == null) throw new ArgumentNullException(nameof(manager));
+
+            this.manager = manager;
 
             typesSet = new HashSet<Type>();
             realComponentMap = new Dictionary<Type, List<object>>();
@@ -73,6 +78,21 @@ namespace UnnamedEngine.ECS {
 
         public IList<object> GetComponent<T>() {
             return componentMap[typeof(T)];
+        }
+
+        public void Dispose() {
+            Dispose(true);
+        }
+
+        void Dispose(bool disposing) {
+            if (disposed) return;
+
+            manager.OnComponentAdded -= OnComponentAdded;
+            manager.OnComponentRemoved -= OnComponentRemoved;
+        }
+
+        ~Group() {
+            Dispose(false);
         }
     }
 }
