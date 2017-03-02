@@ -64,6 +64,15 @@ namespace UnnamedEngine.Core {
             }
         }
 
+        public CursorMode CursorMode {
+            get {
+                return window.CursorMode;
+            }
+            set {
+                window.CursorMode = value;
+            }
+        }
+
         public Input(CSGL.GLFW.Window window) {
             if (window == null) throw new ArgumentNullException(nameof(window));
 

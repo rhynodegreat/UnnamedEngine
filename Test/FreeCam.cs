@@ -49,6 +49,14 @@ namespace Test {
                 y += 1;
             }
 
+            if (input.FirstDown(KeyCode.Escape)) {
+                input.CursorMode = CursorMode.Normal;
+            }
+
+            if (input.FirstDown(MouseButton.Button1)) {
+                input.CursorMode = CursorMode.Disabled;
+            }
+
             if (x != 0 || y != 0 || z != 0) {
                 Vector3 dir = Vector3.Normalize(new Vector3(x, y, z));
                 x = dir.X;
