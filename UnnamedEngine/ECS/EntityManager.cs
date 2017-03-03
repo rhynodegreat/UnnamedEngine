@@ -83,6 +83,6 @@ namespace UnnamedEngine.ECS {
     }
 
     public class EntityManagerException : Exception {
-        public EntityManagerException(string message) { }
+        public EntityManagerException(string message) : base (message) { }
     }
 }
