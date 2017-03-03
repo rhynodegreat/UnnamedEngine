@@ -49,6 +49,7 @@ namespace UnnamedEngine.UI {
         }
 
         void CreateStencil() {
+            engine.Graphics.Allocator.Free(stencilAlloc);
             Stencil?.Dispose();
             StencilView?.Dispose();
 
@@ -94,6 +95,7 @@ namespace UnnamedEngine.UI {
             pool.Dispose();
             StencilView.Dispose();
             Stencil.Dispose();
+            engine.Graphics.Allocator.Free(stencilAlloc);
 
             disposed = true;
         }
