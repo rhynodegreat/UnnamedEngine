@@ -52,24 +52,7 @@ namespace UnnamedEngine.Core {
             nodeMap.Remove(node);
         }
 
-        struct SortState {
-            public bool open;
-            public bool finished;
-        }
-
         public void Bake() {
-            //https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
-            Stack<QueueNode> stack = new Stack<QueueNode>();
-            Dictionary<QueueNode, SortState> sortState = new Dictionary<QueueNode, SortState>();
-
-            foreach (var node in nodeMap.Keys) {
-                sortState.Add(node, new SortState());
-            }
-
-            foreach (var node in nodeMap.Keys) {
-                Visit(stack, sortState, node);
-            }
-
             ClearInternal();
 
             foreach (var fence in fences) {
@@ -77,6 +60,9 @@ namespace UnnamedEngine.Core {
             }
 
             fences.Clear();
+
+            HashSet<QueueNode> nodeSet = new HashSet<QueueNode>(nodeMap.Keys);
+            Stack<QueueNode> stack = DirectedAcyclicGraph<QueueNode>.TopologicalSort(nodeSet, (QueueNode node) => { return node.Output; });
 
             while (stack.Count > 0) {
                 var node = stack.Pop();
@@ -92,25 +78,6 @@ namespace UnnamedEngine.Core {
                 }
 
                 nodeList.Add(new NodeInfo { node = node, submitIndex = Bake(node) });
-            }
-        }
-
-        void Visit(Stack<QueueNode> stack, Dictionary<QueueNode, SortState> sortState, QueueNode node) {
-            if (sortState[node].open) throw new CommandGraphException("Nodes do not form Direct Acyclic Graph");
-            if (!sortState[node].finished) {
-                var state = sortState[node];
-                state.open = true;
-                sortState[node] = state;
-
-                foreach (var output in node.Output) {
-                    Visit(stack, sortState, output);
-                }
-
-                state.open = false;
-                state.finished = true;
-                sortState[node] = state;
-
-                stack.Push(node);
             }
         }
 
@@ -195,26 +162,6 @@ namespace UnnamedEngine.Core {
             }
             catch (Exception e) {
                 Console.WriteLine(e);
-            }
-        }
-
-        class Node : IDisposable {
-            public List<Semaphore> signalSemaphores;
-            public SubmitInfo info;
-
-            public Node(Device device, QueueNode node) {
-                signalSemaphores = new List<Semaphore>(node.Output.Count);
-                info = new SubmitInfo();
-
-                for (int i = 0; i < signalSemaphores.Count; i++) {
-                    signalSemaphores.Add(new Semaphore(device));
-                }
-            }
-
-            public void Dispose() {
-                for (int i = 0; i < signalSemaphores.Count; i++) {
-                    signalSemaphores[i].Dispose();
-                }
             }
         }
 
