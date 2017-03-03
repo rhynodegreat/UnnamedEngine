@@ -27,5 +27,29 @@ namespace UnnamedEngine.ECS {
             }
             return false;
         }
+
+        public T GetFirst<T>() where T : class {
+            for (int i = 0; i < components.Count; i++) {
+                if (components[i] is T) return (T)components[i];
+            }
+
+            return null;
+        }
+
+        public List<T> GetAll<T>() where T : class {
+            List<T> result = new List<T>();
+            for (int i = 0; i < components.Count; i++) {
+                if (components[i] is T) result.Add((T)components[i]);
+            }
+
+            return result;
+        }
+
+        public void SetIndex<T>(T component, int index) where T : class {
+            if (component == null) throw new ArgumentNullException(nameof(component));
+            if (components.Remove(component)) {
+                components.Insert(index, component);
+            }
+        }
     }
 }
