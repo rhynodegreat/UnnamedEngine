@@ -40,7 +40,7 @@ namespace UnnamedEngine.ECS {
 
         EntityManager manager;
         HashSet<Type> typesSet;
-        Dictionary<Type, IHolder> realComponentMap;
+        Dictionary<Type, IHolder> componentMap;
         Dictionary<object, Entity> reverseComponentMap;
         HashSet<Entity> entitySet;
         List<Entity> realEntities;
@@ -55,7 +55,7 @@ namespace UnnamedEngine.ECS {
             this.manager = manager;
 
             typesSet = new HashSet<Type>();
-            realComponentMap = new Dictionary<Type, IHolder>();
+            componentMap = new Dictionary<Type, IHolder>();
             reverseComponentMap = new Dictionary<object, Entity>();
             entitySet = new HashSet<Entity>();
             realEntities = new List<Entity>();
@@ -68,7 +68,7 @@ namespace UnnamedEngine.ECS {
                 List<object> list = new List<object>();
 
                 Type holder = typeof(Holder<>).MakeGenericType(types[i]);
-                realComponentMap.Add(types[i], (IHolder)Activator.CreateInstance(holder));
+                componentMap.Add(types[i], (IHolder)Activator.CreateInstance(holder));
             }
 
             manager.OnComponentAdded += OnComponentAdded;
@@ -78,7 +78,7 @@ namespace UnnamedEngine.ECS {
         void OnComponentAdded(Entity entity, object component) {
             if (typesSet.Contains(component.GetType())) {
                 Type t = component.GetType();
-                realComponentMap[t].Add(component);
+                componentMap[t].Add(component);
                 reverseComponentMap.Add(component, entity);
 
                 entitySet.Add(entity);
@@ -89,7 +89,7 @@ namespace UnnamedEngine.ECS {
         void OnComponentRemoved(Entity entity, object component) {
             if (typesSet.Contains(component.GetType()) && entitySet.Contains(entity)) {
                 Type t = component.GetType();
-                realComponentMap[t].Remove(component);
+                componentMap[t].Remove(component);
                 reverseComponentMap.Remove(component);
                 
                 //make sure entities with multiple of the same type of component are not removed
@@ -103,7 +103,7 @@ namespace UnnamedEngine.ECS {
         }
 
         public IList<T> GetComponent<T>() {
-            return (IList<T>)realComponentMap[typeof(T)].GetReadOnly();
+            return (IList<T>)componentMap[typeof(T)].GetReadOnly();
         }
 
         public void Dispose() {
