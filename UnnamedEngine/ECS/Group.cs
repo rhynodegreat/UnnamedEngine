@@ -3,12 +3,44 @@ using System.Collections.Generic;
 
 namespace UnnamedEngine.ECS {
     public class Group : IDisposable {
+        interface IHolder {
+            object Get();
+            object GetReadOnly();
+            void Add(object o);
+            void Remove(object o);
+        }
+
+        class Holder<T> : IHolder {
+            List<T> list;
+            IList<T> readOnly;
+
+            public Holder() {
+                list = new List<T>();
+                readOnly = list.AsReadOnly();
+            }
+
+            public object Get() {
+                return list;
+            }
+
+            public object GetReadOnly() {
+                return readOnly;
+            }
+
+            public void Add(object o) {
+                list.Add((T)o);
+            }
+
+            public void Remove(object o) {
+                list.Remove((T)o);
+            }
+        }
+
         bool disposed;
 
         EntityManager manager;
         HashSet<Type> typesSet;
-        Dictionary<Type, IList<object>> componentMap;
-        Dictionary<Type, List<object>> realComponentMap;
+        Dictionary<Type, IHolder> realComponentMap;
         Dictionary<object, Entity> reverseComponentMap;
         HashSet<Entity> entitySet;
         List<Entity> realEntities;
@@ -23,8 +55,7 @@ namespace UnnamedEngine.ECS {
             this.manager = manager;
 
             typesSet = new HashSet<Type>();
-            realComponentMap = new Dictionary<Type, List<object>>();
-            componentMap = new Dictionary<Type, IList<object>>();
+            realComponentMap = new Dictionary<Type, IHolder>();
             reverseComponentMap = new Dictionary<object, Entity>();
             entitySet = new HashSet<Entity>();
             realEntities = new List<Entity>();
@@ -35,8 +66,9 @@ namespace UnnamedEngine.ECS {
             for (int i = 0; i < types.Length; i++) {
                 typesSet.Add(types[i]);
                 List<object> list = new List<object>();
-                realComponentMap.Add(types[i], list);
-                componentMap.Add(types[i], list.AsReadOnly());
+
+                Type holder = typeof(Holder<>).MakeGenericType(types[i]);
+                realComponentMap.Add(types[i], (IHolder)Activator.CreateInstance(holder));
             }
 
             manager.OnComponentAdded += OnComponentAdded;
@@ -46,8 +78,7 @@ namespace UnnamedEngine.ECS {
         void OnComponentAdded(Entity entity, object component) {
             if (typesSet.Contains(component.GetType())) {
                 Type t = component.GetType();
-                List<object> list = realComponentMap[t];
-                list.Add(component);
+                realComponentMap[t].Add(component);
                 reverseComponentMap.Add(component, entity);
 
                 entitySet.Add(entity);
@@ -58,8 +89,7 @@ namespace UnnamedEngine.ECS {
         void OnComponentRemoved(Entity entity, object component) {
             if (typesSet.Contains(component.GetType()) && entitySet.Contains(entity)) {
                 Type t = component.GetType();
-                List<object> list = realComponentMap[t];
-                list.Remove(component);
+                realComponentMap[t].Remove(component);
                 reverseComponentMap.Remove(component);
                 
                 //make sure entities with multiple of the same type of component are not removed
@@ -72,12 +102,8 @@ namespace UnnamedEngine.ECS {
             }
         }
 
-        public IList<object> GetComponents(Type type) {
-            return componentMap[type];
-        }
-
-        public IList<object> GetComponent<T>() {
-            return componentMap[typeof(T)];
+        public IList<T> GetComponent<T>() {
+            return (IList<T>)realComponentMap[typeof(T)].GetReadOnly();
         }
 
         public void Dispose() {
