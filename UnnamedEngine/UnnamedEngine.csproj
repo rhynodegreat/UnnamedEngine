@@ -84,6 +84,7 @@
     <Compile Include="UI\Text\GlyphCachePage.cs" />
     <Compile Include="UI\Text\Glyph.cs" />
     <Compile Include="UI\UIElement.cs" />
+    <Compile Include="Utilities\DirectedAcyclicGraph.cs" />
     <Compile Include="Utilities\OpenList.cs" />
     <Compile Include="Utilities\Pool.cs" />
     <Compile Include="Utilities\VkAlloc\Heap.cs" />
