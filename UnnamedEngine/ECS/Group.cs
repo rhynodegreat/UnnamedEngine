@@ -107,7 +107,7 @@ namespace UnnamedEngine.ECS {
             }
         }
 
-        public IList<T> GetComponents<T>() {
+        public IList<T> GetComponents<T>() where T : class {
             if (!componentMap.ContainsKey(typeof(T))) throw new GroupException("Group does not contain this type");
             return (IList<T>)componentMap[typeof(T)].GetReadOnly();
         }
