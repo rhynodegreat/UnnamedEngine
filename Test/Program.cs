@@ -12,6 +12,7 @@ using UWindow = UnnamedEngine.Core.Window;
 using UnnamedEngine.Resources;
 using UnnamedEngine.Rendering;
 using UnnamedEngine.UI.Text;
+using UnnamedEngine.ECS;
 
 namespace Test {
     class Program {
@@ -121,6 +122,12 @@ namespace Test {
             QueueGraph graph = engine.QueueGraph;
             graph.Add(renderer);
             graph.Bake();
+
+            EntityManager manager = new EntityManager();
+            Group group = new Group(manager, typeof(object));
+            Entity e = new Entity();
+            e.AddComponent(new object());
+            e.AddComponent(new Transform());
 
             using (engine)
             using (camera)
