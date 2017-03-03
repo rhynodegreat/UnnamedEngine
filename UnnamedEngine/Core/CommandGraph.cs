@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 
 using CSGL.Vulkan;
 
+using UnnamedEngine.Utilities;
+
 namespace UnnamedEngine.Core {
     public class CommandGraph : IDisposable {
         bool disposed;
@@ -26,26 +28,11 @@ namespace UnnamedEngine.Core {
             nodes.Remove(node);
         }
 
-        struct SortState {
-            public bool open;
-            public bool finished;
-        }
-
         public void Bake() {
-            //https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
-            Stack<CommandNode> stack = new Stack<CommandNode>();
-            Dictionary<CommandNode, SortState> sortState = new Dictionary<CommandNode, SortState>();
-
-            foreach (var node in nodes) {
-                sortState.Add(node, new SortState());
-            }
-
-            foreach (var node in nodes) {
-                Visit(stack, sortState, node);
-            }
-
             nodeList.Clear();
             commands.Clear();
+
+            Stack<CommandNode> stack = DirectedAcyclicGraph<CommandNode>.TopologicalSort(nodes, (CommandNode node) => { return node.Output; });
 
             while (stack.Count > 0) {
                 var node = stack.Pop();
@@ -53,25 +40,6 @@ namespace UnnamedEngine.Core {
                 nodeList.Add(node);
                 node.Bake();
                 commands.Add(null);
-            }
-        }
-
-        void Visit(Stack<CommandNode> stack, Dictionary<CommandNode, SortState> sortState, CommandNode node) {
-            if (sortState[node].open) throw new CommandGraphException("Nodes do not form Direct Acyclic Graph");
-            if (!sortState[node].finished) {
-                var state = sortState[node];
-                state.open = true;
-                sortState[node] = state;
-
-                foreach (var output in node.Output) {
-                    Visit(stack, sortState, output);
-                }
-
-                state.open = false;
-                state.finished = true;
-                sortState[node] = state;
-
-                stack.Push(node);
             }
         }
 
