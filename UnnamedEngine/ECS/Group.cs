@@ -69,6 +69,11 @@ namespace UnnamedEngine.ECS {
 
                 Type holder = typeof(Holder<>).MakeGenericType(types[i]);
                 componentMap.Add(types[i], (IHolder)Activator.CreateInstance(holder));
+
+                List<object> alreadyAdded = manager.GetList(types[i]);
+                for (int j = 0; j < alreadyAdded.Count; j++) {
+                    OnComponentAdded(manager.GetEntity(alreadyAdded[i]), alreadyAdded[i]);
+                }
             }
 
             manager.OnComponentAdded += OnComponentAdded;

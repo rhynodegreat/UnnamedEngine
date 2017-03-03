@@ -5,6 +5,7 @@ namespace UnnamedEngine.ECS {
     public class EntityManager {
         HashSet<Entity> entities;
         Dictionary<Type, List<object>> componentMap;
+        Dictionary<object, Entity> reverseComponentMap;
         HashSet<object> componentSet;
 
         public event Action<Entity> OnEntityAdded = delegate { };
@@ -17,6 +18,7 @@ namespace UnnamedEngine.ECS {
             entities = new HashSet<Entity>();
             componentMap = new Dictionary<Type, List<object>>();
             componentSet = new HashSet<object>();
+            reverseComponentMap = new Dictionary<object, Entity>();
         }
 
         public void AddEntity(Entity entity) {
@@ -54,6 +56,7 @@ namespace UnnamedEngine.ECS {
             if (componentSet.Contains(component)) throw new EntityManagerException("Component has already been added to an entity");
 
             componentSet.Add(component);
+            reverseComponentMap.Add(component, entity);
 
             Type t = component.GetType();
             List<object> list = GetList(t);
@@ -64,6 +67,7 @@ namespace UnnamedEngine.ECS {
 
         internal void RemoveComponent(Entity entity, object component) {
             componentSet.Remove(component);
+            reverseComponentMap.Remove(component);
 
             Type t = component.GetType();
             List<object> list = GetList(t);
@@ -80,6 +84,13 @@ namespace UnnamedEngine.ECS {
                 componentMap.Add(t, list);
                 return list;
             }
+        }
+
+        public Entity GetEntity(object component) {
+            if (reverseComponentMap.ContainsKey(component)) {
+                return reverseComponentMap[component];
+            }
+            return null;
         }
     }
 
