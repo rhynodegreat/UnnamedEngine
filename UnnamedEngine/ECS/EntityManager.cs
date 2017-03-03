@@ -55,7 +55,8 @@ namespace UnnamedEngine.ECS {
 
             componentSet.Add(component);
 
-            List<object> list = GetList(component);
+            Type t = component.GetType();
+            List<object> list = GetList(t);
             list.Add(component);
 
             OnComponentAdded(entity, component);
@@ -64,14 +65,14 @@ namespace UnnamedEngine.ECS {
         internal void RemoveComponent(Entity entity, object component) {
             componentSet.Remove(component);
 
-            List<object> list = GetList(component);
+            Type t = component.GetType();
+            List<object> list = GetList(t);
             list.Remove(component);
 
             OnComponentRemoved(entity, component);
         }
 
-        List<object> GetList(object component) {
-            Type t = component.GetType();
+        public List<object> GetList(Type t) {
             if (componentMap.ContainsKey(t)) {
                 return componentMap[t];
             } else {
