@@ -13,14 +13,14 @@ namespace UnnamedEngine.ECS {
             Components = components.AsReadOnly();
         }
 
-        public void AddComponent(object component) {
+        public void AddComponent<T>(T component) where T : class {
             if (component == null) throw new ArgumentNullException(nameof(component));
 
             components.Add(component);
             if (Manager != null) Manager.AddComponent(this, component);
         }
 
-        public bool RemoveComponent(object component) {
+        public bool RemoveComponent<T>(T component) where T : class {
             if (components.Remove(component)) {
                 if (Manager != null) Manager.RemoveComponent(this, component);
                 return true;
