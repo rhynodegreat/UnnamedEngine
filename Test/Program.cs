@@ -13,6 +13,7 @@ using UnnamedEngine.Resources;
 using UnnamedEngine.Rendering;
 using UnnamedEngine.UI.Text;
 using UnnamedEngine.ECS;
+using UnnamedEngine.UI;
 
 namespace Test {
     class Program {
@@ -129,9 +130,13 @@ namespace Test {
             e.AddComponent(new object());
             e.AddComponent(new Transform());
 
+            Screen screen = new Screen(engine, gbuffer.Width, gbuffer.Height, true);
+            gbuffer.OnSizeChanged += screen.Recreate;
+
             using (engine)
             using (camera)
             using (gbuffer)
+            using (screen)
             using (cache) {
                 engine.Run();
             }
