@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
+using UnnamedEngine.Rendering;
 using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.UI {
@@ -12,20 +13,23 @@ namespace UnnamedEngine.UI {
 
         Engine engine;
 
+        CommandPool pool;
         VkaAllocation stencilAlloc;
-        Image stencil;
-        ImageView stencilView;
+        public Image Stencil { get; private set; }
+        public ImageView StencilView { get; private set; }
 
+        public Camera Camera { get; set; }
         public bool Clear { get; set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public Screen(Engine engine, int width, int height, bool clear) {
+        public Screen(Engine engine, Camera camera, int width, int height, bool clear) {
             this.engine = engine;
+
+            Camera = camera;
+            Clear = clear;
             Width = width;
             Height = height;
-
-            Clear = clear;
 
             CreateStencil();
         }
@@ -36,9 +40,17 @@ namespace UnnamedEngine.UI {
             CreateStencil();
         }
 
+        void CreateCommandPool() {
+            CommandPoolCreateInfo info = new CommandPoolCreateInfo();
+            info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
+            info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+
+            pool = new CommandPool(engine.Graphics.Device, info);
+        }
+
         void CreateStencil() {
-            stencil?.Dispose();
-            stencilView?.Dispose();
+            Stencil?.Dispose();
+            StencilView?.Dispose();
 
             ImageCreateInfo info = new ImageCreateInfo();
             info.imageType = VkImageType._2d;
@@ -54,12 +66,12 @@ namespace UnnamedEngine.UI {
             info.sharingMode = VkSharingMode.Exclusive;
             info.initialLayout = VkImageLayout.Undefined;
 
-            stencil = new Image(engine.Graphics.Device, info);
-            stencilAlloc = engine.Graphics.Allocator.Alloc(stencil.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            stencil.Bind(stencilAlloc.memory, stencilAlloc.offset);
+            Stencil = new Image(engine.Graphics.Device, info);
+            stencilAlloc = engine.Graphics.Allocator.Alloc(Stencil.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
+            Stencil.Bind(stencilAlloc.memory, stencilAlloc.offset);
 
             ImageViewCreateInfo viewInfo = new ImageViewCreateInfo();
-            viewInfo.image = stencil;
+            viewInfo.image = Stencil;
             viewInfo.viewType = VkImageViewType._2d;
             viewInfo.format = VkFormat.D32SfloatS8Uint;
             viewInfo.subresourceRange.aspectMask = VkImageAspectFlags.StencilBit;
@@ -68,7 +80,7 @@ namespace UnnamedEngine.UI {
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = 1;
 
-            stencilView = new ImageView(engine.Graphics.Device, viewInfo);
+            StencilView = new ImageView(engine.Graphics.Device, viewInfo);
         }
 
         public void Dispose() {
@@ -79,8 +91,9 @@ namespace UnnamedEngine.UI {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            stencilView.Dispose();
-            stencil.Dispose();
+            pool.Dispose();
+            StencilView.Dispose();
+            Stencil.Dispose();
 
             disposed = true;
         }

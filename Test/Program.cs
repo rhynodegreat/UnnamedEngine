@@ -130,7 +130,9 @@ namespace Test {
             e.AddComponent(new object());
             e.AddComponent(new Transform());
 
-            Screen screen = new Screen(engine, gbuffer.Width, gbuffer.Height, true);
+            Camera uiCam = new Camera(engine, window, 90, 1);
+
+            Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height, true);
             gbuffer.OnSizeChanged += screen.Recreate;
 
             using (engine)
