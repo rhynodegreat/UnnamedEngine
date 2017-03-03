@@ -89,6 +89,8 @@ namespace UnnamedEngine.ECS {
 
             manager.OnComponentAdded -= OnComponentAdded;
             manager.OnComponentRemoved -= OnComponentRemoved;
+
+            disposed = true;
         }
 
         ~Group() {
