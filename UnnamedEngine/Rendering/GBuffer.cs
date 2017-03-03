@@ -396,6 +396,8 @@ namespace UnnamedEngine.Rendering {
 
             window.OnSizeChanged -= CreateGBuffer;
 
+            OnSizeChanged = null;
+
             Free();
             pool.Dispose();
             InputLayout.Dispose();
