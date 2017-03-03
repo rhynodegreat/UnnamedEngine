@@ -107,7 +107,8 @@ namespace UnnamedEngine.ECS {
             }
         }
 
-        public IList<T> GetComponent<T>() {
+        public IList<T> GetComponents<T>() {
+            if (!componentMap.ContainsKey(typeof(T))) throw new GroupException("Group does not contain this type");
             return (IList<T>)componentMap[typeof(T)].GetReadOnly();
         }
 
@@ -127,5 +128,9 @@ namespace UnnamedEngine.ECS {
         ~Group() {
             Dispose(false);
         }
+    }
+
+    public class GroupException : Exception {
+        public GroupException(string message) : base(message) { }
     }
 }
