@@ -40,9 +40,12 @@ namespace Test {
 
             GBuffer gbuffer = new GBuffer(engine, window);
 
-            PerspectiveCamera camera = new PerspectiveCamera(window, 90, .1f);
+            PerspectiveCamera camera = new PerspectiveCamera(90, .1f);
             engine.Cameras.AddCamera(camera);
             camera.Transform.Position = new Vector3(0, 0, 1);
+
+            camera.Update(window.Width, window.Height);
+            window.OnSizeChanged += camera.Update;
 
             FreeCam freeCam = new FreeCam(engine, camera);
 
@@ -130,7 +133,7 @@ namespace Test {
             e.AddComponent(new object());
             e.AddComponent(new Transform());
 
-            PerspectiveCamera uiCam = new PerspectiveCamera(window, 90, 1);
+            PerspectiveCamera uiCam = new PerspectiveCamera(90, 1);
 
             Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height, true);
             gbuffer.OnSizeChanged += screen.Recreate;

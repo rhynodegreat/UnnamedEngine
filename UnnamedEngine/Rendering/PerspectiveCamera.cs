@@ -6,8 +6,6 @@ using UnnamedEngine.Core;
 
 namespace UnnamedEngine.Rendering {
     public class PerspectiveCamera : Camera {
-        Window window;
-
         Matrix4x4 projection;
         Matrix4x4 view;
         
@@ -16,30 +14,27 @@ namespace UnnamedEngine.Rendering {
         public float Far { get; set; }
         public bool Infinite { get; set; }
 
-        public PerspectiveCamera(Window window, float fov, float near, float far, bool infinite) : base(new Transform()) {
-            if (window == null) throw new ArgumentNullException(nameof(window));
-            
-            this.window = window;
-
+        public PerspectiveCamera(float fov, float near, float far, bool infinite) : base(new Transform()) {
             FOV = fov;
             Near = near;
             Far = far;
             Infinite = infinite;
-
-            Update();
         }
 
-        public PerspectiveCamera(Window window, float fov, float near) : this(window, fov, near, 0, true) { }
-        public PerspectiveCamera(Window window, float fov, float near, float far) : this(window, fov, near, far, false) { }
+        public PerspectiveCamera(float fov, float near) : this(fov, near, 0, true) { }
+        public PerspectiveCamera(float fov, float near, float far) : this(fov, near, far, false) { }
 
-        protected override void Update() {
+        public void Update(int width, int height) {
             if (Infinite) {
-                projection = CreatePerspectiveInfinite(FOV, window.Width / (float)window.Height, Near);
+                projection = CreatePerspectiveInfinite(FOV, width / (float)height, Near);
             } else {
-                projection = CreatePerspective(FOV, window.Width / (float)window.Height, Near, Far);
+                projection = CreatePerspective(FOV, width / (float)height, Near, Far);
             }
 
             projection.M22 *= -1;
+        }
+
+        protected override void Update() {
             view = Matrix4x4.CreateLookAt(Transform.Position, Transform.Position + Transform.Forward, Transform.Up);
 
             ProjectionView = view * projection;
