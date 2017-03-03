@@ -190,6 +190,8 @@ namespace UnnamedEngine.Core {
 
         void Dispose(bool disposing) {
             if (disposed) return;
+
+            OnSizeChanged = null;
             
             Swapchain.Dispose();
             Surface.Dispose();
