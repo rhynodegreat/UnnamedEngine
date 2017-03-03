@@ -12,12 +12,12 @@ namespace UnnamedEngine.Core {
         bool disposed;
 
         Window window;
-        Camera camera;
 
         public Graphics Graphics { get; private set; }
         public QueueGraph QueueGraph { get; private set; }
         public FrameLoop FrameLoop { get; private set; }
         public Clock Clock { get; private set; }
+        public CameraManager Cameras { get; private set; }
 
         public Window Window {
             get {
@@ -26,16 +26,6 @@ namespace UnnamedEngine.Core {
             set {
                 if (value == null) throw new ArgumentNullException(nameof(Window));
                 window = value;
-            }
-        }
-
-        public Camera Camera {
-            get {
-                return camera;
-            }
-            set {
-                if (value == null) throw new ArgumentNullException(nameof(Camera));
-                camera = value;
             }
         }
 
@@ -48,13 +38,13 @@ namespace UnnamedEngine.Core {
             QueueGraph = new QueueGraph(this);
             FrameLoop = new FrameLoop();
             Clock = new Clock();
+            Cameras = new CameraManager(this);
 
             QueueGraph.Add(graphics.TransferNode);
         }
 
         public void Run() {
             if (Window == null) throw new EngineException("Window not set");
-            if (Camera == null) throw new EngineException("Camera not set");
 
             while (true) {
                 Graphics.Allocator.ResetTemp();
@@ -65,7 +55,7 @@ namespace UnnamedEngine.Core {
                 Clock.FrameUpdate();
                 FrameLoop.Update(Clock.FrameDelta);
                 Window.Update();
-                Camera.Update();
+                Cameras.Update();
 
                 QueueGraph.Submit();
             }
@@ -84,7 +74,7 @@ namespace UnnamedEngine.Core {
             QueueGraph.Dispose();
 
             if (disposing) {
-                Camera.Dispose();
+                Cameras.Dispose();
                 Window.Dispose();
                 Graphics.Dispose();
             }

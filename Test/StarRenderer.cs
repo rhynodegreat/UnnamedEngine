@@ -31,15 +31,15 @@ namespace Test {
 
         List<Star> stars;
 
-        public StarRenderer(Engine engine, Deferred deferred) {
+        public StarRenderer(Engine engine, Deferred deferred, Camera camera) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
+            if (camera == null) throw new ArgumentNullException(nameof(camera));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
 
             this.engine = engine;
             transferNode = engine.Graphics.TransferNode;
             this.deferred = deferred;
-            camera = engine.Camera;
+            this.camera = camera;
 
             Random rand = new Random(0);
             stars = new List<Star>();
@@ -250,7 +250,7 @@ namespace Test {
             commandBuffer.Begin(beginInfo);
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Descriptor });
             commandBuffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
             commandBuffer.Draw(stars.Count, 1, 0, 0);
 

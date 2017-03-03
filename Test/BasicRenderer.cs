@@ -29,16 +29,16 @@ namespace Test {
         CommandPool commandPool;
         CommandBuffer commandBuffer;
 
-        public BasicRenderer(Engine engine, Deferred deferred, Mesh mesh) {
+        public BasicRenderer(Engine engine, Deferred deferred, Mesh mesh, Camera camera) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
+            if (camera == null) throw new ArgumentNullException(nameof(camera));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
             if (mesh == null) throw new ArgumentNullException(nameof(mesh));
 
             this.engine = engine;
             transferNode = engine.Graphics.TransferNode;
             this.deferred = deferred;
-            camera = engine.Camera;
+            this.camera = camera;
             this.mesh = mesh;
             
             CreateCommandPool(engine);
@@ -195,7 +195,7 @@ namespace Test {
             commandBuffer.Begin(beginInfo);
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Descriptor });
             commandBuffer.BindVertexBuffer(0, mesh.VertexBuffer, 0);
             
             if (mesh.IndexBuffer != null) {

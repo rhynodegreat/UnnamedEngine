@@ -40,11 +40,11 @@ namespace Test {
 
             GBuffer gbuffer = new GBuffer(engine, window);
 
-            Camera camera = new Camera(engine, window, 90, .1f);
-            engine.Camera = camera;
+            PerspectiveCamera camera = new PerspectiveCamera(window, 90, .1f);
+            engine.Cameras.AddCamera(camera);
             camera.Transform.Position = new Vector3(0, 0, 1);
 
-            FreeCam freeCam = new FreeCam(engine);
+            FreeCam freeCam = new FreeCam(engine, camera);
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
             info.queueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
@@ -64,9 +64,9 @@ namespace Test {
             renderer.AddNode(toneMapper);
             toneMapper.AddInput(deferred);
 
-            TriangleRenderer triangle = new TriangleRenderer(engine, deferred);
-            BasicRenderer basic = new BasicRenderer(engine, deferred, mesh);
-            StarRenderer stars = new StarRenderer(engine, deferred);
+            TriangleRenderer triangle = new TriangleRenderer(engine, deferred, camera);
+            BasicRenderer basic = new BasicRenderer(engine, deferred, mesh, camera);
+            StarRenderer stars = new StarRenderer(engine, deferred, camera);
 
             Light light1 = new Light();
             light1.Color = new CSGL.Graphics.Color4(0.125f, 0.125f, 0.125f, 0);
@@ -130,13 +130,12 @@ namespace Test {
             e.AddComponent(new object());
             e.AddComponent(new Transform());
 
-            Camera uiCam = new Camera(engine, window, 90, 1);
+            PerspectiveCamera uiCam = new PerspectiveCamera(window, 90, 1);
 
             Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height, true);
             gbuffer.OnSizeChanged += screen.Recreate;
 
             using (engine)
-            using (camera)
             using (gbuffer)
             using (screen)
             using (cache) {

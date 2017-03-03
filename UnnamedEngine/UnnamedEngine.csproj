@@ -68,6 +68,8 @@
     <Compile Include="Core\QueueGraph.cs" />
     <Compile Include="Core\QueueNode.cs" />
     <Compile Include="Rendering\Camera.cs" />
+    <Compile Include="Rendering\PerspectiveCamera.cs" />
+    <Compile Include="Rendering\CameraManager.cs" />
     <Compile Include="Rendering\GBuffer.cs" />
     <Compile Include="Rendering\RenderGraph.cs" />
     <Compile Include="Rendering\RenderNode.cs" />

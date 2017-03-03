@@ -16,10 +16,10 @@ namespace Test {
         
         float lookX, lookY;
 
-        public FreeCam(Engine engine) {
+        public FreeCam(Engine engine, Camera camera) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
 
-            cam = engine.Camera;
+            cam = camera;
             input = engine.Window.Input;
 
             engine.FrameLoop.Add(this);

@@ -38,15 +38,15 @@ namespace Test {
             new Vertex(new Vector3(-1, -1, -.1f), new Vector3(0, 0, 1), new Vector3(0, 0, -1)),
         };
 
-        public TriangleRenderer(Engine engine, Deferred deferred) {
+        public TriangleRenderer(Engine engine, Deferred deferred, Camera camera) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            if (engine.Camera == null) throw new ArgumentNullException(nameof(engine.Camera));
+            if (camera == null) throw new ArgumentNullException(nameof(camera));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
 
             this.engine = engine;
             transferNode = engine.Graphics.TransferNode;
             this.deferred = deferred;
-            camera = engine.Camera;
+            this.camera = camera;
 
             CreateVertexBuffer(engine.Graphics);
             CreateCommandPool(engine);
@@ -236,7 +236,7 @@ namespace Test {
             commandBuffer.Begin(beginInfo);
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Desciptor });
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Descriptor });
             commandBuffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
             commandBuffer.Draw(vertices.Length, 1, 0, 0);
 

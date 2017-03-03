@@ -23,7 +23,7 @@ namespace Test {
         GBuffer gbuffer;
         RenderPass renderPass;
         uint subpassIndex;
-        Camera camera;
+        PerspectiveCamera camera;
 
         int lightCount;
 
@@ -50,7 +50,7 @@ namespace Test {
             public Matrix4x4 transform;
         }
 
-        public Point(Engine engine, Deferred deferred, Camera camera, int lightCount) {
+        public Point(Engine engine, Deferred deferred, PerspectiveCamera camera, int lightCount) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
             if (lightCount < 0) throw new ArgumentOutOfRangeException(nameof(lightCount));
@@ -323,7 +323,7 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, gbuffer.InputDescriptor);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 2, camera.Desciptor);
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 2, camera.Descriptor);
             commandBuffer.BindVertexBuffer(0, mesh.VertexBuffer, 0);
             commandBuffer.BindIndexBuffer(mesh.IndexBuffer, 0, mesh.IndexData.IndexType);
 
