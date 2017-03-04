@@ -18,12 +18,12 @@ namespace UnnamedEngine.UI {
         public Image Stencil { get; private set; }
         public ImageView StencilView { get; private set; }
 
-        public PerspectiveCamera Camera { get; set; }
+        public Camera Camera { get; set; }
         public bool Clear { get; set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public Screen(Engine engine, PerspectiveCamera camera, int width, int height, bool clear) {
+        public Screen(Engine engine, Camera camera, int width, int height, bool clear) {
             this.engine = engine;
 
             Camera = camera;
