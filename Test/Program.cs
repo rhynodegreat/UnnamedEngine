@@ -134,6 +134,8 @@ namespace Test {
             e.AddComponent(new Transform());
 
             PerspectiveCamera uiCam = new PerspectiveCamera(90, 1);
+            uiCam.Update(window.Width, window.Height);
+            window.OnSizeChanged += uiCam.Update;
 
             Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height, true);
             gbuffer.OnSizeChanged += screen.Recreate;
