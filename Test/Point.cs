@@ -23,7 +23,7 @@ namespace Test {
         GBuffer gbuffer;
         RenderPass renderPass;
         uint subpassIndex;
-        PerspectiveCamera camera;
+        Camera camera;
 
         int lightCount;
 
@@ -50,7 +50,7 @@ namespace Test {
             public Matrix4x4 transform;
         }
 
-        public Point(Engine engine, Deferred deferred, PerspectiveCamera camera, int lightCount) {
+        public Point(Engine engine, Deferred deferred, Camera camera, int lightCount) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
             if (lightCount < 0) throw new ArgumentOutOfRangeException(nameof(lightCount));
