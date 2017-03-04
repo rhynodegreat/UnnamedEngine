@@ -43,8 +43,8 @@ namespace UnnamedEngine.UI {
 
             Manager = new EntityManager();
             Root = new Entity();
-            Transform rootTransform = new Transform();
-            Root.AddComponent(rootTransform);
+            Root.AddComponent(new Transform());
+            Root.AddComponent(new UIRoot(this));
             Manager.AddEntity(Root);
 
             CreateCommandPool();
