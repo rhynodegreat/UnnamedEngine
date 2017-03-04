@@ -271,13 +271,6 @@ namespace Test {
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
             pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { gbuffer.InputLayout, descriptorLayout, camera.Layout };
-            pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
-                new VkPushConstantRange {
-                    offset = 0,
-                    size = 4,
-                    stageFlags = VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit
-                }
-            };
 
             pipelineLayout?.Dispose();
 
