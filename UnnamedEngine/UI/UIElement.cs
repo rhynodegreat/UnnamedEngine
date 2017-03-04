@@ -6,6 +6,6 @@ using UnnamedEngine.Rendering;
 
 namespace UnnamedEngine.UI {
     public abstract class UIElement {
-        public Vector2 Position { get; set; }
+        public Vector2 Size { get; set; }
     }
 }
