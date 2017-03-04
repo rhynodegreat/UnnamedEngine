@@ -121,22 +121,16 @@ namespace Test {
 
             renderer.AddNode(text);
 
+            Camera uiCam = new OrthographicCamera(window.Width, window.Height, 0, 1);
+
+            Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height, true);
+            gbuffer.OnSizeChanged += screen.Recreate;
+
             renderer.Bake();
 
             QueueGraph graph = engine.QueueGraph;
             graph.Add(renderer);
             graph.Bake();
-
-            EntityManager manager = new EntityManager();
-            Group group = new Group(manager, typeof(object));
-            Entity e = new Entity();
-            e.AddComponent(new object());
-            e.AddComponent(new Transform());
-
-            Camera uiCam = new OrthographicCamera(window.Width, window.Height, 0, 1);
-
-            Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height, true);
-            gbuffer.OnSizeChanged += screen.Recreate;
 
             using (engine)
             using (gbuffer)

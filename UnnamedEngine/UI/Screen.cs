@@ -6,6 +6,7 @@ using CSGL.Vulkan;
 using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 using UnnamedEngine.Utilities;
+using UnnamedEngine.ECS;
 
 namespace UnnamedEngine.UI {
     public class Screen : IDisposable {
@@ -23,6 +24,9 @@ namespace UnnamedEngine.UI {
         public int Width { get; private set; }
         public int Height { get; private set; }
 
+        public EntityManager Manager { get; private set; }
+        public Entity Root { get; private set; }
+
         public Screen(Engine engine, Camera camera, int width, int height, bool clear) {
             this.engine = engine;
 
@@ -30,6 +34,12 @@ namespace UnnamedEngine.UI {
             Clear = clear;
             Width = width;
             Height = height;
+
+            Manager = new EntityManager();
+            Root = new Entity();
+            Transform rootTransform = new Transform();
+            Root.AddComponent(rootTransform);
+            Manager.AddEntity(Root);
 
             CreateCommandPool();
             CreateStencil();
