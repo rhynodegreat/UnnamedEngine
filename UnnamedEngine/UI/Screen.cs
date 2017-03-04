@@ -24,7 +24,6 @@ namespace UnnamedEngine.UI {
         public ImageView StencilView { get; private set; }
 
         public Camera Camera { get; set; }
-        public bool Clear { get; set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
 
@@ -69,9 +68,11 @@ namespace UnnamedEngine.UI {
             CreateStencil();
         }
 
-        public void Render() {
+        public CommandBuffer Render(RenderPassBeginInfo renderPassBeginInfo) {
             commandBuffer.Reset(VkCommandBufferResetFlags.None);
             commandBuffer.Begin(beginInfo);
+
+            commandBuffer.BeginRenderPass(renderPassBeginInfo, VkSubpassContents.Inline);
 
             Transform root = Root.GetFirst<Transform>();
             Stack<Transform> stack = new Stack<Transform>();
@@ -86,7 +87,10 @@ namespace UnnamedEngine.UI {
                 }
             }
 
+            commandBuffer.EndRenderPass();
             commandBuffer.End();
+
+            return commandBuffer;
         }
 
         void Render(Entity e) {
