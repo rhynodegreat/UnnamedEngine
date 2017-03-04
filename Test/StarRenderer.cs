@@ -149,28 +149,10 @@ namespace Test {
             multisampling.minSampleShading = 1f;
 
             var albedo = new PipelineColorBlendAttachmentState();
-            albedo.colorWriteMask = VkColorComponentFlags.RBit
-                                                | VkColorComponentFlags.GBit
-                                                | VkColorComponentFlags.BBit
-                                                | VkColorComponentFlags.ABit;
-            albedo.srcColorBlendFactor = VkBlendFactor.One;
-            albedo.dstColorBlendFactor = VkBlendFactor.Zero;
-            albedo.colorBlendOp = VkBlendOp.Add;
-            albedo.srcAlphaBlendFactor = VkBlendFactor.One;
-            albedo.dstAlphaBlendFactor = VkBlendFactor.Zero;
-            albedo.alphaBlendOp = VkBlendOp.Add;
+            albedo.colorWriteMask = VkColorComponentFlags.None;
 
             var norm = new PipelineColorBlendAttachmentState();
-            norm.colorWriteMask = VkColorComponentFlags.RBit
-                                                | VkColorComponentFlags.GBit
-                                                | VkColorComponentFlags.BBit
-                                                | VkColorComponentFlags.ABit;
-            norm.srcColorBlendFactor = VkBlendFactor.One;
-            norm.dstColorBlendFactor = VkBlendFactor.Zero;
-            norm.colorBlendOp = VkBlendOp.Add;
-            norm.srcAlphaBlendFactor = VkBlendFactor.One;
-            norm.dstAlphaBlendFactor = VkBlendFactor.Zero;
-            norm.alphaBlendOp = VkBlendOp.Add;
+            norm.colorWriteMask = VkColorComponentFlags.None;
 
             var light = new PipelineColorBlendAttachmentState();
             light.colorWriteMask = VkColorComponentFlags.RBit
@@ -191,6 +173,13 @@ namespace Test {
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
             pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { camera.Layout };
+            pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
+                new VkPushConstantRange {
+                    offset = 0,
+                    size = 4,
+                    stageFlags = VkShaderStageFlags.VertexBit
+                }
+            };
 
             PipelineDepthStencilStateCreateInfo depth = new PipelineDepthStencilStateCreateInfo();
             depth.depthTestEnable = true;
@@ -252,6 +241,7 @@ namespace Test {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Descriptor });
             commandBuffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit, 0, camera.Index);
             commandBuffer.Draw(stars.Count, 1, 0, 0);
 
             commandBuffer.End();
