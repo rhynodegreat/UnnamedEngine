@@ -123,7 +123,7 @@ namespace Test {
 
             Camera uiCam = new OrthographicCamera(window.Width, window.Height, 0, 1);
 
-            Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height, true);
+            Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height);
             gbuffer.OnSizeChanged += screen.Recreate;
 
             renderer.Bake();

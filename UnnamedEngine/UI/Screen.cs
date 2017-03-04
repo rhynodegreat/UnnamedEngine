@@ -30,11 +30,10 @@ namespace UnnamedEngine.UI {
         public EntityManager Manager { get; private set; }
         public Entity Root { get; private set; }
 
-        public Screen(Engine engine, Camera camera, int width, int height, bool clear) {
+        public Screen(Engine engine, Camera camera, int width, int height) {
             this.engine = engine;
 
             Camera = camera;
-            Clear = clear;
             Width = width;
             Height = height;
 
