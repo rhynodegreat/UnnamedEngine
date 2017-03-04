@@ -44,6 +44,10 @@ namespace UnnamedEngine.Core {
         }
 
         public List<CommandBuffer> GetCommands() {
+            for (int i = 0; i < nodeList.Count; i++) {
+                nodeList[i].ResetEvent();
+            }
+
             Parallel.For(0, nodeList.Count, GetCommands);
             return commands;
         }

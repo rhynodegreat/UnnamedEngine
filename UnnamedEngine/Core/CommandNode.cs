@@ -40,8 +40,11 @@ namespace UnnamedEngine.Core {
         }
 
         public void SetEvents(CommandBuffer commandBuffer) {
-            commandBuffer.ResetEvent(Event, EventStage);
             commandBuffer.SetEvent(Event, EventStage);
+        }
+
+        internal void ResetEvent() {
+            Event.Reset();
         }
 
         public void AddInput(CommandNode node) {
