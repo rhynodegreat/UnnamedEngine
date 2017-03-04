@@ -135,13 +135,6 @@ namespace Test {
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
             pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { camera.Layout };
-            pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
-                new VkPushConstantRange {
-                    offset = 0,
-                    size = 4,
-                    stageFlags = VkShaderStageFlags.VertexBit
-                }
-            };
 
             PipelineDepthStencilStateCreateInfo depth = new PipelineDepthStencilStateCreateInfo();
             depth.depthTestEnable = true;
@@ -204,7 +197,6 @@ namespace Test {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Descriptor });
             commandBuffer.BindVertexBuffer(0, mesh.VertexBuffer, 0);
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit, 0, camera.Index);
             
             if (mesh.IndexBuffer != null) {
                 commandBuffer.BindIndexBuffer(mesh.IndexBuffer, 0, mesh.IndexData.IndexType);
