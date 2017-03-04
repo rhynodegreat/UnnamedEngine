@@ -333,7 +333,6 @@ namespace Test {
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 2, camera.Descriptor);
             commandBuffer.BindVertexBuffer(0, mesh.VertexBuffer, 0);
             commandBuffer.BindIndexBuffer(mesh.IndexBuffer, 0, mesh.IndexData.IndexType);
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit, 0, camera.Index);
 
             for (uint i = 0; i < lights.Count; i++) {
                 commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, set, i * 80);
