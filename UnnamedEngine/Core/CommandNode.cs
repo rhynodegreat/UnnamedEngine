@@ -9,6 +9,7 @@ namespace UnnamedEngine.Core {
         List<CommandNode> input;
         List<CommandNode> output;
         List<Event> waitEvents;
+        VkPipelineStageFlags srcStage;
 
         public IList<CommandNode> Input { get; private set; }
         public IList<CommandNode> Output { get; private set; }
@@ -16,31 +17,32 @@ namespace UnnamedEngine.Core {
         public List<MemoryBarrier> MemoryBarriers { get; set; }
         public List<BufferMemoryBarrier> BufferMemoryBarriers { get; set; }
         public List<ImageMemoryBarrier> ImageMemoryBarriers { get; set; }
-
-        public VkPipelineStageFlags SrcStage { get; set; }
-        public VkPipelineStageFlags DstStage { get; set; }
+        
+        public VkPipelineStageFlags StartStage { get; set; }
+        public VkPipelineStageFlags EndStage { get; set; }
 
         public Event Event { get; private set; }
-        public VkPipelineStageFlags EventStage { get; set; }
 
-        protected CommandNode(Device device) {
+        protected CommandNode(Device device, VkPipelineStageFlags startStage, VkPipelineStageFlags endStage) {
             Event = new Event(device);
             input = new List<CommandNode>();
             output = new List<CommandNode>();
             Input = input.AsReadOnly();
             Output = output.AsReadOnly();
             waitEvents = new List<Event>();
+            StartStage = startStage;
+            EndStage = endStage;
         }
 
         protected abstract void OnBake();
         public abstract CommandBuffer GetCommands();
 
         public void WaitEvents(CommandBuffer commandBuffer) {
-            if (waitEvents.Count > 0) commandBuffer.WaitEvents(waitEvents, SrcStage, DstStage, MemoryBarriers, BufferMemoryBarriers, ImageMemoryBarriers);
+            if (waitEvents.Count > 0) commandBuffer.WaitEvents(waitEvents, srcStage, StartStage, MemoryBarriers, BufferMemoryBarriers, ImageMemoryBarriers);
         }
 
         public void SetEvents(CommandBuffer commandBuffer) {
-            commandBuffer.SetEvent(Event, EventStage);
+            commandBuffer.SetEvent(Event, EndStage);
         }
 
         internal void ResetEvent() {
@@ -62,8 +64,10 @@ namespace UnnamedEngine.Core {
 
         internal void Bake() {
             waitEvents.Clear();
+            srcStage = VkPipelineStageFlags.None;
             foreach (var node in input) {
                 waitEvents.Add(node.Event);
+                srcStage |= node.EndStage;
             }
             OnBake();
         }

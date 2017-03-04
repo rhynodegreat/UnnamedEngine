@@ -22,16 +22,12 @@ namespace Test {
 
         public event Action OnFramebufferChanged = delegate { };
 
-        public Deferred(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device) {
+        public Deferred(Engine engine, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.FragmentShaderBit, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (gbuffer == null) throw new ArgumentNullException(nameof(gbuffer));
 
             this.engine = engine;
             GBuffer = gbuffer;
-
-            EventStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
-            SrcStage = VkPipelineStageFlags.TopOfPipeBit;
-            DstStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
 
             gbuffer.OnSizeChanged += RecreateFramebuffer;
 

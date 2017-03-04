@@ -24,7 +24,7 @@ namespace Test {
         List<CommandBuffer> commandBuffers;
         List<CommandBuffer> submitBuffers;
 
-        public ToneMapper(Engine engine, Renderer presentation, GBuffer gbuffer) : base(engine.Graphics.Device) {
+        public ToneMapper(Engine engine, Renderer presentation, GBuffer gbuffer) : base(engine.Graphics.Device, VkPipelineStageFlags.FragmentShaderBit, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (gbuffer == null) throw new ArgumentNullException(nameof(gbuffer));
             if (presentation == null) throw new ArgumentNullException(nameof(presentation));
@@ -32,10 +32,6 @@ namespace Test {
             this.engine = engine;
             this.gbuffer = gbuffer;
             this.presentation = presentation;
-
-            EventStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
-            SrcStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
-            DstStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;

@@ -43,7 +43,7 @@ namespace Test {
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
 
-        public TextRenderer(Engine engine, Renderer renderer, GlyphCache glyphCache) : base(engine.Graphics.Device) {
+        public TextRenderer(Engine engine, Renderer renderer, GlyphCache glyphCache) : base(engine.Graphics.Device, VkPipelineStageFlags.FragmentShaderBit, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
             if (glyphCache == null) throw new ArgumentNullException(nameof(glyphCache));
@@ -52,10 +52,6 @@ namespace Test {
             this.renderer = renderer;
             this.glyphCache = glyphCache;
             device = engine.Graphics.Device;
-
-            SrcStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
-            DstStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
-            EventStage = VkPipelineStageFlags.ColorAttachmentOutputBit;
 
             imageViews = new List<ImageView>();
             framebuffers = new List<Framebuffer>();
