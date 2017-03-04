@@ -17,7 +17,7 @@ namespace UnnamedEngine.UI {
         CommandPool pool;
         CommandBuffer commandBuffer;
         VkaAllocation stencilAlloc;
-        Dictionary<Type, UIRenderer> rendererMap;
+        Dictionary<Type, IRenderer> rendererMap;
         CommandBufferBeginInfo beginInfo;
 
         public Image Stencil { get; private set; }
@@ -39,7 +39,7 @@ namespace UnnamedEngine.UI {
             Width = width;
             Height = height;
 
-            rendererMap = new Dictionary<Type, UIRenderer>();
+            rendererMap = new Dictionary<Type, IRenderer>();
 
             Manager = new EntityManager();
             Root = new Entity();
@@ -54,7 +54,7 @@ namespace UnnamedEngine.UI {
             beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmitBit;
         }
 
-        public void AddRenderer(Type type, UIRenderer renderer) {
+        public void AddRenderer(Type type, IRenderer renderer) {
             if (rendererMap.ContainsKey(type)) throw new ScreenException("Type already has a renderer defined");
             rendererMap.Add(type, renderer);
         }
