@@ -323,7 +323,7 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, gbuffer.InputDescriptor);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 2, camera.Descriptor);
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 2, camera.Descriptor, (uint)(camera.Index * Interop.SizeOf<Matrix4x4>()));
             commandBuffer.BindVertexBuffer(0, mesh.VertexBuffer, 0);
             commandBuffer.BindIndexBuffer(mesh.IndexBuffer, 0, mesh.IndexData.IndexType);
 

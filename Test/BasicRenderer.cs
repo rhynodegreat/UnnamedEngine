@@ -195,7 +195,7 @@ namespace Test {
             commandBuffer.Begin(beginInfo);
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, new DescriptorSet[] { camera.Descriptor });
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, camera.Descriptor, (uint)(camera.Index * Interop.SizeOf<Matrix4x4>()));
             commandBuffer.BindVertexBuffer(0, mesh.VertexBuffer, 0);
             
             if (mesh.IndexBuffer != null) {

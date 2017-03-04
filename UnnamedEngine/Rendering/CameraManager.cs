@@ -75,7 +75,7 @@ namespace UnnamedEngine.Rendering {
             layoutInfo.bindings = new List<VkDescriptorSetLayoutBinding> {
                 new VkDescriptorSetLayoutBinding {
                     binding = 0,
-                    descriptorType = VkDescriptorType.UniformBuffer,
+                    descriptorType = VkDescriptorType.UniformBufferDynamic,
                     descriptorCount = 1,
                     stageFlags = VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit
                 }
@@ -87,7 +87,7 @@ namespace UnnamedEngine.Rendering {
             poolInfo.maxSets = 1;
             poolInfo.poolSizes = new List<VkDescriptorPoolSize> {
                 new VkDescriptorPoolSize {
-                    type = VkDescriptorType.UniformBuffer,
+                    type = VkDescriptorType.UniformBufferDynamic,
                     descriptorCount = 1
                 }
             };
@@ -116,7 +116,7 @@ namespace UnnamedEngine.Rendering {
 
             Descriptor.Update(new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {
-                    descriptorType = VkDescriptorType.UniformBuffer,
+                    descriptorType = VkDescriptorType.UniformBufferDynamic,
                     dstArrayElement = 0,
                     dstBinding = 0,
                     dstSet = Descriptor,
