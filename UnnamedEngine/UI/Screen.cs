@@ -15,7 +15,11 @@ namespace UnnamedEngine.UI {
         Engine engine;
 
         CommandPool pool;
+        CommandBuffer commandBuffer;
         VkaAllocation stencilAlloc;
+        Dictionary<Type, UIRenderer> rendererMap;
+        CommandBufferBeginInfo beginInfo;
+
         public Image Stencil { get; private set; }
         public ImageView StencilView { get; private set; }
 
@@ -35,6 +39,8 @@ namespace UnnamedEngine.UI {
             Width = width;
             Height = height;
 
+            rendererMap = new Dictionary<Type, UIRenderer>();
+
             Manager = new EntityManager();
             Root = new Entity();
             Transform rootTransform = new Transform();
@@ -43,6 +49,18 @@ namespace UnnamedEngine.UI {
 
             CreateCommandPool();
             CreateStencil();
+
+            beginInfo = new CommandBufferBeginInfo();
+            beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmitBit;
+        }
+
+        public void AddRenderer(Type type, UIRenderer renderer) {
+            if (rendererMap.ContainsKey(type)) throw new ScreenException("Type already has a renderer defined");
+            rendererMap.Add(type, renderer);
+        }
+
+        public void RemoveRenderer(Type type) {
+            rendererMap.Remove(type);
         }
 
         public void Recreate(int width, int height) {
@@ -51,12 +69,44 @@ namespace UnnamedEngine.UI {
             CreateStencil();
         }
 
+        public void Render() {
+            commandBuffer.Reset(VkCommandBufferResetFlags.None);
+            commandBuffer.Begin(beginInfo);
+
+            Transform root = Root.GetFirst<Transform>();
+            Stack<Transform> stack = new Stack<Transform>();
+            stack.Push(root);
+
+            while (stack.Count > 0) {
+                Transform current = stack.Pop();
+
+                for (int i = current.ChildCount - 1; i >= 0; i++) {
+                    stack.Push(current[i]);
+                    Render(Manager.GetEntity(current));
+                }
+            }
+
+            commandBuffer.End();
+        }
+
+        void Render(Entity e) {
+            UIElement element = e.GetFirst<UIElement>();
+            if (element == null) return;
+
+            Type type = element.GetType();
+            if (!rendererMap.ContainsKey(type)) return;
+
+            rendererMap[type].Render(commandBuffer);
+        }
+
         void CreateCommandPool() {
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
             info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
             info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
 
             pool = new CommandPool(engine.Graphics.Device, info);
+
+            commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
         }
 
         void CreateStencil() {
@@ -114,5 +164,9 @@ namespace UnnamedEngine.UI {
         ~Screen() {
             Dispose(true);
         }
+    }
+
+    public class ScreenException : Exception {
+        public ScreenException(string message) : base(message) { }
     }
 }
