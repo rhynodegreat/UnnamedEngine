@@ -162,7 +162,7 @@ namespace UnnamedEngine.UI {
 
         }
 
-        public void Render(CommandBuffer commandBuffer) {
+        public void Render(CommandBuffer commandBuffer, Entity e) {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Descriptor, (uint)(screen.Camera.Index * Interop.SizeOf<Matrix4x4>()));
 

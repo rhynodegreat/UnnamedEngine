@@ -84,7 +84,7 @@ namespace UnnamedEngine.UI {
             Type type = element.GetType();
             if (!rendererMap.ContainsKey(type)) return;
 
-            rendererMap[type].Render(commandBuffer);
+            rendererMap[type].Render(commandBuffer, e);
         }
 
         void CreateStencil() {
