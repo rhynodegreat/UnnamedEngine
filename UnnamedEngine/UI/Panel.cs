@@ -5,6 +5,6 @@ using CSGL.Graphics;
 
 namespace UnnamedEngine.UI {
     public class Panel : UIElement {
-        Color4 Color { get; set; }
+        public Color4 Color { get; set; }
     }
 }
