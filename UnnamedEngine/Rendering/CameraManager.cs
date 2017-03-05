@@ -124,7 +124,7 @@ namespace UnnamedEngine.Rendering {
                         new DescriptorBufferInfo {
                             buffer = buffer,
                             offset = bufferAlloc.offset,
-                            range = bufferAlloc.size
+                            range = (uint)Interop.SizeOf<Matrix4x4>()
                         }
                     }
                 }
