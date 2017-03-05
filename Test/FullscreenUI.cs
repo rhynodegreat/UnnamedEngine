@@ -18,12 +18,12 @@ namespace Test {
         CommandPool pool;
         CommandBuffer commandBuffer;
         CommandBufferBeginInfo beginInfo;
-        RenderPass renderPass;
         RenderPassBeginInfo renderPassBeginInfo;
         List<ImageView> imageViews;
         List<Framebuffer> framebuffers;
 
         public Screen Screen { get; private set; }
+        public RenderPass RenderPass { get; private set; }
 
         public FullscreenUI(Engine engine, Camera camera, Renderer renderer) : base(engine.Graphics.Device, VkPipelineStageFlags.FragmentShaderBit, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
@@ -60,7 +60,7 @@ namespace Test {
             };
             renderPassBeginInfo.renderArea.extent.width = (uint)window.Width;
             renderPassBeginInfo.renderArea.extent.height = (uint)window.Height;
-            renderPassBeginInfo.renderPass = renderPass;
+            renderPassBeginInfo.renderPass = RenderPass;
         }
 
         void Recreate(int width, int height) {
@@ -106,7 +106,7 @@ namespace Test {
                 }
             };
 
-            renderPass = new RenderPass(engine.Graphics.Device, info);
+            RenderPass = new RenderPass(engine.Graphics.Device, info);
         }
 
         void CreateFramebuffers() {
@@ -130,7 +130,7 @@ namespace Test {
                 imageViews.Add(iv);
 
                 FramebufferCreateInfo info = new FramebufferCreateInfo();
-                info.renderPass = renderPass;
+                info.renderPass = RenderPass;
                 info.attachments = new List<ImageView> {
                     iv,
                     Screen.StencilView
@@ -161,7 +161,7 @@ namespace Test {
             renderPassBeginInfo.framebuffer = framebuffers[(int)renderer.ImageIndex];
             commandBuffer.BeginRenderPass(renderPassBeginInfo, VkSubpassContents.Inline);
 
-            //screen.Render(commandBuffer);
+            Screen.Render(commandBuffer);
 
             commandBuffer.EndRenderPass();
             commandBuffer.End();
@@ -189,7 +189,7 @@ namespace Test {
             foreach (var iv in imageViews) iv.Dispose();
             foreach (var fb in framebuffers) fb.Dispose();
 
-            renderPass.Dispose();
+            RenderPass.Dispose();
             pool.Dispose();
 
             disposed = true;
