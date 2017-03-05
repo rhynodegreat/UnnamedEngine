@@ -13,12 +13,9 @@ namespace UnnamedEngine.UI {
         bool disposed;
 
         Engine engine;
-
-        CommandPool pool;
-        CommandBuffer commandBuffer;
+        
         VkaAllocation stencilAlloc;
         Dictionary<Type, IRenderer> rendererMap;
-        CommandBufferBeginInfo beginInfo;
 
         public Image Stencil { get; private set; }
         public ImageView StencilView { get; private set; }
@@ -29,6 +26,7 @@ namespace UnnamedEngine.UI {
 
         public EntityManager Manager { get; private set; }
         public Entity Root { get; private set; }
+        public VkFormat StencilFormat { get; private set; } = VkFormat.D32SfloatS8Uint;
 
         public Screen(Engine engine, Camera camera, int width, int height) {
             this.engine = engine;
@@ -44,12 +42,8 @@ namespace UnnamedEngine.UI {
             Root.AddComponent(new Transform());
             Root.AddComponent(new UIRoot(this));
             Manager.AddEntity(Root);
-
-            CreateCommandPool();
+            
             CreateStencil();
-
-            beginInfo = new CommandBufferBeginInfo();
-            beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmitBit;
         }
 
         public void AddRenderer(Type type, IRenderer renderer) {
@@ -67,12 +61,7 @@ namespace UnnamedEngine.UI {
             CreateStencil();
         }
 
-        public CommandBuffer Render(RenderPassBeginInfo renderPassBeginInfo) {
-            commandBuffer.Reset(VkCommandBufferResetFlags.None);
-            commandBuffer.Begin(beginInfo);
-
-            commandBuffer.BeginRenderPass(renderPassBeginInfo, VkSubpassContents.Inline);
-
+        public void Render(CommandBuffer commandBuffer) {
             Transform root = Root.GetFirst<Transform>();
             Stack<Transform> stack = new Stack<Transform>();
             stack.Push(root);
@@ -82,17 +71,12 @@ namespace UnnamedEngine.UI {
 
                 for (int i = current.ChildCount - 1; i >= 0; i++) {
                     stack.Push(current[i]);
-                    Render(Manager.GetEntity(current));
+                    Render(commandBuffer, Manager.GetEntity(current));
                 }
             }
-
-            commandBuffer.EndRenderPass();
-            commandBuffer.End();
-
-            return commandBuffer;
         }
 
-        void Render(Entity e) {
+        void Render(CommandBuffer commandBuffer, Entity e) {
             UIElement element = e.GetFirst<UIElement>();
             if (element == null) return;
 
@@ -102,16 +86,6 @@ namespace UnnamedEngine.UI {
             rendererMap[type].Render(commandBuffer);
         }
 
-        void CreateCommandPool() {
-            CommandPoolCreateInfo info = new CommandPoolCreateInfo();
-            info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
-            info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
-
-            pool = new CommandPool(engine.Graphics.Device, info);
-
-            commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
-        }
-
         void CreateStencil() {
             engine.Graphics.Allocator.Free(stencilAlloc);
             Stencil?.Dispose();
@@ -119,7 +93,7 @@ namespace UnnamedEngine.UI {
 
             ImageCreateInfo info = new ImageCreateInfo();
             info.imageType = VkImageType._2d;
-            info.format = VkFormat.D32SfloatS8Uint;
+            info.format = StencilFormat;
             info.extent.width = (uint)Width;
             info.extent.height = (uint)Height;
             info.extent.depth = 1;
@@ -138,8 +112,8 @@ namespace UnnamedEngine.UI {
             ImageViewCreateInfo viewInfo = new ImageViewCreateInfo();
             viewInfo.image = Stencil;
             viewInfo.viewType = VkImageViewType._2d;
-            viewInfo.format = VkFormat.D32SfloatS8Uint;
-            viewInfo.subresourceRange.aspectMask = VkImageAspectFlags.StencilBit;
+            viewInfo.format = StencilFormat;
+            viewInfo.subresourceRange.aspectMask = VkImageAspectFlags.DepthBit | VkImageAspectFlags.StencilBit;
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
             viewInfo.subresourceRange.baseMipLevel = 0;
@@ -155,8 +129,7 @@ namespace UnnamedEngine.UI {
 
         void Dispose(bool disposing) {
             if (disposed) return;
-
-            pool.Dispose();
+            
             StencilView.Dispose();
             Stencil.Dispose();
             engine.Graphics.Allocator.Free(stencilAlloc);

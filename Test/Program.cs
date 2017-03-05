@@ -103,6 +103,10 @@ namespace Test {
 
             point.AddLight(light4);
 
+            Camera uiCam = new OrthographicCamera(window.Width, window.Height, 0, 1);
+            FullscreenUI ui = new FullscreenUI(engine, uiCam, renderer);
+            ui.AddInput(toneMapper);
+
             int pageSize = 1024;
             float range = 4;
             int padding = 1;
@@ -116,25 +120,44 @@ namespace Test {
             }
             cache.Update();
 
-            TextRenderer text = new TextRenderer(engine, renderer, cache);
-            text.AddInput(toneMapper);
-
-            renderer.AddNode(text);
-
-            Camera uiCam = new OrthographicCamera(window.Width, window.Height, 0, 1);
-
-            Screen screen = new Screen(engine, uiCam, gbuffer.Width, gbuffer.Height);
-            gbuffer.OnSizeChanged += screen.Recreate;
-
+            renderer.AddNode(ui);
             renderer.Bake();
 
             QueueGraph graph = engine.QueueGraph;
             graph.Add(renderer);
             graph.Bake();
 
+            CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
+            poolInfo.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
+            poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+            CommandPool pool = new CommandPool(engine.Graphics.Device, poolInfo);
+
+            CommandBuffer commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
+
+            CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
+            beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmitBit;
+            commandBuffer.Begin(beginInfo);
+            commandBuffer.PipelineBarrier(VkPipelineStageFlags.TopOfPipeBit, VkPipelineStageFlags.TopOfPipeBit, VkDependencyFlags.None,
+                null, null, new List<ImageMemoryBarrier> {
+                    new ImageMemoryBarrier {
+                        image = ui.Screen.Stencil,
+                        oldLayout = VkImageLayout.Undefined,
+                        newLayout = VkImageLayout.DepthStencilAttachmentOptimal,
+                        srcQueueFamilyIndex = uint.MaxValue,
+                        dstQueueFamilyIndex = uint.MaxValue,
+                        subresourceRange = ui.Screen.StencilView.SubresourceRange,
+                        srcAccessMask = VkAccessFlags.None,
+                        dstAccessMask = VkAccessFlags.DepthStencilAttachmentReadBit | VkAccessFlags.DepthStencilAttachmentWriteBit
+                    }
+                }
+            );
+            commandBuffer.End();
+
+            renderer.SubmitOnce(commandBuffer);
+
             using (engine)
             using (gbuffer)
-            using (screen)
+            using (pool)
             using (cache) {
                 engine.Run();
             }

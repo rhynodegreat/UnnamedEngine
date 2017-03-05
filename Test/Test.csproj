@@ -54,6 +54,7 @@
     <Compile Include="Deferred.cs" />
     <Compile Include="Directional.cs" />
     <Compile Include="FreeCam.cs" />
+    <Compile Include="FullscreenUI.cs" />
     <Compile Include="ISubpass.cs" />
     <Compile Include="Light.cs" />
     <Compile Include="LightingNode.cs" />
