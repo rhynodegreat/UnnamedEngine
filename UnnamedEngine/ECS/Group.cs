@@ -72,7 +72,7 @@ namespace UnnamedEngine.ECS {
 
                 List<object> alreadyAdded = manager.GetList(types[i]);
                 for (int j = 0; j < alreadyAdded.Count; j++) {
-                    OnComponentAdded(manager.GetEntity(alreadyAdded[i]), alreadyAdded[i]);
+                    OnComponentAdded(manager.GetEntity(alreadyAdded[j]), alreadyAdded[j]);
                 }
             }
 
