@@ -9,6 +9,8 @@ using CSGL.Graphics;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
+using UnnamedEngine.ECS;
+using UnnamedEngine.Rendering;
 
 namespace UnnamedEngine.UI {
     public class PanelRenderer : UIRenderer {
@@ -166,9 +168,11 @@ namespace UnnamedEngine.UI {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Descriptor, (uint)(screen.Camera.Index * Interop.SizeOf<Matrix4x4>()));
 
-            Matrix4x4 model = Matrix4x4.CreateScale(500, 50, 0);
+            Panel p = e.GetFirst<Panel>();
+            Transform t = e.GetFirst<Transform>();
+            Matrix4x4 model = Matrix4x4.CreateScale(p.Size.X, p.Size.Y, 1) * t.WorldTransform;
 
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit, 0, new PanelInfo(model, new Color4(1, 0, 1, 1f)));
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit, 0, new PanelInfo(model, p.Color));
             commandBuffer.Draw(6, 1, 0, 0);
         }
 
