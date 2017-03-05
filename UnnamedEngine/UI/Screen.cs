@@ -69,10 +69,11 @@ namespace UnnamedEngine.UI {
             while (stack.Count > 0) {
                 Transform current = stack.Pop();
 
-                for (int i = current.ChildCount - 1; i >= 0; i++) {
+                for (int i = current.ChildCount - 1; i >= 0; i--) {
                     stack.Push(current[i]);
-                    Render(commandBuffer, Manager.GetEntity(current));
                 }
+
+                Render(commandBuffer, Manager.GetEntity(current));
             }
         }
 
