@@ -44,8 +44,8 @@ namespace Test {
             engine.Cameras.AddCamera(camera);
             camera.Transform.Position = new Vector3(0, 0, 1);
 
-            camera.Update(window.Width, window.Height);
-            window.OnSizeChanged += camera.Update;
+            camera.Recreate(window.Width, window.Height);
+            window.OnSizeChanged += camera.Recreate;
 
             FreeCam freeCam = new FreeCam(engine, camera);
 
@@ -103,9 +103,22 @@ namespace Test {
 
             point.AddLight(light4);
 
-            Camera uiCam = new OrthographicCamera(window.Width, window.Height, 0, 1);
+            Camera uiCam = new OrthographicCamera(window.Width, window.Height, -1, 1);
+            window.OnSizeChanged += uiCam.Recreate;
+            engine.Cameras.AddCamera(uiCam);
             FullscreenUI ui = new FullscreenUI(engine, uiCam, renderer);
             ui.AddInput(toneMapper);
+
+            PanelRenderer panelRenderer = new PanelRenderer(engine, window, ui.Screen, ui.RenderPass);
+            ui.Screen.AddRenderer(typeof(Panel), panelRenderer);
+
+            Entity e = new Entity();
+            Transform t = new Transform();
+            Panel p = new Panel();
+            e.AddComponent(t);
+            e.AddComponent(p);
+            t.Parent = ui.Screen.Root.GetFirst<Transform>();
+            ui.Screen.Manager.AddEntity(e);
 
             int pageSize = 1024;
             float range = 4;
