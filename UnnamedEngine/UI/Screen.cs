@@ -135,6 +135,8 @@ namespace UnnamedEngine.UI {
             Stencil.Dispose();
             engine.Graphics.Allocator.Free(stencilAlloc);
 
+            foreach (var renderer in rendererMap.Values) renderer.Dispose();
+
             disposed = true;
         }
 
