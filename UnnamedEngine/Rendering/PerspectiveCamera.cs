@@ -24,7 +24,7 @@ namespace UnnamedEngine.Rendering {
         public PerspectiveCamera(float fov, float near) : this(fov, near, 0, true) { }
         public PerspectiveCamera(float fov, float near, float far) : this(fov, near, far, false) { }
 
-        public void Update(int width, int height) {
+        public override void Recreate(int width, int height) {
             if (Infinite) {
                 projection = CreatePerspectiveInfinite(FOV, width / (float)height, Near);
             } else {

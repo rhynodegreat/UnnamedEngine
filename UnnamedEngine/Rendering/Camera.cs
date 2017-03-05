@@ -21,6 +21,7 @@ namespace UnnamedEngine.Rendering {
             Transform = transform;
         }
 
+        public abstract void Recreate(int width, int height);
         protected abstract void Update();
 
         internal void InternalUpdate() {
