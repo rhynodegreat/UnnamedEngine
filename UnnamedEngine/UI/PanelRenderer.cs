@@ -158,6 +158,10 @@ namespace UnnamedEngine.UI {
             frag.Dispose();
         }
 
+        public void PreRender() {
+
+        }
+
         public void Render(CommandBuffer commandBuffer) {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Descriptor, (uint)(screen.Camera.Index * Interop.SizeOf<Matrix4x4>()));
