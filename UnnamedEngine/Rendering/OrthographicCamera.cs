@@ -17,6 +17,7 @@ namespace UnnamedEngine.Rendering {
             Height = height;
             Near = near;
             Far = far;
+            Recreate((int)width, (int)height);
         }
 
         public OrthographicCamera(float width, float height, float near, float far, Transform transform) : base(transform) {
@@ -24,13 +25,27 @@ namespace UnnamedEngine.Rendering {
             Height = height;
             Near = near;
             Far = far;
+            Recreate((int)width, (int)height);
+        }
+
+        public override void Recreate(int width, int height) {
+            Width = width;
+            Height = height;
+            projection = CreateOrthographic(0, Width, Height, 0, Near, Far);
         }
 
         protected override void Update() {
-            projection = Matrix4x4.CreateOrthographic(Width, Height, -Near, -Far);
-            projection.M22 *= -1;
             view = Matrix4x4.CreateLookAt(Transform.Position, Transform.Position + Transform.Forward, Transform.Up);
             ProjectionView = view * projection;
+        }
+
+        Matrix4x4 CreateOrthographic(float left, float right, float top, float bottom, float near, float far) {
+            return new Matrix4x4(
+                2 / (right - left), 0, 0, 0,
+                0, 2 / (top - bottom), 0, 0,
+                0, 0, 2 / (near - far), 0,
+                -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(far + near) / (far - near), 1
+            );
         }
     }
 }
