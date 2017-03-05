@@ -21,17 +21,14 @@ namespace UnnamedEngine.UI {
 
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
-
-        [StructLayout(LayoutKind.Explicit)]
+        
         struct PanelInfo {
-            [FieldOffset(0)]
+            public Matrix4x4 model;
             public Color4 color;
-            [FieldOffset(16)]
-            public Vector2 size;
 
-            public PanelInfo(Color4 color, Vector2 size) {
+            public PanelInfo(Matrix4x4 model, Color4 color) {
+                this.model = model;
                 this.color = color;
-                this.size = size;
             }
         }
 
@@ -164,7 +161,10 @@ namespace UnnamedEngine.UI {
         public void Render(CommandBuffer commandBuffer) {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Descriptor, (uint)(screen.Camera.Index * Interop.SizeOf<Matrix4x4>()));
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit, 0, new PanelInfo(new Color4(1, 0, 1, 1f), new Vector2(500, 50)));
+
+            Matrix4x4 model = Matrix4x4.CreateScale(500, 50, 0);
+
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit, 0, new PanelInfo(model, new Color4(1, 0, 1, 1f)));
             commandBuffer.Draw(6, 1, 0, 0);
         }
 
