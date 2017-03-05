@@ -11,7 +11,7 @@ using CSGL.Vulkan;
 using UnnamedEngine.Core;
 
 namespace UnnamedEngine.UI {
-    public class PanelRenderer : IRenderer {
+    public class PanelRenderer : UIRenderer {
         bool disposed;
 
         Engine engine;

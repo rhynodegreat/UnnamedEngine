@@ -15,7 +15,7 @@ namespace UnnamedEngine.UI {
         Engine engine;
         
         VkaAllocation stencilAlloc;
-        Dictionary<Type, IRenderer> rendererMap;
+        Dictionary<Type, UIRenderer> rendererMap;
 
         public Image Stencil { get; private set; }
         public ImageView StencilView { get; private set; }
@@ -35,7 +35,7 @@ namespace UnnamedEngine.UI {
             Width = width;
             Height = height;
 
-            rendererMap = new Dictionary<Type, IRenderer>();
+            rendererMap = new Dictionary<Type, UIRenderer>();
 
             Manager = new EntityManager();
             Root = new Entity();
@@ -46,7 +46,7 @@ namespace UnnamedEngine.UI {
             CreateStencil();
         }
 
-        public void AddRenderer(Type type, IRenderer renderer) {
+        public void AddRenderer(Type type, UIRenderer renderer) {
             if (rendererMap.ContainsKey(type)) throw new ScreenException("Type already has a renderer defined");
             rendererMap.Add(type, renderer);
         }
