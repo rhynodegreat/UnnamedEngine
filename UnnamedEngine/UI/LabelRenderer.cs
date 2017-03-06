@@ -26,7 +26,7 @@ namespace UnnamedEngine.UI {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            disposing = true;
+            disposed = true;
         }
 
         ~LabelRenderer() {
