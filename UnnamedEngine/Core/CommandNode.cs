@@ -33,6 +33,9 @@ namespace UnnamedEngine.Core {
             StartStage = startStage;
             EndStage = endStage;
         }
+
+        public virtual void PreCommand() { }
+        public virtual void PostCommand() { }
         
         public abstract CommandBuffer GetCommands();
 

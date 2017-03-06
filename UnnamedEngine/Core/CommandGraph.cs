@@ -48,7 +48,16 @@ namespace UnnamedEngine.Core {
                 nodeList[i].ResetEvent();
             }
 
+            for (int i = 0; i < nodeList.Count; i++) {
+                nodeList[i].PreCommand();
+            }
+
             Parallel.For(0, nodeList.Count, GetCommands);
+
+            for (int i = 0; i < nodeList.Count; i++) {
+                nodeList[i].PostCommand();
+            }
+
             return commands;
         }
 
