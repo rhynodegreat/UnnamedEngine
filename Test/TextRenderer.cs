@@ -72,10 +72,6 @@ namespace Test {
             engine.Window.OnSizeChanged += Recreate;
         }
 
-        protected override void OnBake() {
-
-        }
-
         void Recreate(int x, int y) {
             CreateFramebuffers();
             CreatePipeline();

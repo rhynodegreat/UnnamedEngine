@@ -47,9 +47,7 @@ namespace Test {
             CreatePipeline();
 
             gbuffer.OnSizeChanged += Recreate;
-        }
 
-        protected override void OnBake() {
             CreateCommandBuffer();
         }
 

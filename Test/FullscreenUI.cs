@@ -169,10 +169,6 @@ namespace Test {
             return commandBuffer;
         }
 
-        protected override void OnBake() {
-
-        }
-
         public new void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);

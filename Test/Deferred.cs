@@ -42,10 +42,6 @@ namespace Test {
             CreateFramebuffer(gbuffer.Width, gbuffer.Height);
         }
 
-        protected override void OnBake() {
-            
-        }
-
         void RecreateFramebuffer(int width, int height) {
             CreateFramebuffer(width, height);
             OnFramebufferChanged();

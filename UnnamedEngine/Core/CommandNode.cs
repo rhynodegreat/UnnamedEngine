@@ -33,8 +33,7 @@ namespace UnnamedEngine.Core {
             StartStage = startStage;
             EndStage = endStage;
         }
-
-        protected abstract void OnBake();
+        
         public abstract CommandBuffer GetCommands();
 
         public void WaitEvents(CommandBuffer commandBuffer) {
@@ -69,7 +68,6 @@ namespace UnnamedEngine.Core {
                 waitEvents.Add(node.Event);
                 srcStage |= node.EndStage;
             }
-            OnBake();
         }
 
         public void Dispose() {
