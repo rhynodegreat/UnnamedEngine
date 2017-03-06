@@ -7,7 +7,7 @@ using UnnamedEngine.ECS;
 
 namespace UnnamedEngine.UI {
     public interface UIRenderer : IDisposable{
-        void PreRender();
+        void PreRender(Entity e);
         void Render(CommandBuffer commandbuffer, Entity e);
     }
 }

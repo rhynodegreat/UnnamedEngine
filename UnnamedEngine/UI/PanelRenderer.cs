@@ -160,7 +160,7 @@ namespace UnnamedEngine.UI {
             frag.Dispose();
         }
 
-        public void PreRender() {
+        public void PreRender(Entity e) {
 
         }
 
