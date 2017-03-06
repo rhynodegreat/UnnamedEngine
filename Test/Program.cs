@@ -106,6 +106,19 @@ namespace Test {
 
             point.AddLight(light4);
 
+            int pageSize = 1024;
+            float range = 4;
+            int padding = 1;
+            float scale = 2;
+            float threshold = 1.000001f;
+
+            GlyphCache cache = new GlyphCache(engine, 1, pageSize, range, padding, scale, threshold);
+            Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
+            //for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
+            //    cache.AddChar(font, i);
+            //}
+            //cache.Update();
+
             Camera uiCam = new OrthographicCamera(window.Width, window.Height, -1, 1);
             window.OnSizeChanged += uiCam.Recreate;
             engine.Cameras.AddCamera(uiCam);
@@ -114,6 +127,9 @@ namespace Test {
 
             PanelRenderer panelRenderer = new PanelRenderer(engine, ui.Screen, ui.RenderPass);
             ui.Screen.AddRenderer(typeof(Panel), panelRenderer);
+
+            LabelRenderer labelRenderer = new LabelRenderer(engine, ui.Screen, ui.RenderPass, cache);
+            ui.Screen.AddRenderer(typeof(Label), labelRenderer);
 
             Entity e = new Entity();
             Transform t = new Transform();
@@ -125,20 +141,17 @@ namespace Test {
             t.Parent = ui.Screen.Root.GetFirst<Transform>();
             ui.Screen.Manager.AddEntity(e);
 
+            Entity e2 = new Entity();
+            Transform t2 = new Transform();
+            Label l = new Label();
+            l.Text = "asdf";
+            l.Font = font;
+            e2.AddComponent(t2);
+            e2.AddComponent(l);
+            t2.Parent = ui.Screen.Root.GetFirst<Transform>();
+            ui.Screen.Manager.AddEntity(e2);
+
             Framerate framerate = new Framerate(engine, p);
-
-            int pageSize = 1024;
-            float range = 4;
-            int padding = 1;
-            float scale = 2;
-            float threshold = 1.000001f;
-
-            GlyphCache cache = new GlyphCache(engine, 1, pageSize, range, padding, scale, threshold);
-            Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
-            for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
-                cache.AddChar(font, i);
-            }
-            cache.Update();
 
             renderer.AddNode(ui);
             renderer.Bake();
