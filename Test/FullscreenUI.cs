@@ -155,6 +155,8 @@ namespace Test {
         }
 
         public override CommandBuffer GetCommands() {
+            Screen.PreRender();
+
             commandBuffer.Reset(VkCommandBufferResetFlags.None);
             commandBuffer.Begin(beginInfo);
 

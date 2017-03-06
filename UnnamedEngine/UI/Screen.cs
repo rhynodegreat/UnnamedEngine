@@ -10,6 +10,16 @@ using UnnamedEngine.ECS;
 
 namespace UnnamedEngine.UI {
     public class Screen : IDisposable {
+        struct RenderInfo {
+            public UIRenderer renderer;
+            public Entity entity;
+
+            public RenderInfo(UIRenderer renderer, Entity entity) {
+                this.renderer = renderer;
+                this.entity = entity;
+            }
+        }
+
         bool disposed;
 
         Engine engine;
@@ -20,6 +30,9 @@ namespace UnnamedEngine.UI {
         CommandPool pool;
         CommandBuffer commandBuffer;
         CommandBufferBeginInfo beginInfo;
+
+        Stack<Transform> stack;
+        List<RenderInfo> list;
 
         public Image Stencil { get; private set; }
         public ImageView StencilView { get; private set; }
@@ -51,6 +64,9 @@ namespace UnnamedEngine.UI {
             Root.AddComponent(new UIRoot(this));
             Manager.AddEntity(Root);
 
+            stack = new Stack<Transform>();
+            list = new List<RenderInfo>();
+
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
             poolInfo.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
@@ -81,9 +97,10 @@ namespace UnnamedEngine.UI {
             CreateCommandBuffer();
         }
 
-        public void Render(CommandBuffer commandBuffer) {
+        public void PreRender() {
             Transform root = Root.GetFirst<Transform>();
-            Stack<Transform> stack = new Stack<Transform>();
+            stack.Clear();
+            list.Clear();
             stack.Push(root);
 
             while (stack.Count > 0) {
@@ -93,18 +110,24 @@ namespace UnnamedEngine.UI {
                     stack.Push(current[i]);
                 }
 
-                Render(commandBuffer, Manager.GetEntity(current));
+                Entity e = Manager.GetEntity(current);
+
+                UIElement element = e.GetFirst<UIElement>();
+                if (element == null) continue;
+
+                Type type = element.GetType();
+                if (!rendererMap.ContainsKey(type)) continue;
+
+                UIRenderer renderer = rendererMap[type];
+                renderer.PreRender();
+                list.Add(new RenderInfo(renderer, e));
             }
         }
 
-        void Render(CommandBuffer commandBuffer, Entity e) {
-            UIElement element = e.GetFirst<UIElement>();
-            if (element == null) return;
-
-            Type type = element.GetType();
-            if (!rendererMap.ContainsKey(type)) return;
-
-            rendererMap[type].Render(commandBuffer, e);
+        public void Render(CommandBuffer commandBuffer) {
+            for (int i = 0; i < list.Count; i++) {
+                list[i].renderer.Render(commandBuffer, list[i].entity);
+            }
         }
 
         void CreateStencil() {
