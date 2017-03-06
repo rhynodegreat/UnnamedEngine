@@ -160,17 +160,16 @@ namespace UnnamedEngine.UI {
             frag.Dispose();
         }
 
-        public void PreRender(Entity e) {
+        public void PreRender(Entity e, Transform transform, UIElement element) {
 
         }
 
-        public void Render(CommandBuffer commandBuffer, Entity e) {
+        public void Render(CommandBuffer commandBuffer, Entity e, Transform transform, UIElement element) {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Descriptor, (uint)(screen.Camera.Index * Interop.SizeOf<Matrix4x4>()));
 
-            Panel p = e.GetFirst<Panel>();
-            Transform t = e.GetFirst<Transform>();
-            Matrix4x4 model = Matrix4x4.CreateScale(p.Size.X, p.Size.Y, 1) * t.WorldTransform;
+            Panel p = (Panel)element;
+            Matrix4x4 model = Matrix4x4.CreateScale(p.Size.X, p.Size.Y, 1) * transform.WorldTransform;
 
             commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit, 0, new PanelInfo(model, p.Color));
             commandBuffer.Draw(6, 1, 0, 0);

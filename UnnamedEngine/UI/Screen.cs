@@ -13,10 +13,14 @@ namespace UnnamedEngine.UI {
         struct RenderInfo {
             public UIRenderer renderer;
             public Entity entity;
+            public Transform transform;
+            public UIElement element;
 
-            public RenderInfo(UIRenderer renderer, Entity entity) {
+            public RenderInfo(UIRenderer renderer, Entity entity, Transform transform, UIElement element) {
                 this.renderer = renderer;
                 this.entity = entity;
+                this.transform = transform;
+                this.element = element;
             }
         }
 
@@ -119,14 +123,14 @@ namespace UnnamedEngine.UI {
                 if (!rendererMap.ContainsKey(type)) continue;
 
                 UIRenderer renderer = rendererMap[type];
-                renderer.PreRender(e);
-                list.Add(new RenderInfo(renderer, e));
+                renderer.PreRender(e, current, element);
+                list.Add(new RenderInfo(renderer, e, current, element));
             }
         }
 
         public void Render(CommandBuffer commandBuffer) {
             for (int i = 0; i < list.Count; i++) {
-                list[i].renderer.Render(commandBuffer, list[i].entity);
+                list[i].renderer.Render(commandBuffer, list[i].entity, list[i].transform, list[i].element);
             }
         }
 
