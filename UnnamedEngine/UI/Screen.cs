@@ -119,7 +119,7 @@ namespace UnnamedEngine.UI {
                 if (!rendererMap.ContainsKey(type)) continue;
 
                 UIRenderer renderer = rendererMap[type];
-                renderer.PreRender();
+                renderer.PreRender(e);
                 list.Add(new RenderInfo(renderer, e));
             }
         }
