@@ -118,14 +118,14 @@ namespace Test {
             Entity e = new Entity();
             Transform t = new Transform();
             Panel p = new Panel();
-            p.Size = new Vector2(300, 25);
+            p.Size = new Vector2(300, 20);
             p.Color = new Color4(1, 0, 0, 1);
             e.AddComponent(t);
             e.AddComponent(p);
             t.Parent = ui.Screen.Root.GetFirst<Transform>();
             ui.Screen.Manager.AddEntity(e);
-            t.Rotation = Quaternion.CreateFromYawPitchRoll(0, 0, 1);
-            t.Position = new Vector3(100, 50, 0);
+
+            Framerate framerate = new Framerate(engine, p);
 
             int pageSize = 1024;
             float range = 4;

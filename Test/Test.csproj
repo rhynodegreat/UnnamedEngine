@@ -53,6 +53,7 @@
     <Compile Include="BasicRenderer.cs" />
     <Compile Include="Deferred.cs" />
     <Compile Include="Directional.cs" />
+    <Compile Include="Framerate.cs" />
     <Compile Include="FreeCam.cs" />
     <Compile Include="FullscreenUI.cs" />
     <Compile Include="ISubpass.cs" />
