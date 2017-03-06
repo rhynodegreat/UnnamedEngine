@@ -7,7 +7,7 @@ using UnnamedEngine.ECS;
 using UnnamedEngine.Rendering;
 
 namespace UnnamedEngine.UI {
-    public class TextRenderer : UIRenderer {
+    public class LabelRenderer : UIRenderer {
         bool disposed;
 
         public void PreRender(Entity e, Transform transform, UIElement element) {
@@ -29,7 +29,7 @@ namespace UnnamedEngine.UI {
             disposing = true;
         }
 
-        ~TextRenderer() {
+        ~LabelRenderer() {
 
         }
     }
