@@ -17,7 +17,6 @@ namespace UnnamedEngine.UI {
         bool disposed;
 
         Engine engine;
-        Window window;
         Screen screen;
         RenderPass renderPass;
 
@@ -34,20 +33,18 @@ namespace UnnamedEngine.UI {
             }
         }
 
-        public PanelRenderer(Engine engine, Window window, Screen screen, RenderPass renderPass) {
+        public PanelRenderer(Engine engine, Screen screen, RenderPass renderPass) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
-            if (window == null) throw new ArgumentNullException(nameof(window));
             if (screen == null) throw new ArgumentNullException(nameof(screen));
             if (renderPass == null) throw new ArgumentNullException(nameof(renderPass));
 
             this.engine = engine;
-            this.window = window;
             this.screen = screen;
             this.renderPass = renderPass;
 
             CreatePipeline();
 
-            window.OnSizeChanged += Recreate;
+            screen.OnSizeChanged += Recreate;
         }
 
         void Recreate(int width, int height) {
@@ -81,14 +78,14 @@ namespace UnnamedEngine.UI {
             inputAssembly.topology = VkPrimitiveTopology.TriangleList;
 
             var viewport = new VkViewport();
-            viewport.width = window.Width;
-            viewport.height = window.Height;
+            viewport.width = screen.Width;
+            viewport.height = screen.Height;
             viewport.minDepth = 0f;
             viewport.maxDepth = 1f;
 
             var scissor = new VkRect2D();
-            scissor.extent.width = (uint)window.Width;
-            scissor.extent.height = (uint)window.Height;
+            scissor.extent.width = (uint)screen.Width;
+            scissor.extent.height = (uint)screen.Height;
 
             var viewportState = new PipelineViewportStateCreateInfo();
             viewportState.viewports = new List<VkViewport> { viewport };
@@ -185,6 +182,7 @@ namespace UnnamedEngine.UI {
 
             pipeline.Dispose();
             pipelineLayout.Dispose();
+            screen.OnSizeChanged -= Recreate;
 
             disposed = true;
         }

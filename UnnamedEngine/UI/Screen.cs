@@ -49,6 +49,8 @@ namespace UnnamedEngine.UI {
         public Entity Root { get; private set; }
         public VkFormat StencilFormat { get; private set; } = VkFormat.D32SfloatS8Uint;
 
+        public event Action<int, int> OnSizeChanged = delegate { };
+
         public Screen(Engine engine, SubmitNode submitNode, Camera camera, int width, int height) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (submitNode == null) throw new ArgumentNullException(nameof(submitNode));
@@ -99,6 +101,8 @@ namespace UnnamedEngine.UI {
             Height = height;
             CreateStencil();
             CreateCommandBuffer();
+
+            OnSizeChanged(width, height);
         }
 
         public void PreRender() {

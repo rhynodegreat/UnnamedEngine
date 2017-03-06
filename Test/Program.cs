@@ -112,7 +112,7 @@ namespace Test {
             FullscreenUI ui = new FullscreenUI(engine, submitNode, uiCam, renderer);
             ui.AddInput(toneMapper);
 
-            PanelRenderer panelRenderer = new PanelRenderer(engine, window, ui.Screen, ui.RenderPass);
+            PanelRenderer panelRenderer = new PanelRenderer(engine, ui.Screen, ui.RenderPass);
             ui.Screen.AddRenderer(typeof(Panel), panelRenderer);
 
             Entity e = new Entity();
