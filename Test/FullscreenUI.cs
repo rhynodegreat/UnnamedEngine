@@ -154,9 +154,11 @@ namespace Test {
             commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
         }
 
-        public override CommandBuffer GetCommands() {
+        public override void PreCommand() {
             Screen.PreRender();
+        }
 
+        public override CommandBuffer GetCommands() {
             commandBuffer.Reset(VkCommandBufferResetFlags.None);
             commandBuffer.Begin(beginInfo);
 
