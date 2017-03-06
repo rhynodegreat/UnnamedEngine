@@ -43,7 +43,7 @@ namespace UnnamedEngine.Core {
             }
         }
 
-        public List<CommandBuffer> GetCommands() {
+        public void PreCommand() {
             for (int i = 0; i < nodeList.Count; i++) {
                 nodeList[i].ResetEvent();
             }
@@ -51,14 +51,17 @@ namespace UnnamedEngine.Core {
             for (int i = 0; i < nodeList.Count; i++) {
                 nodeList[i].PreCommand();
             }
+        }
 
+        public List<CommandBuffer> GetCommands() {
             Parallel.For(0, nodeList.Count, GetCommands);
+            return commands;
+        }
 
+        public void PostCommand() {
             for (int i = 0; i < nodeList.Count; i++) {
                 nodeList[i].PostCommand();
             }
-
-            return commands;
         }
 
         void GetCommands(int i) {

@@ -60,11 +60,13 @@ namespace Test {
 
         public override void PreSubmit() {
             var result = window.Swapchain.AcquireNextImage(ulong.MaxValue, acquireImageSemaphore, out imageIndex);
+            graph.PreCommand();
         }
 
         public override void PostSubmit() {
             presentInfo.imageIndices[0] = ImageIndex;
             engine.Graphics.PresentQueue.Present(presentInfo);
+            graph.PostCommand();
         }
 
         public override List<CommandBuffer> GetCommands() {
