@@ -25,7 +25,7 @@ namespace Test {
         public Screen Screen { get; private set; }
         public RenderPass RenderPass { get; private set; }
 
-        public FullscreenUI(Engine engine, Camera camera, Renderer renderer) : base(engine.Graphics.Device, VkPipelineStageFlags.FragmentShaderBit, VkPipelineStageFlags.ColorAttachmentOutputBit) {
+        public FullscreenUI(Engine engine, SubmitNode submitNode, Camera camera, Renderer renderer) : base(engine.Graphics.Device, VkPipelineStageFlags.FragmentShaderBit, VkPipelineStageFlags.ColorAttachmentOutputBit) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (camera == null) throw new ArgumentNullException(nameof(camera));
             if (engine.Window == null) throw new ArgumentNullException(nameof(window));
@@ -38,7 +38,7 @@ namespace Test {
             imageViews = new List<ImageView>();
             framebuffers = new List<Framebuffer>();
 
-            Screen = new Screen(engine, camera, window.Width, window.Height);
+            Screen = new Screen(engine, submitNode, camera, window.Width, window.Height);
             window.OnSizeChanged += Recreate;
 
             CreateRenderPass();

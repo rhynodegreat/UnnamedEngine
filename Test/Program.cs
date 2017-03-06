@@ -40,6 +40,8 @@ namespace Test {
 
             GBuffer gbuffer = new GBuffer(engine, window);
 
+            SubmitNode submitNode = new SubmitNode(engine, engine.Graphics.GraphicsQueue);
+
             PerspectiveCamera camera = new PerspectiveCamera(90, .1f);
             engine.Cameras.AddCamera(camera);
             camera.Transform.Position = new Vector3(0, 0, 1);
@@ -59,6 +61,7 @@ namespace Test {
 
             Renderer renderer = new Renderer(engine);
             renderer.AddInput(engine.Graphics.TransferNode);
+            renderer.AddInput(submitNode);
 
             Deferred deferred = new Deferred(engine, gbuffer);
             renderer.AddNode(deferred);
@@ -106,7 +109,7 @@ namespace Test {
             Camera uiCam = new OrthographicCamera(window.Width, window.Height, -1, 1);
             window.OnSizeChanged += uiCam.Recreate;
             engine.Cameras.AddCamera(uiCam);
-            FullscreenUI ui = new FullscreenUI(engine, uiCam, renderer);
+            FullscreenUI ui = new FullscreenUI(engine, submitNode, uiCam, renderer);
             ui.AddInput(toneMapper);
 
             PanelRenderer panelRenderer = new PanelRenderer(engine, window, ui.Screen, ui.RenderPass);
@@ -141,40 +144,12 @@ namespace Test {
             renderer.Bake();
 
             QueueGraph graph = engine.QueueGraph;
+            graph.Add(submitNode);
             graph.Add(renderer);
             graph.Bake();
 
-            CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
-            poolInfo.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
-            poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
-            CommandPool pool = new CommandPool(engine.Graphics.Device, poolInfo);
-
-            CommandBuffer commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
-
-            CommandBufferBeginInfo beginInfo = new CommandBufferBeginInfo();
-            beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmitBit;
-            commandBuffer.Begin(beginInfo);
-            commandBuffer.PipelineBarrier(VkPipelineStageFlags.TopOfPipeBit, VkPipelineStageFlags.TopOfPipeBit, VkDependencyFlags.None,
-                null, null, new List<ImageMemoryBarrier> {
-                    new ImageMemoryBarrier {
-                        image = ui.Screen.Stencil,
-                        oldLayout = VkImageLayout.Undefined,
-                        newLayout = VkImageLayout.DepthStencilAttachmentOptimal,
-                        srcQueueFamilyIndex = uint.MaxValue,
-                        dstQueueFamilyIndex = uint.MaxValue,
-                        subresourceRange = ui.Screen.StencilView.SubresourceRange,
-                        srcAccessMask = VkAccessFlags.None,
-                        dstAccessMask = VkAccessFlags.DepthStencilAttachmentReadBit | VkAccessFlags.DepthStencilAttachmentWriteBit
-                    }
-                }
-            );
-            commandBuffer.End();
-
-            renderer.SubmitOnce(commandBuffer);
-
             using (engine)
             using (gbuffer)
-            using (pool)
             using (cache) {
                 engine.Run();
             }

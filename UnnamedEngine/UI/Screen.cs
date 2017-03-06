@@ -13,9 +13,13 @@ namespace UnnamedEngine.UI {
         bool disposed;
 
         Engine engine;
+        SubmitNode submitNode;
         
         VkaAllocation stencilAlloc;
         Dictionary<Type, UIRenderer> rendererMap;
+        CommandPool pool;
+        CommandBuffer commandBuffer;
+        CommandBufferBeginInfo beginInfo;
 
         public Image Stencil { get; private set; }
         public ImageView StencilView { get; private set; }
@@ -28,8 +32,12 @@ namespace UnnamedEngine.UI {
         public Entity Root { get; private set; }
         public VkFormat StencilFormat { get; private set; } = VkFormat.D32SfloatS8Uint;
 
-        public Screen(Engine engine, Camera camera, int width, int height) {
+        public Screen(Engine engine, SubmitNode submitNode, Camera camera, int width, int height) {
+            if (engine == null) throw new ArgumentNullException(nameof(engine));
+            if (submitNode == null) throw new ArgumentNullException(nameof(submitNode));
+
             this.engine = engine;
+            this.submitNode = submitNode;
 
             Camera = camera;
             Width = width;
@@ -42,8 +50,19 @@ namespace UnnamedEngine.UI {
             Root.AddComponent(new Transform());
             Root.AddComponent(new UIRoot(this));
             Manager.AddEntity(Root);
+
+            CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
+            poolInfo.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
+            poolInfo.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
+
+            pool = new CommandPool(engine.Graphics.Device, poolInfo);
+            commandBuffer = pool.Allocate(VkCommandBufferLevel.Primary);
+
+            beginInfo = new CommandBufferBeginInfo();
+            beginInfo.flags = VkCommandBufferUsageFlags.OneTimeSubmitBit;
             
             CreateStencil();
+            CreateCommandBuffer();
         }
 
         public void AddRenderer(Type type, UIRenderer renderer) {
@@ -59,6 +78,7 @@ namespace UnnamedEngine.UI {
             Width = width;
             Height = height;
             CreateStencil();
+            CreateCommandBuffer();
         }
 
         public void Render(CommandBuffer commandBuffer) {
@@ -123,6 +143,31 @@ namespace UnnamedEngine.UI {
             StencilView = new ImageView(engine.Graphics.Device, viewInfo);
         }
 
+        void CreateCommandBuffer() {
+            commandBuffer.Reset(VkCommandBufferResetFlags.None);
+
+            commandBuffer.Begin(beginInfo);
+
+            commandBuffer.PipelineBarrier(VkPipelineStageFlags.TopOfPipeBit, VkPipelineStageFlags.TopOfPipeBit, VkDependencyFlags.None,
+                null, null, new List<ImageMemoryBarrier> {
+                    new ImageMemoryBarrier {
+                        image = Stencil,
+                        oldLayout = VkImageLayout.Undefined,
+                        newLayout = VkImageLayout.DepthStencilAttachmentOptimal,
+                        srcQueueFamilyIndex = uint.MaxValue,
+                        dstQueueFamilyIndex = uint.MaxValue,
+                        subresourceRange = StencilView.SubresourceRange,
+                        srcAccessMask = VkAccessFlags.None,
+                        dstAccessMask = VkAccessFlags.DepthStencilAttachmentReadBit | VkAccessFlags.DepthStencilAttachmentWriteBit
+                    }
+                }
+            );
+
+            commandBuffer.End();
+
+            submitNode.SubmitOnce(commandBuffer);
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -134,6 +179,7 @@ namespace UnnamedEngine.UI {
             StencilView.Dispose();
             Stencil.Dispose();
             engine.Graphics.Allocator.Free(stencilAlloc);
+            pool.Dispose();
 
             foreach (var renderer in rendererMap.Values) renderer.Dispose();
 

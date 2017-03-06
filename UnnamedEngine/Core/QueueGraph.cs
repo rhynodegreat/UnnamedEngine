@@ -158,7 +158,7 @@ namespace UnnamedEngine.Core {
             SubmitInfo info = queueMap[nodeList[i].node.Queue][nodeList[i].submitIndex];
             info.commandBuffers = null;
             try {
-                info.commandBuffers = nodeList[i].node.InternalGetCommands();
+                info.commandBuffers = nodeList[i].node.GetCommands();
             }
             catch (Exception e) {
                 Console.WriteLine(e);
