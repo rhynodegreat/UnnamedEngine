@@ -208,7 +208,9 @@ namespace UnnamedEngine.UI {
             engine.Graphics.Allocator.Free(stencilAlloc);
             pool.Dispose();
 
-            foreach (var renderer in rendererMap.Values) renderer.Dispose();
+            if (disposing) {
+                foreach (var renderer in rendererMap.Values) renderer.Dispose();
+            }
 
             disposed = true;
         }
