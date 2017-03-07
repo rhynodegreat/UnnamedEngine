@@ -29,7 +29,7 @@ namespace UnnamedEngine.Resources {
 
         protected override void ReadVertices(BinaryReader reader) {
             uint vertexSize = reader.ReadUInt32();
-            if (vertexSize != Bindings[0].stride) throw new VertexDataException(string.Format("Vertex size ({0}) does not match attribute size ({1})", vertexSize, Bindings[0].stride));
+            if (vertexSize != Bindings[0].stride) throw new VertexDataException(string.Format("Vertex size ({0}) does not match binding stride ({1})", vertexSize, Bindings[0].stride));
 
             uint vertexCount = reader.ReadUInt32();
             VertexCount = (int)vertexCount;
