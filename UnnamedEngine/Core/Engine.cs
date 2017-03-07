@@ -72,9 +72,9 @@ namespace UnnamedEngine.Core {
             if (disposed) return;
 
             QueueGraph.Dispose();
+            Cameras.Dispose();
 
             if (disposing) {
-                Cameras.Dispose();
                 Window.Dispose();
                 Graphics.Dispose();
             }
