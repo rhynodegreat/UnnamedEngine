@@ -54,14 +54,17 @@ namespace UnnamedEngine.Resources {
             if (attributes == null) throw new ArgumentNullException(nameof(attributes));
 
             Bindings = bindings;
-            Attributes = Attributes;
+            Attributes = attributes;
         }
 
         protected VertexData(Stream stream) {
             using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
-                Bindings = new List<VkVertexInputBindingDescription>();
-                Attributes = new List<VkVertexInputAttributeDescription>();
-                ReadAttributes(reader);
+                List<VkVertexInputBindingDescription> bindings;
+                List<VkVertexInputAttributeDescription> attributes;
+                ReadAttributes(reader, out bindings, out attributes);
+                Bindings = bindings;
+                Attributes = attributes;
+
                 ReadVertices(reader);
             }
         }
@@ -72,11 +75,14 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        protected void ReadAttributes(BinaryReader reader) {
+        protected void ReadAttributes(BinaryReader reader, out List<VkVertexInputBindingDescription> bindings, out List<VkVertexInputAttributeDescription> attributes) {
             byte formatLength = reader.ReadByte();
             if (formatLength > 0) {
                 reader.ReadBytes(formatLength); //skip format
             }
+
+            bindings = new List<VkVertexInputBindingDescription>();
+            attributes = new List<VkVertexInputAttributeDescription>();
 
             byte attributeCount = reader.ReadByte();
 
@@ -113,7 +119,7 @@ namespace UnnamedEngine.Resources {
 
         protected abstract void ReadVertices(BinaryReader reader);
 
-        VkFormat GetFormat(int components, VertexAttribute type, int index, out int size) {
+        protected static VkFormat GetFormat(int components, VertexAttribute type, int index, out int size) {
             switch (type) {
                 case VertexAttribute.Uint8:
                     size = components;
