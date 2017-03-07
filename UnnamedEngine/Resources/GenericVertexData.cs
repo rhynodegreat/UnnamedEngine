@@ -6,6 +6,8 @@ using System.Reflection;
 using CSGL;
 using CSGL.Vulkan;
 
+using UnnamedEngine.Core;
+
 namespace UnnamedEngine.Resources {
     public class VertexData<T> : VertexData where T : struct {
         static List<VkVertexInputBindingDescription> bindings;
@@ -37,11 +39,11 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        public VertexData() : base(bindings, attributes) {
+        public VertexData(Engine engine) : base(engine, bindings, attributes) {
 
         }
 
-        public VertexData(Stream stream) : base(stream) {
+        public VertexData(Engine engine, Stream stream) : base(engine, stream) {
             if (bindings.Count != Bindings.Count || attributes.Count != Attributes.Count) throw new VertexDataException($"Stream data does not match {typeof(T).Name}");
 
             for (int i = 0; i < bindings.Count; i++) {

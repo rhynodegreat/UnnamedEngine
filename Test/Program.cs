@@ -161,7 +161,7 @@ namespace Test {
             graph.Add(renderer);
             graph.Bake();
 
-            VertexData<TestVertex> test = new VertexData<TestVertex>();
+            VertexData<TestVertex> test = new VertexData<TestVertex>(engine);
 
             using (engine)
             using (gbuffer)

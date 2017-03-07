@@ -2,9 +2,14 @@
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 using CSGL;
 using CSGL.Vulkan;
+using Buffer = CSGL.Vulkan.Buffer;
+
+using UnnamedEngine.Core;
+using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.Resources {
     public enum VertexAttribute {
@@ -21,7 +26,13 @@ namespace UnnamedEngine.Resources {
         Float64 = 10,
     }
 
-    public abstract class VertexData {
+    public abstract class VertexData : IDisposable {
+        bool disposed;
+        Engine engine;
+
+        VkaAllocation alloc;
+        int lastSize;
+
         List<VkVertexInputBindingDescription> bindings;
         public List<VkVertexInputBindingDescription> Bindings {
             get {
@@ -48,16 +59,24 @@ namespace UnnamedEngine.Resources {
 
         public int VertexCount { get; protected set; }
         public int Size { get; protected set; }
+        public Buffer Buffer { get; private set; }
 
-        protected VertexData(List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) {
+        protected VertexData(Engine engine, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) {
+            if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (bindings == null) throw new ArgumentNullException(nameof(bindings));
             if (attributes == null) throw new ArgumentNullException(nameof(attributes));
+
+            this.engine = engine;
 
             Bindings = bindings;
             Attributes = attributes;
         }
 
-        protected VertexData(Stream stream) {
+        protected VertexData(Engine engine, Stream stream) {
+            if (engine == null) throw new ArgumentNullException(nameof(engine));
+
+            this.engine = engine;
+
             using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
                 List<VkVertexInputBindingDescription> bindings;
                 List<VkVertexInputAttributeDescription> attributes;
@@ -69,7 +88,11 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        protected VertexData(Stream stream, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) : this(bindings, attributes) {
+        protected VertexData(Engine engine, Stream stream, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) : this(engine, bindings, attributes) {
+            if (engine == null) throw new ArgumentNullException(nameof(engine));
+
+            this.engine = engine;
+
             using (var reader = new BinaryReader(stream, Encoding.UTF8, true)) {
                 ReadVertices(reader);
             }
@@ -118,6 +141,47 @@ namespace UnnamedEngine.Resources {
         }
 
         protected abstract void ReadVertices(BinaryReader reader);
+
+        public void Apply() {
+            if (Size > lastSize) {
+                Buffer?.Dispose();
+                engine.Graphics.Allocator.Free(alloc);
+
+                BufferCreateInfo vertexInfo = new BufferCreateInfo();
+                vertexInfo.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
+                vertexInfo.size = (ulong)Size;
+                vertexInfo.sharingMode = VkSharingMode.Exclusive;
+
+                Buffer = new Buffer(engine.Graphics.Device, vertexInfo);
+
+                alloc = engine.Graphics.Allocator.Alloc(Buffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
+                Buffer.Bind(alloc.memory, alloc.offset);
+
+                lastSize = Size;
+            }
+
+            GCHandle vertexHandle = GCHandle.Alloc(InternalData, GCHandleType.Pinned);
+            engine.Graphics.TransferNode.Transfer(vertexHandle.AddrOfPinnedObject(), (uint)Size, Buffer);
+            vertexHandle.Free();
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing) {
+            if (disposed) return;
+
+            engine.Graphics.Allocator.Free(alloc);
+            Buffer?.Dispose();  //this vertex may never have data put into it
+
+            disposed = true;
+        }
+
+        ~VertexData() {
+            Dispose(false);
+        }
 
         protected static VkFormat GetFormat(int components, VertexAttribute type, int index, out int size) {
             switch (type) {

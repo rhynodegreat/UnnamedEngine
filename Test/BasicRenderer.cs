@@ -196,10 +196,10 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, camera.Descriptor, (uint)(camera.Index * Interop.SizeOf<Matrix4x4>()));
-            commandBuffer.BindVertexBuffer(0, mesh.VertexBuffer, 0);
+            commandBuffer.BindVertexBuffer(0, mesh.VertexData.Buffer, 0);
             
-            if (mesh.IndexBuffer != null) {
-                commandBuffer.BindIndexBuffer(mesh.IndexBuffer, 0, mesh.IndexData.IndexType);
+            if (mesh.IndexData.Buffer != null) {
+                commandBuffer.BindIndexBuffer(mesh.IndexData.Buffer, 0, mesh.IndexData.IndexType);
                 commandBuffer.DrawIndexed((uint)mesh.IndexData.IndexCount, 1, 0, 0, 0);
             } else {
                 commandBuffer.Draw(mesh.VertexData.VertexCount, 1, 0, 0);

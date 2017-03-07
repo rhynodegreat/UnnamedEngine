@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 using CSGL.Vulkan;
 
+using UnnamedEngine.Core;
+
 namespace UnnamedEngine.Resources {
     public class OpaqueVertexData : VertexData {
         byte[] data;
@@ -18,14 +20,14 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        public OpaqueVertexData(List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes, byte[] data) : base(bindings, attributes) {
+        public OpaqueVertexData(Engine engine, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes, byte[] data) : base(engine, bindings, attributes) {
             if (data == null) throw new ArgumentNullException(nameof(data));
 
             Data = data;
         }
 
-        public OpaqueVertexData(Stream stream) : base(stream) { }
-        public OpaqueVertexData(Stream stream, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) : base(stream, bindings, attributes) { }
+        public OpaqueVertexData(Engine engine, Stream stream) : base(engine, stream) { }
+        public OpaqueVertexData(Engine engine, Stream stream, List<VkVertexInputBindingDescription> bindings, List<VkVertexInputAttributeDescription> attributes) : base(engine, stream, bindings, attributes) { }
 
         protected override void ReadVertices(BinaryReader reader) {
             uint vertexSize = reader.ReadUInt32();
