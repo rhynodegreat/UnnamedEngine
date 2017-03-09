@@ -134,13 +134,11 @@ namespace UnnamedEngine.Core {
             queueList.Add(info);
             return queueList.Count - 1;
         }
-
-        public void Wait() {
-            Fence.Wait(graphics.Device, fences, true, ulong.MaxValue);
-            Fence.Reset(graphics.Device, fences);
-        }
         
         public void Submit() {
+            Fence.Wait(graphics.Device, fences, true, ulong.MaxValue);
+            Fence.Reset(graphics.Device, fences);
+
             for (int i = 0; i < nodeList.Count; i++) {
                 nodeList[i].node.PreSubmit();
             }

@@ -49,8 +49,6 @@ namespace UnnamedEngine.Core {
             if (Window == null) throw new EngineException("Window not set");
 
             while (true) {
-                QueueGraph.Wait();
-                Memory.ResetStaging();
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
@@ -61,6 +59,7 @@ namespace UnnamedEngine.Core {
                 Cameras.Update();
 
                 QueueGraph.Submit();
+                Memory.ResetStaging();
             }
 
             Graphics.Device.WaitIdle();
