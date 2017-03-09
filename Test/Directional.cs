@@ -35,7 +35,6 @@ namespace Test {
         DescriptorPool descriptorPool;
         DescriptorSet set;
         Buffer uniform;
-        VkaAllocation uniformAllocation;
         bool dirty = true;
 
         struct LightData {
@@ -126,10 +125,7 @@ namespace Test {
             info.size = 32 * (uint)lightCount;
             info.sharingMode = VkSharingMode.Exclusive;
 
-            uniform = new Buffer(engine.Graphics.Device, info);
-
-            uniformAllocation = engine.Graphics.Allocator.Alloc(uniform.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
-            uniform.Bind(uniformAllocation.memory, uniformAllocation.offset);
+            uniform = engine.Memory.AllocUniform(info);
 
             DescriptorSet.Update(engine.Graphics.Device, new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {
@@ -153,9 +149,9 @@ namespace Test {
                 lightData[i] = new LightData { color = lights[i].Color, direction = new Vector4(lights[i].Transform.Forward, 0) };
             }
 
-            IntPtr ptr = uniformAllocation.memory.Map(uniformAllocation.offset, uniformAllocation.size);
+            IntPtr ptr = uniform.Memory.Map(uniform.Offset, uniform.Size);
             Interop.Copy(lightData, ptr);
-            uniformAllocation.memory.Unmap();
+            uniform.Memory.Unmap();
         }
 
         ShaderModule CreateShaderModule(Device device, byte[] code) {
@@ -316,8 +312,7 @@ namespace Test {
             pool.Dispose();
             descriptorPool.Dispose();
             descriptorLayout.Dispose();
-            uniform.Dispose();
-            engine.Graphics.Allocator.Free(uniformAllocation);
+            engine.Memory.FreeUniform(uniform);
 
             deferred.OnFramebufferChanged -= CreatePipeline;
 

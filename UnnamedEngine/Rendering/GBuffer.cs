@@ -16,11 +16,6 @@ namespace UnnamedEngine.Rendering {
 
         DescriptorPool pool;
 
-        VkaAllocation albedoAlloc;
-        VkaAllocation normAlloc;
-        VkaAllocation depthAlloc;
-        VkaAllocation lightAlloc;
-
         Sampler lightSampler;
 
         public DescriptorSetLayout InputLayout { get; private set; }
@@ -227,9 +222,7 @@ namespace UnnamedEngine.Rendering {
             albedoInfo.extent.depth = 1;
             albedoInfo.format = AlbedoFormat;
 
-            Albedo = new Image(engine.Graphics.Device, albedoInfo);
-            albedoAlloc = engine.Graphics.Allocator.Alloc(Albedo.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            Albedo.Bind(albedoAlloc.memory, albedoAlloc.offset);
+            Albedo = engine.Memory.AllocDevice(albedoInfo);
 
             ImageViewCreateInfo albedoViewInfo = new ImageViewCreateInfo(Albedo);
             albedoViewInfo.components.r = VkComponentSwizzle.Identity;
@@ -261,9 +254,7 @@ namespace UnnamedEngine.Rendering {
             normInfo.extent.depth = 1;
             normInfo.format = NormFormat;
 
-            Norm = new Image(engine.Graphics.Device, normInfo);
-            normAlloc = engine.Graphics.Allocator.Alloc(Norm.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            Norm.Bind(normAlloc.memory, normAlloc.offset);
+            Norm = engine.Memory.AllocDevice(normInfo);
 
             ImageViewCreateInfo normViewInfo = new ImageViewCreateInfo(Norm);
             normViewInfo.components.r = VkComponentSwizzle.Identity;
@@ -309,9 +300,7 @@ namespace UnnamedEngine.Rendering {
             depthInfo.extent.depth = 1;
             depthInfo.format = DepthFormat;
 
-            Depth = new Image(engine.Graphics.Device, depthInfo);
-            depthAlloc = engine.Graphics.Allocator.Alloc(Depth.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            Depth.Bind(depthAlloc.memory, depthAlloc.offset);
+            Depth = engine.Memory.AllocDevice(depthInfo);
 
             ImageViewCreateInfo depthViewInfo = new ImageViewCreateInfo(Depth);
             depthViewInfo.components.r = VkComponentSwizzle.Identity;
@@ -348,9 +337,7 @@ namespace UnnamedEngine.Rendering {
             lightInfo.extent.depth = 1;
             lightInfo.format = LightFormat;
 
-            Light = new Image(engine.Graphics.Device, lightInfo);
-            lightAlloc = engine.Graphics.Allocator.Alloc(Light.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            Light.Bind(lightAlloc.memory, lightAlloc.offset);
+            Light = engine.Memory.AllocDevice(lightInfo);
 
             ImageViewCreateInfo lightViewInfo = new ImageViewCreateInfo(Light);
             lightViewInfo.components.r = VkComponentSwizzle.Identity;
@@ -372,18 +359,10 @@ namespace UnnamedEngine.Rendering {
             NormView?.Dispose();
             DepthView?.Dispose();
             LightView?.Dispose();
-            Albedo?.Dispose();
-            Norm?.Dispose();
-            Depth?.Dispose();
-            Light?.Dispose();
-            engine.Graphics.Allocator.Free(albedoAlloc);
-            engine.Graphics.Allocator.Free(normAlloc);
-            engine.Graphics.Allocator.Free(depthAlloc);
-            engine.Graphics.Allocator.Free(lightAlloc);
-            albedoAlloc = default(VkaAllocation);
-            normAlloc = default(VkaAllocation);
-            depthAlloc = default(VkaAllocation);
-            lightAlloc = default(VkaAllocation);
+            if (Albedo != null) engine.Memory.FreeDevice(Albedo);
+            if (Norm != null) engine.Memory.FreeDevice(Norm);
+            if (Depth != null) engine.Memory.FreeDevice(Depth);
+            if (Light != null) engine.Memory.FreeDevice(Light);
         }
 
         public void Dispose() {

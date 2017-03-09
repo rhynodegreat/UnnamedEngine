@@ -14,8 +14,7 @@ namespace UnnamedEngine.Resources {
     public class IndexData : IDisposable {
         bool disposed;
         Engine engine;
-
-        VkaAllocation alloc;
+        
         int lastSize;
 
         public VkIndexType IndexType { get; private set; }
@@ -72,24 +71,20 @@ namespace UnnamedEngine.Resources {
 
         public void Apply() {
             if (Size > lastSize) {
-                Buffer?.Dispose();
-                engine.Graphics.Allocator.Free(alloc);
+                engine.Memory.FreeDevice(Buffer);
 
                 BufferCreateInfo indexInfo = new BufferCreateInfo();
                 indexInfo.usage = VkBufferUsageFlags.IndexBufferBit | VkBufferUsageFlags.TransferDstBit;
                 indexInfo.size = (ulong)Size;
                 indexInfo.sharingMode = VkSharingMode.Exclusive;
 
-                Buffer = new Buffer(engine.Graphics.Device, indexInfo);
-
-                alloc = engine.Graphics.Allocator.Alloc(Buffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-                Buffer.Bind(alloc.memory, alloc.offset);
+                Buffer = engine.Memory.AllocDevice(indexInfo);
 
                 lastSize = Size;
             }
 
             GCHandle indexHandle = GCHandle.Alloc(InternalData, GCHandleType.Pinned);
-            engine.Graphics.TransferNode.Transfer(indexHandle.AddrOfPinnedObject(), (uint)Size, Buffer);
+            engine.Memory.TransferNode.Transfer(indexHandle.AddrOfPinnedObject(), (uint)Size, Buffer);
             indexHandle.Free();
         }
 
@@ -135,9 +130,8 @@ namespace UnnamedEngine.Resources {
 
         void Dispose(bool disposing) {
             if (disposed) return;
-
-            engine.Graphics.Allocator.Free(alloc);
-            Buffer.Dispose();
+            
+            engine.Memory.FreeDevice(Buffer);
 
             disposed = true;
         }

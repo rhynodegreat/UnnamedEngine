@@ -29,8 +29,7 @@ namespace UnnamedEngine.Resources {
     public abstract class VertexData : IDisposable {
         bool disposed;
         Engine engine;
-
-        VkaAllocation alloc;
+        
         int lastSize;
 
         List<VkVertexInputBindingDescription> bindings;
@@ -144,24 +143,20 @@ namespace UnnamedEngine.Resources {
 
         public void Apply() {
             if (Size > lastSize) {
-                Buffer?.Dispose();
-                engine.Graphics.Allocator.Free(alloc);
+                engine.Memory.FreeDevice(Buffer);
 
                 BufferCreateInfo vertexInfo = new BufferCreateInfo();
                 vertexInfo.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
                 vertexInfo.size = (ulong)Size;
                 vertexInfo.sharingMode = VkSharingMode.Exclusive;
 
-                Buffer = new Buffer(engine.Graphics.Device, vertexInfo);
-
-                alloc = engine.Graphics.Allocator.Alloc(Buffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-                Buffer.Bind(alloc.memory, alloc.offset);
+                Buffer = engine.Memory.AllocDevice(vertexInfo);
 
                 lastSize = Size;
             }
 
             GCHandle vertexHandle = GCHandle.Alloc(InternalData, GCHandleType.Pinned);
-            engine.Graphics.TransferNode.Transfer(vertexHandle.AddrOfPinnedObject(), (uint)Size, Buffer);
+            engine.Memory.TransferNode.Transfer(vertexHandle.AddrOfPinnedObject(), (uint)Size, Buffer);
             vertexHandle.Free();
         }
 
@@ -173,8 +168,7 @@ namespace UnnamedEngine.Resources {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            engine.Graphics.Allocator.Free(alloc);
-            Buffer?.Dispose();  //this vertex may never have data put into it
+            if (Buffer != null) engine.Memory.FreeDevice(Buffer);
 
             disposed = true;
         }

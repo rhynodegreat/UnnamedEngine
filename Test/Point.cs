@@ -38,7 +38,6 @@ namespace Test {
         DescriptorPool descriptorPool;
         DescriptorSet set;
         Buffer uniform;
-        VkaAllocation uniformAllocation;
         Mesh mesh;
         bool dirty = true;
 
@@ -135,10 +134,7 @@ namespace Test {
             info.size = (uint)(Interop.SizeOf<LightData>() * lightCount);
             info.sharingMode = VkSharingMode.Exclusive;
 
-            uniform = new Buffer(engine.Graphics.Device, info);
-
-            uniformAllocation = engine.Graphics.Allocator.Alloc(uniform.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
-            uniform.Bind(uniformAllocation.memory, uniformAllocation.offset);
+            uniform = engine.Memory.AllocUniform(info);
 
             DescriptorSet.Update(engine.Graphics.Device, new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {
@@ -168,9 +164,9 @@ namespace Test {
                     transform = Matrix4x4.CreateScale(radius) * Matrix4x4.CreateTranslation(lights[i].Transform.Position) };
             }
 
-            IntPtr ptr = uniformAllocation.memory.Map(uniformAllocation.offset, uniformAllocation.size);
+            IntPtr ptr = uniform.Memory.Map(uniform.Offset, uniform.Size);
             Interop.Copy(lightData, ptr);
-            uniformAllocation.memory.Unmap();
+            uniform.Memory.Unmap();
         }
 
         void CreateMesh() {
@@ -357,8 +353,7 @@ namespace Test {
             pool.Dispose();
             descriptorPool.Dispose();
             descriptorLayout.Dispose();
-            uniform.Dispose();
-            engine.Graphics.Allocator.Free(uniformAllocation);
+            engine.Memory.FreeUniform(uniform);
             mesh.Dispose();
 
             deferred.OnFramebufferChanged -= CreatePipeline;

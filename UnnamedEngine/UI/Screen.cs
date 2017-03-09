@@ -29,7 +29,6 @@ namespace UnnamedEngine.UI {
         Engine engine;
         SubmitNode submitNode;
         
-        VkaAllocation stencilAlloc;
         Dictionary<Type, UIRenderer> rendererMap;
         CommandPool pool;
         CommandBuffer commandBuffer;
@@ -139,8 +138,7 @@ namespace UnnamedEngine.UI {
         }
 
         void CreateStencil() {
-            engine.Graphics.Allocator.Free(stencilAlloc);
-            Stencil?.Dispose();
+            engine.Memory.FreeDevice(Stencil);
             StencilView?.Dispose();
 
             ImageCreateInfo info = new ImageCreateInfo();
@@ -157,9 +155,7 @@ namespace UnnamedEngine.UI {
             info.sharingMode = VkSharingMode.Exclusive;
             info.initialLayout = VkImageLayout.Undefined;
 
-            Stencil = new Image(engine.Graphics.Device, info);
-            stencilAlloc = engine.Graphics.Allocator.Alloc(Stencil.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            Stencil.Bind(stencilAlloc.memory, stencilAlloc.offset);
+            Stencil = engine.Memory.AllocDevice(info);
 
             ImageViewCreateInfo viewInfo = new ImageViewCreateInfo();
             viewInfo.image = Stencil;
@@ -208,8 +204,7 @@ namespace UnnamedEngine.UI {
             if (disposed) return;
             
             StencilView.Dispose();
-            Stencil.Dispose();
-            engine.Graphics.Allocator.Free(stencilAlloc);
+            engine.Memory.FreeDevice(Stencil);
             pool.Dispose();
 
             if (disposing) {

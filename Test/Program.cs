@@ -60,7 +60,7 @@ namespace Test {
             }
 
             Renderer renderer = new Renderer(engine);
-            renderer.AddInput(engine.Graphics.TransferNode);
+            renderer.AddInput(engine.Memory.TransferNode);
             renderer.AddInput(submitNode);
 
             Deferred deferred = new Deferred(engine, gbuffer);

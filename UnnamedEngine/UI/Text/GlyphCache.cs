@@ -83,7 +83,6 @@ namespace UnnamedEngine.UI.Text {
         HashSet<GlyphPair> glyphUpdateSet;
         Dictionary<GlyphPair, GlyphMetrics> infoMap;
         List<RenderInfo> renderQueue;
-        VkaAllocation alloc;
         DescriptorPool pool;
         ImageView imageView;
         Sampler sampler;
@@ -248,7 +247,6 @@ namespace UnnamedEngine.UI.Text {
         }
 
         void UpdatePage(int index) {
-
             VkImageCopy region = new VkImageCopy();
             region.dstSubresource.aspectMask = VkImageAspectFlags.ColorBit;
             region.dstSubresource.baseArrayLayer = (uint)index;
@@ -258,7 +256,7 @@ namespace UnnamedEngine.UI.Text {
             region.extent.height = (uint)PageSize;
             region.extent.depth = 1;
 
-            engine.Graphics.TransferNode.Transfer(pages[index].Bitmap, Image, region, VkImageLayout.ShaderReadOnlyOptimal);
+            engine.Memory.TransferNode.Transfer(pages[index].Bitmap, Image, region, VkImageLayout.ShaderReadOnlyOptimal);
         }
 
         void CreateSampler() {
@@ -276,7 +274,7 @@ namespace UnnamedEngine.UI.Text {
 
         void CreateImage() {
             imageView?.Dispose();
-            Image?.Dispose();
+            if (Image != null) engine.Memory.FreeDevice(Image);
 
             ImageCreateInfo info = new ImageCreateInfo();
             info.imageType = VkImageType._2d;
@@ -292,12 +290,7 @@ namespace UnnamedEngine.UI.Text {
             info.sharingMode = VkSharingMode.Exclusive;
             info.initialLayout = VkImageLayout.Undefined;
 
-            Image = new Image(engine.Graphics.Device, info);
-
-            engine.Graphics.Allocator.Free(alloc);
-            alloc = engine.Graphics.Allocator.Alloc(Image.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-
-            Image.Bind(alloc.memory, alloc.offset);
+            Image = engine.Memory.AllocDevice(info);
 
             ImageViewCreateInfo viewInfo = new ImageViewCreateInfo();
             viewInfo.image = Image;
@@ -371,8 +364,7 @@ namespace UnnamedEngine.UI.Text {
             pool.Dispose();
             DescriptorLayout.Dispose();
             imageView.Dispose();
-            Image.Dispose();
-            engine.Graphics.Allocator.Free(alloc);
+            engine.Memory.FreeDevice(Image);
             sampler.Dispose();
 
             disposed = true;

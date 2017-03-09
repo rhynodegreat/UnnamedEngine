@@ -18,6 +18,7 @@ namespace UnnamedEngine.Core {
         public FrameLoop FrameLoop { get; private set; }
         public Clock Clock { get; private set; }
         public CameraManager Cameras { get; private set; }
+        public Memory Memory { get; private set; }
 
         public Window Window {
             get {
@@ -34,21 +35,22 @@ namespace UnnamedEngine.Core {
             if (graphics == null) throw new ArgumentNullException(nameof(graphics));
             
             Graphics = graphics;
+            Memory = new Memory(this);
 
             QueueGraph = new QueueGraph(this);
             FrameLoop = new FrameLoop();
             Clock = new Clock();
             Cameras = new CameraManager(this);
 
-            QueueGraph.Add(graphics.TransferNode);
+            QueueGraph.Add(Memory.TransferNode);
         }
 
         public void Run() {
             if (Window == null) throw new EngineException("Window not set");
 
             while (true) {
-                Graphics.Allocator.ResetTemp();
                 QueueGraph.Wait();
+                Memory.ResetStaging();
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
@@ -74,6 +76,7 @@ namespace UnnamedEngine.Core {
 
             QueueGraph.Dispose();
             Cameras.Dispose();
+            Memory.Dispose();
 
             if (disposing) {
                 Window.Dispose();

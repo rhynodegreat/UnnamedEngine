@@ -63,6 +63,7 @@
     <Compile Include="Core\Engine.cs" />
     <Compile Include="Core\FrameLoop.cs" />
     <Compile Include="Core\ISystem.cs" />
+    <Compile Include="Core\Memory.cs" />
     <Compile Include="Core\SubmitNode.cs" />
     <Compile Include="Core\Window.cs" />
     <Compile Include="Core\Input.cs" />
@@ -99,15 +100,14 @@
     <Compile Include="UI\Text\Glyph.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\UIRoot.cs" />
+    <Compile Include="Utilities\Allocation.cs" />
     <Compile Include="Utilities\DirectedAcyclicGraph.cs" />
+    <Compile Include="Utilities\LinearAllocator.cs" />
+    <Compile Include="Utilities\MemoryHeap.cs" />
+    <Compile Include="Utilities\HeapAllocator.cs" />
+    <Compile Include="Utilities\Node.cs" />
     <Compile Include="Utilities\OpenList.cs" />
     <Compile Include="Utilities\Pool.cs" />
-    <Compile Include="Utilities\VkAlloc\Heap.cs" />
-    <Compile Include="Utilities\VkAlloc\LinearHeap.cs" />
-    <Compile Include="Utilities\VkAlloc\LinearPage.cs" />
-    <Compile Include="Utilities\VkAlloc\Node.cs" />
-    <Compile Include="Utilities\VkAlloc\Page.cs" />
-    <Compile Include="Utilities\VkAlloc\VkAllocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CSharpGameLibrary\CSGL.Vulkan\CSGL.Vulkan.csproj">

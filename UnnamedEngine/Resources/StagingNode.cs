@@ -11,8 +11,7 @@ using UnnamedEngine.Utilities;
 namespace UnnamedEngine.Resources {
     public class StagingNode : TransferNode, IDisposable {
         bool disposed;
-        Graphics graphics;
-        VkAllocator allocator;
+        Engine engine;
 
         CommandPool pool;
         CommandBuffer buffer;
@@ -20,14 +19,10 @@ namespace UnnamedEngine.Resources {
         CommandBufferBeginInfo beginInfo;
 
         List<BufferTransfer> bufferTransfers;
-        List<BufferTransfer> bufferCompleted;
-
         Pool<BufferMemoryBarrier> bufferBarrierPool;
         List<BufferMemoryBarrier> bufferBarriers;
 
         List<ImageTransfer> imageTransfers;
-        List<ImageTransfer> imageCompleted;
-
         Pool<ImageMemoryBarrier> imageBarriersPool;
         List<ImageMemoryBarrier> imageBarriers;
 
@@ -55,17 +50,16 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        public StagingNode(Graphics graphics) : base(graphics.Device, graphics.GraphicsQueue, VkPipelineStageFlags.TransferBit) {
-            if (graphics == null) throw new ArgumentNullException(nameof(graphics));
+        public StagingNode(Engine engine) : base(engine.Graphics.Device, engine.Graphics.GraphicsQueue, VkPipelineStageFlags.TransferBit) {
+            if (engine == null) throw new ArgumentNullException(nameof(engine));
 
-            allocator = graphics.Allocator;
-            this.graphics = graphics;
+            this.engine = engine;
 
             CommandPoolCreateInfo info = new CommandPoolCreateInfo();
-            info.queueFamilyIndex = graphics.GraphicsQueue.FamilyIndex;
+            info.queueFamilyIndex = engine.Graphics.GraphicsQueue.FamilyIndex;
             info.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
 
-            pool = new CommandPool(graphics.Device, info);
+            pool = new CommandPool(engine.Graphics.Device, info);
             buffer = pool.Allocate(VkCommandBufferLevel.Primary);
             submitBuffers = new List<CommandBuffer> { buffer };
 
@@ -73,7 +67,6 @@ namespace UnnamedEngine.Resources {
             beginInfo.flags = VkCommandBufferUsageFlags.SimultaneousUseBit | VkCommandBufferUsageFlags.OneTimeSubmitBit;
 
             bufferTransfers = new List<BufferTransfer>();
-            bufferCompleted = new List<BufferTransfer>();
 
             bufferBarrierPool = new Pool<BufferMemoryBarrier>(() => new BufferMemoryBarrier() {
                 size = ulong.MaxValue   //VK_WHOLE_SIZE
@@ -81,24 +74,9 @@ namespace UnnamedEngine.Resources {
             bufferBarriers = new List<BufferMemoryBarrier>();
 
             imageTransfers = new List<ImageTransfer>();
-            imageCompleted = new List<ImageTransfer>();
 
             imageBarriersPool = new Pool<ImageMemoryBarrier>(() => new ImageMemoryBarrier());
             imageBarriers = new List<ImageMemoryBarrier>();
-        }
-
-        public override void PreSubmit() {
-            for (int i = 0; i < bufferCompleted.Count; i++) {
-                bufferCompleted[i].staging.Dispose();
-            }
-
-            bufferCompleted.Clear();
-
-            for (int i = 0; i < imageCompleted.Count; i++) {
-                imageCompleted[i].staging.Dispose();
-            }
-
-            imageCompleted.Clear();
         }
 
         public override List<CommandBuffer> GetCommands() {
@@ -167,8 +145,6 @@ namespace UnnamedEngine.Resources {
                         imageTransfer.dest, VkImageLayout.TransferDstOptimal,
                         region
                     );
-
-                    imageCompleted.Add(imageTransfer);
                 }
 
                 //transition dest images to their dest layouts
@@ -197,7 +173,6 @@ namespace UnnamedEngine.Resources {
             lock (bufferTransfers) {
                 for (int i = 0; i < bufferTransfers.Count; i++) {
                     buffer.CopyBuffer(bufferTransfers[i].staging, bufferTransfers[i].dest);
-                    bufferCompleted.Add(bufferTransfers[i]);
 
                     BufferMemoryBarrier barrier = bufferBarrierPool.Get();
                     barrier.buffer = bufferTransfers[i].dest;
@@ -229,15 +204,13 @@ namespace UnnamedEngine.Resources {
             imageBarriers.Clear();
         }
 
-        Buffer CreateStaging(ulong size, Buffer dest, out VkaAllocation alloc) {
+        Buffer CreateStaging(ulong size, Buffer dest) {
             var info = new BufferCreateInfo();
             info.size = size;
             info.usage = VkBufferUsageFlags.TransferSrcBit;
             info.sharingMode = VkSharingMode.Exclusive;
 
-            Buffer staging = new Buffer(device, info);
-            alloc = allocator.AllocTemp(staging.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
-            staging.Bind(alloc.memory, alloc.offset);
+            Buffer staging = engine.Memory.AllocStaging(info);
 
             return staging;
         }
@@ -245,21 +218,19 @@ namespace UnnamedEngine.Resources {
         public override void Transfer(IntPtr data, ulong size, Buffer buffer) {
             if (buffer == null) throw new ArgumentNullException(nameof(buffer));
             if ((buffer.Usage & VkBufferUsageFlags.TransferDstBit) == 0) throw new TransferException("Buffer.Usage must include TransferDstBit");
+            
+            Buffer staging = CreateStaging(size, buffer);
 
-            VkaAllocation alloc;
-            Buffer staging = CreateStaging(size, buffer, out alloc);
-
-            IntPtr ptr = alloc.memory.Map(alloc.offset, alloc.size);
+            IntPtr ptr = staging.Memory.Map(staging.Offset, staging.Size);
             Interop.Copy(data, ptr, (long)size);
-            alloc.memory.Unmap();
+            staging.Memory.Unmap();
 
             lock (bufferTransfers) {
                 bufferTransfers.Add(new BufferTransfer(staging, buffer));
             }
         }
 
-        Image CreateStaging(ulong size, uint width, uint height, Image dest, out VkaAllocation alloc) {
-
+        Image CreateStaging(ulong size, uint width, uint height, Image dest) {
             var info = new ImageCreateInfo();
             info.imageType = dest.ImageType;
             info.format = dest.Format;
@@ -274,9 +245,7 @@ namespace UnnamedEngine.Resources {
             info.sharingMode = VkSharingMode.Exclusive;
             info.initialLayout = VkImageLayout.Preinitialized;
 
-            Image staging = new Image(device, info);
-            alloc = allocator.AllocTemp(staging.Requirements, VkMemoryPropertyFlags.HostVisibleBit | VkMemoryPropertyFlags.HostCoherentBit);
-            staging.Bind(alloc.memory, alloc.offset);
+            Image staging = engine.Memory.AllocStaging(info);
 
             return staging;
         }
@@ -284,13 +253,12 @@ namespace UnnamedEngine.Resources {
         public override void Transfer(IntPtr data, uint width, uint height, ulong size, Image image, VkImageCopy region, VkImageLayout destLayout) {
             if (image == null) throw new ArgumentNullException(nameof(image));
             if ((image.Usage & VkImageUsageFlags.TransferDstBit) == 0) throw new TransferException("Image.Usage must include TransferDstBit");
+            
+            Image staging = CreateStaging(size, width, height, image);
 
-            VkaAllocation alloc;
-            Image staging = CreateStaging(size, width, height, image, out alloc);
-
-            IntPtr ptr = alloc.memory.Map(alloc.offset, alloc.size);
+            IntPtr ptr = staging.Memory.Map(staging.Offset, staging.Size);
             Interop.Copy(data, ptr, (long)size);
-            alloc.memory.Unmap();
+            staging.Memory.Unmap();
 
             lock (imageTransfers) {
                 imageTransfers.Add(new ImageTransfer(staging, image, region, destLayout));

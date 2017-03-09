@@ -36,7 +36,7 @@ namespace Test {
             if (mesh == null) throw new ArgumentNullException(nameof(mesh));
 
             this.engine = engine;
-            transferNode = engine.Graphics.TransferNode;
+            transferNode = engine.Memory.TransferNode;
             this.deferred = deferred;
             this.camera = camera;
             this.mesh = mesh;

@@ -19,7 +19,6 @@ namespace UnnamedEngine.Rendering {
         int lastCapacity;
         DescriptorPool pool;
         Buffer buffer;
-        VkaAllocation bufferAlloc;
 
         public DescriptorSetLayout Layout { get; private set; }
         public DescriptorSet Descriptor { get; private set; }
@@ -58,7 +57,7 @@ namespace UnnamedEngine.Rendering {
                 CreateBuffer();
             }
 
-            IntPtr data = bufferAlloc.memory.Map(bufferAlloc.offset, bufferAlloc.size);
+            IntPtr data = buffer.Memory.Map(buffer.Offset, buffer.Size);
 
             for (int i = 0; i < cameras.Count; i++) {
                 cameras[i].Index = i;
@@ -67,7 +66,7 @@ namespace UnnamedEngine.Rendering {
                 Interop.Copy(cameras[i].ProjectionView, ptr);
             }
 
-            bufferAlloc.memory.Unmap();
+            buffer.Memory.Unmap();
         }
 
         void CreateDescriptor() {
@@ -102,17 +101,14 @@ namespace UnnamedEngine.Rendering {
         }
 
         void CreateBuffer() {
-            engine.Graphics.Allocator.Free(bufferAlloc);
-            buffer?.Dispose();
+            if (buffer != null) engine.Memory.FreeDevice(buffer);
 
             BufferCreateInfo info = new BufferCreateInfo();
             info.size = (uint)(cameras.Capacity * Interop.SizeOf<Matrix4x4>());
             info.usage = VkBufferUsageFlags.UniformBufferBit;
             info.sharingMode = VkSharingMode.Exclusive;
 
-            buffer = new Buffer(engine.Graphics.Device, info);
-            bufferAlloc = engine.Graphics.Allocator.Alloc(buffer.Requirements, VkMemoryPropertyFlags.HostCoherentBit | VkMemoryPropertyFlags.HostVisibleBit);
-            buffer.Bind(bufferAlloc.memory, bufferAlloc.offset);
+            buffer = engine.Memory.AllocUniform(info);
 
             Descriptor.Update(new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {
@@ -123,7 +119,7 @@ namespace UnnamedEngine.Rendering {
                     bufferInfo = new List<DescriptorBufferInfo> {
                         new DescriptorBufferInfo {
                             buffer = buffer,
-                            offset = bufferAlloc.offset,
+                            offset = buffer.Offset,
                             range = (uint)Interop.SizeOf<Matrix4x4>()
                         }
                     }
@@ -141,8 +137,7 @@ namespace UnnamedEngine.Rendering {
 
             Layout.Dispose();
             pool.Dispose();
-            engine.Graphics.Allocator.Free(bufferAlloc);
-            buffer.Dispose();
+            engine.Memory.FreeDevice(buffer);
 
             disposed = true;
         }

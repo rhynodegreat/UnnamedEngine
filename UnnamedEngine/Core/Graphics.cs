@@ -23,9 +23,6 @@ namespace UnnamedEngine.Core {
         public Queue GraphicsQueue { get; private set; }
         public Queue PresentQueue { get; private set; }
 
-        public VkAllocator Allocator { get; private set; }
-        public TransferNode TransferNode { get; private set; }
-
         public Graphics(Instance instance, PhysicalDevice physicalDevice) {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             if (physicalDevice == null) throw new ArgumentNullException(nameof(physicalDevice));
@@ -34,9 +31,6 @@ namespace UnnamedEngine.Core {
             PhysicalDevice = physicalDevice;
 
             CreateDevice();
-
-            Allocator = new VkAllocator(Device, 16 * 1024 * 1024);
-            TransferNode = new StagingNode(this);
         }
 
         void CreateDevice() {
@@ -89,7 +83,6 @@ namespace UnnamedEngine.Core {
         void Dispose(bool disposing) {
             if (disposed) return;
             
-            Allocator.Dispose();
             Device.Dispose();
             Instance.Dispose();
 

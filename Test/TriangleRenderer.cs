@@ -26,7 +26,6 @@ namespace Test {
         Pipeline pipeline;
         CommandPool commandPool;
         Buffer vertexBuffer;
-        VkaAllocation vertexAllocation;
         CommandBuffer commandBuffer;
         
         Vertex[] vertices = {
@@ -44,7 +43,7 @@ namespace Test {
             if (deferred == null) throw new ArgumentNullException(nameof(deferred));
 
             this.engine = engine;
-            transferNode = engine.Graphics.TransferNode;
+            transferNode = engine.Memory.TransferNode;
             this.deferred = deferred;
             this.camera = camera;
 
@@ -73,10 +72,7 @@ namespace Test {
             info.size = (uint)Interop.SizeOf(vertices);
             info.usage = VkBufferUsageFlags.VertexBufferBit | VkBufferUsageFlags.TransferDstBit;
 
-            vertexBuffer = new Buffer(engine.Graphics.Device, info);
-
-            vertexAllocation = renderer.Allocator.Alloc(vertexBuffer.Requirements, VkMemoryPropertyFlags.DeviceLocalBit);
-            vertexBuffer.Bind(vertexAllocation.memory, vertexAllocation.offset);
+            vertexBuffer = engine.Memory.AllocDevice(info);
 
             transferNode.Transfer(vertices, vertexBuffer);
         }
@@ -255,11 +251,10 @@ namespace Test {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            vertexBuffer.Dispose();
+            engine.Memory.FreeDevice(vertexBuffer);
             commandPool.Dispose();
             pipeline.Dispose();
             pipelineLayout.Dispose();
-            engine.Graphics.Allocator.Free(vertexAllocation);
 
             deferred.OnFramebufferChanged -= CreateCommandBuffers;
 
