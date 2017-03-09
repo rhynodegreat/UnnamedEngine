@@ -48,6 +48,7 @@ namespace UnnamedEngine.Core {
 
             while (true) {
                 Graphics.Allocator.ResetTemp();
+                QueueGraph.Wait();
                 GLFW.PollEvents();
 
                 if (Window.ShouldClose) break;
