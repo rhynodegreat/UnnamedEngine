@@ -247,7 +247,7 @@ namespace UnnamedEngine.Core {
                 hostHeap = new MemoryHeap(engine.Graphics.Device, candidate, props, hostPageSize);
 
                 //if other heaps have not been found, use host as fallback
-                if (fastHostHeap == null) deviceHeap = hostHeap;
+                if (fastHostHeap == null) fastHostHeap = hostHeap;
                 if (hostReadHeap == null) hostReadHeap = hostHeap;
             }
         }
