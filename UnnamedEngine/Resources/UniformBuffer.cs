@@ -68,6 +68,19 @@ namespace UnnamedEngine.Resources {
             WriteData();
         }
 
+        public T this[int i] {
+            get {
+                return data[i];
+            }
+            set {
+                data[i] = value;
+            }
+        }
+
+        public void Add(T value) {
+            data.Add(value);
+        }
+
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
