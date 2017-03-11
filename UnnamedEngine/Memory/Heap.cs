@@ -5,12 +5,11 @@ using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
 
-namespace UnnamedEngine.Utilities {
-    public class MemoryHeap : IDisposable {
+namespace UnnamedEngine.Memory {
+    public class Heap : IDisposable {
         bool disposed;
 
         Device device;
-        int heapIndex;
 
         List<MemoryType> memoryTypes;
         List<DeviceMemory> pages;
@@ -20,7 +19,7 @@ namespace UnnamedEngine.Utilities {
         ulong allocated;
         object locker;
 
-        public MemoryHeap(Device device, int heapIndex, VkPhysicalDeviceMemoryProperties props, ulong pageSize) {
+        public Heap(Device device, int heapIndex, VkPhysicalDeviceMemoryProperties props, ulong pageSize) {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
             this.device = device;
@@ -86,7 +85,7 @@ namespace UnnamedEngine.Utilities {
             disposed = true;
         }
 
-        ~MemoryHeap() {
+        ~Heap() {
             Dispose(false);
         }
 

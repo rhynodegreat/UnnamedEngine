@@ -5,16 +5,16 @@ using CSGL.Vulkan;
 using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Resources;
-using UnnamedEngine.Utilities;
+using UnnamedEngine.Memory;
 
 namespace UnnamedEngine.Core {
     public class Memory : IDisposable {
         Engine engine;
 
-        MemoryHeap deviceHeap;    //GPU memory
-        MemoryHeap fastHostHeap;    //GPU memory that's writable by the CPU
-        MemoryHeap hostHeap;    //CPU memory
-        MemoryHeap hostReadHeap;    //cached CPU memory that's writable by the GPU
+        Heap deviceHeap;    //GPU memory
+        Heap fastHostHeap;    //GPU memory that's writable by the CPU
+        Heap hostHeap;    //CPU memory
+        Heap hostReadHeap;    //cached CPU memory that's writable by the GPU
 
         public TransferNode TransferNode { get; private set; }
 
@@ -162,26 +162,26 @@ namespace UnnamedEngine.Core {
 
             TransferNode = new StagingNode(engine);
 
-            deviceAllocator = new HeapAllocator(new List<MemoryHeap> {
+            deviceAllocator = new HeapAllocator(new List<Heap> {
                 deviceHeap,
                 fastHostHeap,
                 hostHeap,
                 hostReadHeap
             });
 
-            stagingAllocator = new LinearAllocator(new List<MemoryHeap> {
+            stagingAllocator = new LinearAllocator(new List<Heap> {
                 fastHostHeap,
                 hostHeap,
                 hostReadHeap
             });
 
-            uniformAllocator = new HeapAllocator(new List<MemoryHeap> {
+            uniformAllocator = new HeapAllocator(new List<Heap> {
                 fastHostHeap,
                 hostHeap,
                 hostReadHeap
             });
 
-            hostReadAllocator = new HeapAllocator(new List<MemoryHeap> {
+            hostReadAllocator = new HeapAllocator(new List<Heap> {
                 hostReadHeap,
                 hostHeap
             });
@@ -196,7 +196,7 @@ namespace UnnamedEngine.Core {
             MatchStrict(props, VkMemoryPropertyFlags.DeviceLocalBit, out candidate);
 
             if (candidate != -1) {
-                deviceHeap = new MemoryHeap(engine.Graphics.Device, candidate, props, devicePageSize);
+                deviceHeap = new Heap(engine.Graphics.Device, candidate, props, devicePageSize);
                 return;
             }
 
@@ -204,7 +204,7 @@ namespace UnnamedEngine.Core {
             Match(props, VkMemoryPropertyFlags.DeviceLocalBit, out candidate);
             
             if (candidate != -1) {
-                deviceHeap = new MemoryHeap(engine.Graphics.Device, candidate, props, devicePageSize);
+                deviceHeap = new Heap(engine.Graphics.Device, candidate, props, devicePageSize);
             }
 
         }
@@ -218,7 +218,7 @@ namespace UnnamedEngine.Core {
             Match(props, flags, out candidate);
 
             if (candidate != -1) {
-                fastHostHeap = new MemoryHeap(engine.Graphics.Device, candidate, props, fastHostPageSize);
+                fastHostHeap = new Heap(engine.Graphics.Device, candidate, props, fastHostPageSize);
             }
         }
 
@@ -231,7 +231,7 @@ namespace UnnamedEngine.Core {
             Match(props, flags, out candidate);
 
             if (candidate != -1) {
-                hostReadHeap = new MemoryHeap(engine.Graphics.Device, candidate, props, hostReadPageSize);
+                hostReadHeap = new Heap(engine.Graphics.Device, candidate, props, hostReadPageSize);
             }
         }
 
@@ -244,7 +244,7 @@ namespace UnnamedEngine.Core {
             Match(props, optimal, out candidate);
 
             if (candidate != -1) {
-                hostHeap = new MemoryHeap(engine.Graphics.Device, candidate, props, hostPageSize);
+                hostHeap = new Heap(engine.Graphics.Device, candidate, props, hostPageSize);
 
                 //if other heaps have not been found, use host as fallback
                 if (fastHostHeap == null) fastHostHeap = hostHeap;

@@ -3,15 +3,17 @@ using System.Collections.Generic;
 
 using CSGL.Vulkan;
 
-namespace UnnamedEngine.Utilities {
-    public class LinearAllocator {
+namespace UnnamedEngine.Memory {
+    public class HeapAllocator {
         List<Heap> heaps;
         object locker;
+        Dictionary<DeviceMemory, Page> pageMap;
 
-        public LinearAllocator(List<MemoryHeap> heaps) {
+        public HeapAllocator(List<Memory.Heap> heaps) {
             this.heaps = new List<Heap>();
-            HashSet<MemoryHeap> set = new HashSet<MemoryHeap>();
+            HashSet<Memory.Heap> set = new HashSet<Memory.Heap>();
             locker = new object();
+            pageMap = new Dictionary<DeviceMemory, Page>();
 
             foreach (var heap in heaps) {
                 if (!set.Contains(heap)) {
@@ -47,6 +49,7 @@ namespace UnnamedEngine.Utilities {
 
                         Page page = new Page(memory);
                         heaps[i].pages.Add(page);
+                        pageMap.Add(memory, page);
                         return page.Alloc(requirements);
                     }
                 }
@@ -55,22 +58,23 @@ namespace UnnamedEngine.Utilities {
             return new Allocation();
         }
 
-        public void Reset() {
-            for (int i = 0; i < heaps.Count; i++) {
-                for (int j = 0; j < heaps[i].pages.Count; j++) {
-                    heaps[i].pages[j].Reset();
-                }
+        public void Free(Allocation allocation) {
+            if (allocation.memory == null) return;
+
+            if (pageMap.ContainsKey(allocation.memory)) {
+                pageMap[allocation.memory].Free(allocation);
             }
         }
 
         class Page {
-            DeviceMemory memory;
+            public DeviceMemory memory;
+            Node head;
             ulong size;
-            ulong used;
             object locker;
 
             public Page(DeviceMemory memory) {
                 this.memory = memory;
+                head = new Node(0, memory.Size);
                 size = memory.Size;
                 locker = new object();
             }
@@ -78,47 +82,70 @@ namespace UnnamedEngine.Utilities {
             public bool Match(int memoryTypeIndex) {
                 return memory.MemoryTypeIndex == (uint)memoryTypeIndex;
             }
-
+            
             public Allocation Alloc(VkMemoryRequirements requirements) {
                 if (requirements.size > size) return new Allocation();
-
                 lock (locker) {
-                    ulong start = used;
-                    ulong available = size - used;
+                    Node current = head;
+                    while (current != null) {
+                        if (current.free && current.size >= requirements.size) {
+                            ulong start = current.offset;
+                            ulong available = current.size;
 
-                    ulong unalign = start % requirements.alignment;
-                    ulong align;
+                            ulong unalign = start % requirements.alignment;
+                            ulong align;
 
-                    if (unalign == 0) {
-                        align = 0;
-                    } else {
-                        align = requirements.alignment - unalign;
+                            if (unalign == 0) {
+                                align = 0;
+                            } else {
+                                align = requirements.alignment - unalign;
+                            }
+
+                            start += align;
+                            available -= align;
+
+                            if (available >= requirements.size) {
+                                current.Split(start, requirements.size);
+                                Allocation result = new Allocation(memory, start, requirements.size);
+                                return result;
+                            }
+                        }
+
+                        current = current.next;
                     }
 
-                    start += align;
-                    available -= align;
-
-                    if (available >= requirements.size) {
-                        used = start + requirements.size;
-                        return new Allocation(memory, start, requirements.size);
-                    }
+                    return new Allocation();
                 }
-
-                return new Allocation();
             }
 
-            public void Reset() {
+            public void Free(Allocation allocation) {
                 lock (locker) {
-                    used = 0;
+                    Node current = head;
+
+                    while (current != null) {
+                        if (current.free && current.offset == allocation.offset && current.size == allocation.size) {
+                            current.free = true;
+                            break;
+                        }
+
+                        current = current.next;
+                    }
+
+                    current = head;
+
+                    while (current != null) {
+                        current.Merge();
+                        current = current.next;
+                    }
                 }
             }
         }
 
         class Heap {
-            public MemoryHeap heap;
+            public Memory.Heap heap;
             public List<Page> pages;
 
-            public Heap(MemoryHeap heap) {
+            public Heap(Memory.Heap heap) {
                 this.heap = heap;
                 pages = new List<Page>();
             }

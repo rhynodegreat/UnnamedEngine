@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UnnamedEngine.Utilities {
+namespace UnnamedEngine.Memory {
     public class Node {
         public Node next;
         public ulong offset;
