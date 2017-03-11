@@ -7,13 +7,17 @@ namespace UnnamedEngine.Memory {
     public class HeapAllocator {
         List<Heap> heaps;
         object locker;
-        Dictionary<DeviceMemory, HeapPage> pageMap;
+        Dictionary<DeviceMemory, HeapPage> heapPageMap;
+        Dictionary<DeviceMemory, Page> pageMap;
+        bool persistentMap;
 
-        public HeapAllocator(List<Memory.Heap> heaps) {
+        public HeapAllocator(List<Memory.Heap> heaps, bool persistentMap) {
             this.heaps = new List<Heap>();
             HashSet<Memory.Heap> set = new HashSet<Memory.Heap>();
             locker = new object();
-            pageMap = new Dictionary<DeviceMemory, HeapPage>();
+            heapPageMap = new Dictionary<DeviceMemory, HeapPage>();
+            pageMap = new Dictionary<DeviceMemory, Page>();
+            this.persistentMap = persistentMap;
 
             foreach (var heap in heaps) {
                 if (!set.Contains(heap)) {
@@ -49,7 +53,11 @@ namespace UnnamedEngine.Memory {
 
                         HeapPage page = new HeapPage(memory);
                         heaps[i].pages.Add(page);
-                        pageMap.Add(memory.Memory, page);
+                        heapPageMap.Add(memory.Memory, page);
+                        pageMap.Add(memory.Memory, memory);
+
+                        if (persistentMap) memory.Map(0, memory.Memory.Size);   //map this page immediately
+
                         return page.Alloc(requirements);
                     }
                 }
@@ -58,11 +66,18 @@ namespace UnnamedEngine.Memory {
             return new Allocation();
         }
 
+        public Page GetPage(DeviceMemory memory) {
+            if (pageMap.ContainsKey(memory)) {
+                return pageMap[memory];
+            }
+            return null;
+        }
+
         public void Free(Allocation allocation) {
             if (allocation.memory == null) return;
 
-            if (pageMap.ContainsKey(allocation.memory)) {
-                pageMap[allocation.memory].Free(allocation);
+            if (heapPageMap.ContainsKey(allocation.memory)) {
+                heapPageMap[allocation.memory].Free(allocation);
             }
         }
 

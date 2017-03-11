@@ -7,11 +7,13 @@ namespace UnnamedEngine.Memory {
     public class LinearAllocator {
         List<Heap> heaps;
         object locker;
+        bool persistentMap;
 
-        public LinearAllocator(List<Memory.Heap> heaps) {
+        public LinearAllocator(List<Memory.Heap> heaps, bool persistentMap) {
             this.heaps = new List<Heap>();
             HashSet<Memory.Heap> set = new HashSet<Memory.Heap>();
             locker = new object();
+            this.persistentMap = persistentMap;
 
             foreach (var heap in heaps) {
                 if (!set.Contains(heap)) {
@@ -48,7 +50,7 @@ namespace UnnamedEngine.Memory {
                         LinearPage page = new LinearPage(memory);
                         heaps[i].pages.Add(page);
 
-                        memory.Map(0, memory.Memory.Size);  //map this page immediately
+                        if (persistentMap) memory.Map(0, memory.Memory.Size);  //map this page immediately
 
                         return page.Alloc(requirements);
                     }

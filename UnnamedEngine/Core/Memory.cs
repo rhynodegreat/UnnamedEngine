@@ -151,6 +151,10 @@ namespace UnnamedEngine.Core {
             return image;
         }
 
+        public Page GetUniformPage(DeviceMemory memory) {
+            return uniformAllocator.GetPage(memory);
+        }
+
         void FindHeaps() {
             PhysicalDevice physicalDevice = engine.Graphics.PhysicalDevice;
             VkPhysicalDeviceMemoryProperties props = physicalDevice.MemoryProperties;
@@ -167,24 +171,24 @@ namespace UnnamedEngine.Core {
                 fastHostHeap,
                 hostHeap,
                 hostReadHeap
-            });
+            }, false);
 
             stagingAllocator = new LinearAllocator(new List<Heap> {
                 fastHostHeap,
                 hostHeap,
                 hostReadHeap
-            });
+            }, true);
 
             uniformAllocator = new HeapAllocator(new List<Heap> {
                 fastHostHeap,
                 hostHeap,
                 hostReadHeap
-            });
+            }, true);
 
             hostReadAllocator = new HeapAllocator(new List<Heap> {
                 hostReadHeap,
                 hostHeap
-            });
+            }, true);
         }
 
         void FindDevice(VkPhysicalDeviceMemoryProperties props) {
