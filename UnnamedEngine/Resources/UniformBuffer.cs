@@ -18,8 +18,8 @@ namespace UnnamedEngine.Resources {
 
         int alignedSize;
         VkBufferUsageFlags usage;
-        Buffer buffer;
-        int count;
+        public Buffer Buffer { get; private set; }
+        public int Count { get; private set; }
         List<T> data;
 
         public UniformBuffer(Engine engine, int count, VkBufferUsageFlags usage) {
@@ -29,7 +29,7 @@ namespace UnnamedEngine.Resources {
             this.engine = engine;
 
             data = new List<T>(count);
-            this.count = count;
+            Count = count;
             this.usage = usage;
 
             int alignment = (int)engine.Graphics.PhysicalDevice.Properties.Limits.minUniformBufferOffsetAlignment;
@@ -40,28 +40,28 @@ namespace UnnamedEngine.Resources {
         }
 
         void CreateBuffer() {
-            engine.Memory.FreeUniform(buffer);
+            engine.Memory.FreeUniform(Buffer);
 
             BufferCreateInfo info = new BufferCreateInfo() {
                 usage = usage | VkBufferUsageFlags.UniformBufferBit,
-                size = (uint)(count * alignedSize),
+                size = (uint)(Count * alignedSize),
                 sharingMode = VkSharingMode.Exclusive
             };
 
-            buffer = engine.Memory.AllocUniform(info);
-            page = engine.Memory.GetUniformPage(buffer.Memory);
+            Buffer = engine.Memory.AllocUniform(info);
+            page = engine.Memory.GetUniformPage(Buffer.Memory);
         }
 
         void WriteData() {
-            for (int i = 0; i < count; i++) {
-                IntPtr ptr = page.Mapping + (int)buffer.Offset + i * alignedSize;
+            for (int i = 0; i < Count; i++) {
+                IntPtr ptr = page.Mapping + (int)Buffer.Offset + i * alignedSize;
                 Interop.Copy(data[i], ptr);
             }
         }
 
         public void Update() {
-            if (count < data.Count) {
-                count = data.Count;
+            if (Count < data.Count) {
+                Count = data.Count;
                 CreateBuffer();
             }
 
