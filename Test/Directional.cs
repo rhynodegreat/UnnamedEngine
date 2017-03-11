@@ -10,7 +10,7 @@ using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
-using UnnamedEngine.Utilities;
+using UnnamedEngine.Resources;
 
 namespace Test {
     public class Directional : ISubpass {
@@ -34,7 +34,7 @@ namespace Test {
         DescriptorSetLayout descriptorLayout;
         DescriptorPool descriptorPool;
         DescriptorSet set;
-        Buffer uniform;
+        UniformBuffer<LightData> uniform;
         bool dirty = true;
 
         struct LightData {
@@ -120,18 +120,13 @@ namespace Test {
         }
 
         void CreateBuffer() {
-            BufferCreateInfo info = new BufferCreateInfo();
-            info.usage = VkBufferUsageFlags.UniformBufferBit;
-            info.size = 32 * (uint)lightCount;
-            info.sharingMode = VkSharingMode.Exclusive;
-
-            uniform = engine.Memory.AllocUniform(info);
+            uniform = new UniformBuffer<LightData>(engine, lightCount, VkBufferUsageFlags.None);
 
             DescriptorSet.Update(engine.Graphics.Device, new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {
                     bufferInfo = new List<DescriptorBufferInfo> {
                         new DescriptorBufferInfo {
-                            buffer = uniform,
+                            buffer = uniform.Buffer,
                             offset = 0,
                             range = 32
                         }
@@ -149,9 +144,7 @@ namespace Test {
                 lightData[i] = new LightData { color = lights[i].Color, direction = new Vector4(lights[i].Transform.Forward, 0) };
             }
 
-            IntPtr ptr = uniform.Memory.Map(uniform.Offset, uniform.Size);
-            Interop.Copy(lightData, ptr);
-            uniform.Memory.Unmap();
+            uniform.Update();
         }
 
         ShaderModule CreateShaderModule(Device device, byte[] code) {
@@ -312,7 +305,7 @@ namespace Test {
             pool.Dispose();
             descriptorPool.Dispose();
             descriptorLayout.Dispose();
-            engine.Memory.FreeUniform(uniform);
+            uniform.Dispose();
 
             deferred.OnFramebufferChanged -= CreatePipeline;
 

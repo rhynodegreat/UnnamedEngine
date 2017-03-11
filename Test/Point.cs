@@ -7,12 +7,10 @@ using System.Runtime.InteropServices;
 using CSGL;
 using CSGL.Graphics;
 using CSGL.Vulkan;
-using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 using UnnamedEngine.Resources;
-using UnnamedEngine.Utilities;
 
 namespace Test {
     public class Point : ISubpass {
@@ -37,7 +35,7 @@ namespace Test {
         DescriptorSetLayout descriptorLayout;
         DescriptorPool descriptorPool;
         DescriptorSet set;
-        Buffer uniform;
+        UniformBuffer<LightData> uniform;
         Mesh mesh;
         bool dirty = true;
 
@@ -129,18 +127,13 @@ namespace Test {
         }
 
         void CreateBuffer() {
-            BufferCreateInfo info = new BufferCreateInfo();
-            info.usage = VkBufferUsageFlags.UniformBufferBit;
-            info.size = (uint)(Interop.SizeOf<LightData>() * lightCount);
-            info.sharingMode = VkSharingMode.Exclusive;
-
-            uniform = engine.Memory.AllocUniform(info);
+            uniform = new UniformBuffer<LightData>(engine, lightCount, VkBufferUsageFlags.None);
 
             DescriptorSet.Update(engine.Graphics.Device, new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {
                     bufferInfo = new List<DescriptorBufferInfo> {
                         new DescriptorBufferInfo {
-                            buffer = uniform,
+                            buffer = uniform.Buffer,
                             offset = 0,
                             range = (uint)Interop.SizeOf<LightData>()
                         }
@@ -164,9 +157,7 @@ namespace Test {
                     transform = Matrix4x4.CreateScale(radius) * Matrix4x4.CreateTranslation(lights[i].Transform.Position) };
             }
 
-            IntPtr ptr = uniform.Memory.Map(uniform.Offset, uniform.Size);
-            Interop.Copy(lightData, ptr);
-            uniform.Memory.Unmap();
+            uniform.Update();
         }
 
         void CreateMesh() {
@@ -353,7 +344,7 @@ namespace Test {
             pool.Dispose();
             descriptorPool.Dispose();
             descriptorLayout.Dispose();
-            engine.Memory.FreeUniform(uniform);
+            uniform.Dispose();
             mesh.Dispose();
 
             deferred.OnFramebufferChanged -= CreatePipeline;
