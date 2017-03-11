@@ -168,7 +168,7 @@ namespace Test {
             colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { albedo, norm, light };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
-            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { camera.Layout };
+            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { camera.Manager.Layout };
 
             PipelineDepthStencilStateCreateInfo depth = new PipelineDepthStencilStateCreateInfo();
             depth.depthTestEnable = true;
@@ -228,7 +228,7 @@ namespace Test {
             commandBuffer.Begin(beginInfo);
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, camera.Descriptor, (uint)(camera.Index * Interop.SizeOf<Matrix4x4>()));
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, camera.Manager.Descriptor, camera.Offset);
             commandBuffer.BindVertexBuffers(0, new Buffer[] { vertexBuffer }, new ulong[] { 0 });
             commandBuffer.Draw(stars.Count, 1, 0, 0);
 

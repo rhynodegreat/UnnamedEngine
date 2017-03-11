@@ -115,7 +115,7 @@ namespace UnnamedEngine.UI {
             colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { color };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
-            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { screen.Camera.Layout };
+            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { screen.Camera.Manager.Layout };
             pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
                 new VkPushConstantRange {
                     offset = 0,
@@ -163,7 +163,7 @@ namespace UnnamedEngine.UI {
 
         public void Render(CommandBuffer commandBuffer, Entity e, Transform transform, UIElement element) {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Descriptor, (uint)(screen.Camera.Index * Interop.SizeOf<Matrix4x4>()));
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Manager.Descriptor, screen.Camera.Offset);
 
             Panel p = (Panel)element;
             Matrix4x4 model = Matrix4x4.CreateScale(p.Size.X, p.Size.Y, 1) * transform.WorldTransform;

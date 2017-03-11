@@ -19,6 +19,7 @@ namespace UnnamedEngine.Rendering {
         int lastCapacity;
         DescriptorPool pool;
         UniformBuffer<Matrix4x4> buffer;
+        WriteDescriptorSet write;
 
         public DescriptorSetLayout Layout { get; private set; }
         public DescriptorSet Descriptor { get; private set; }
@@ -38,20 +39,30 @@ namespace UnnamedEngine.Rendering {
         }
 
         public void AddCamera(Camera camera) {
-            camera.Descriptor = Descriptor;
-            camera.Layout = Layout;
+            camera.Manager = this;
             cameras.Add(camera);
+            buffer.Add();
+            int index = cameras.Count - 1;
+            camera.Index = index;
+            camera.Offset = (uint)(index * buffer.AlignedSize);
 
             if (MainCamera == null) MainCamera = camera;
         }
 
         public void RemoveCamera(Camera camera) {
-            camera.Descriptor = null;
-            camera.Layout = null;
+            camera.Manager = null;
             cameras.Remove(camera);
+            camera.Index = -1;
+            camera.Offset = 0;
+            buffer.Remove();
         }
 
         public void Update() {
+            for (int i = 0; i < cameras.Count; i++) {
+                cameras[i].Index = i;
+                cameras[i].InternalUpdate();
+                buffer[i] = cameras[i].ProjectionView;
+            }
             buffer.Update();
         }
 
@@ -87,23 +98,14 @@ namespace UnnamedEngine.Rendering {
         }
 
         void CreateBuffer() {
-            buffer = new UniformBuffer<Matrix4x4>(engine, 1, VkBufferUsageFlags.None);
+            write = new WriteDescriptorSet {
+                descriptorType = VkDescriptorType.UniformBufferDynamic,
+                dstArrayElement = 0,
+                dstBinding = 0,
+                dstSet = Descriptor,
+            };
 
-            Descriptor.Update(new List<WriteDescriptorSet> {
-                new WriteDescriptorSet {
-                    descriptorType = VkDescriptorType.UniformBufferDynamic,
-                    dstArrayElement = 0,
-                    dstBinding = 0,
-                    dstSet = Descriptor,
-                    bufferInfo = new List<DescriptorBufferInfo> {
-                        new DescriptorBufferInfo {
-                            buffer = buffer.Buffer,
-                            offset = buffer.Buffer.Offset,
-                            range = (uint)Interop.SizeOf<Matrix4x4>()
-                        }
-                    }
-                }
-            });
+            buffer = new UniformBuffer<Matrix4x4>(engine, 2, VkBufferUsageFlags.None, Descriptor, write);
         }
 
         public void Dispose() {

@@ -15,19 +15,23 @@ namespace UnnamedEngine.Resources {
         Engine engine;
 
         Page page;
+        DescriptorSet set;
+        WriteDescriptorSet write;
 
-        int alignedSize;
+        public int AlignedSize { get; private set; }
         VkBufferUsageFlags usage;
         public Buffer Buffer { get; private set; }
         public int Count { get; private set; }
         int capacity;
         List<T> data;
 
-        public UniformBuffer(Engine engine, int count, VkBufferUsageFlags usage) {
+        public UniformBuffer(Engine engine, int count, VkBufferUsageFlags usage, DescriptorSet set, WriteDescriptorSet write) {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (count < 1) throw new ArgumentOutOfRangeException(nameof(count));
 
             this.engine = engine;
+            this.set = set;
+            this.write = write;
 
             data = new List<T>(count);
             Count = count;
@@ -35,8 +39,8 @@ namespace UnnamedEngine.Resources {
             this.usage = usage;
 
             int alignment = (int)engine.Graphics.PhysicalDevice.Properties.Limits.minUniformBufferOffsetAlignment;
-            alignedSize = 0;
-            while (alignedSize < Interop.SizeOf<T>()) alignedSize += alignment;
+            AlignedSize = 0;
+            while (AlignedSize < Interop.SizeOf<T>()) AlignedSize += alignment;
 
             CreateBuffer();
         }
@@ -46,17 +50,27 @@ namespace UnnamedEngine.Resources {
 
             BufferCreateInfo info = new BufferCreateInfo() {
                 usage = usage | VkBufferUsageFlags.UniformBufferBit,
-                size = (uint)(Count * alignedSize),
+                size = (uint)(Count * AlignedSize),
                 sharingMode = VkSharingMode.Exclusive
             };
 
             Buffer = engine.Memory.AllocUniform(info);
             page = engine.Memory.GetUniformPage(Buffer.Memory);
+
+            write.bufferInfo = new List<DescriptorBufferInfo> {
+                new DescriptorBufferInfo {
+                    buffer = Buffer,
+                    offset = 0,
+                    range = (uint)Interop.SizeOf<T>()
+                }
+            };
+
+            set.Update(new List<WriteDescriptorSet> { write });
         }
 
         void WriteData() {
             for (int i = 0; i < Count; i++) {
-                IntPtr ptr = page.Mapping + (int)Buffer.Offset + i * alignedSize;
+                IntPtr ptr = page.Mapping + (int)Buffer.Offset + i * AlignedSize;
                 Interop.Copy(data[i], ptr);
             }
         }
@@ -80,8 +94,12 @@ namespace UnnamedEngine.Resources {
             }
         }
 
-        public void Add(T value) {
-            data.Add(value);
+        public void Add() {
+            data.Add(default(T));
+        }
+
+        public void Remove() {
+            data.RemoveAt(data.Count - 1);
         }
 
         public void Dispose() {

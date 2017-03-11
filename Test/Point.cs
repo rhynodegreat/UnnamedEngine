@@ -127,23 +127,14 @@ namespace Test {
         }
 
         void CreateBuffer() {
-            uniform = new UniformBuffer<LightData>(engine, lightCount, VkBufferUsageFlags.None);
+            WriteDescriptorSet write = new WriteDescriptorSet {
+                descriptorType = VkDescriptorType.UniformBufferDynamic,
+                dstArrayElement = 0,
+                dstBinding = 0,
+                dstSet = set
+            };
 
-            DescriptorSet.Update(engine.Graphics.Device, new List<WriteDescriptorSet> {
-                new WriteDescriptorSet {
-                    bufferInfo = new List<DescriptorBufferInfo> {
-                        new DescriptorBufferInfo {
-                            buffer = uniform.Buffer,
-                            offset = 0,
-                            range = (uint)Interop.SizeOf<LightData>()
-                        }
-                    },
-                    descriptorType = VkDescriptorType.UniformBufferDynamic,
-                    dstArrayElement = 0,
-                    dstBinding = 0,
-                    dstSet = set
-                }
-            });
+            uniform = new UniformBuffer<LightData>(engine, lightCount, VkBufferUsageFlags.None, set, write);
         }
 
         void UpdateUniform() {
@@ -257,7 +248,7 @@ namespace Test {
             colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { colorBlendAttachment };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
-            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { gbuffer.InputLayout, descriptorLayout, camera.Layout };
+            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { gbuffer.InputLayout, descriptorLayout, camera.Manager.Layout };
 
             pipelineLayout?.Dispose();
 
@@ -310,12 +301,12 @@ namespace Test {
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, gbuffer.InputDescriptor);
-            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 2, camera.Descriptor, (uint)(camera.Index * Interop.SizeOf<Matrix4x4>()));
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 2, camera.Manager.Descriptor, camera.Offset);
             commandBuffer.BindVertexBuffer(0, mesh.VertexData.Buffer, 0);
             commandBuffer.BindIndexBuffer(mesh.IndexData.Buffer, 0, mesh.IndexData.IndexType);
 
             for (uint i = 0; i < lights.Count; i++) {
-                commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, set, i * 80);
+                commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, set, i * (uint)uniform.AlignedSize);
                 commandBuffer.DrawIndexed((uint)mesh.IndexData.IndexCount, 1, 0, 0, 0);
             }
 
@@ -324,10 +315,7 @@ namespace Test {
 
         public CommandBuffer GetCommandBuffer() {
             UpdateUniform();
-            if (dirty) {
-                RecordCommands();
-                dirty = false;
-            }
+            RecordCommands();
             return commandBuffer;
         }
 

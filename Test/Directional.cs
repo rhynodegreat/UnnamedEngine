@@ -120,23 +120,14 @@ namespace Test {
         }
 
         void CreateBuffer() {
-            uniform = new UniformBuffer<LightData>(engine, lightCount, VkBufferUsageFlags.None);
+            WriteDescriptorSet write = new WriteDescriptorSet {
+                descriptorType = VkDescriptorType.UniformBufferDynamic,
+                dstArrayElement = 0,
+                dstBinding = 0,
+                dstSet = set
+            };
 
-            DescriptorSet.Update(engine.Graphics.Device, new List<WriteDescriptorSet> {
-                new WriteDescriptorSet {
-                    bufferInfo = new List<DescriptorBufferInfo> {
-                        new DescriptorBufferInfo {
-                            buffer = uniform.Buffer,
-                            offset = 0,
-                            range = 32
-                        }
-                    },
-                    descriptorType = VkDescriptorType.UniformBufferDynamic,
-                    dstArrayElement = 0,
-                    dstBinding = 0,
-                    dstSet = set
-                }
-            });
+            uniform = new UniformBuffer<LightData>(engine, lightCount, VkBufferUsageFlags.None, set, write);
         }
 
         void UpdateUniform() {

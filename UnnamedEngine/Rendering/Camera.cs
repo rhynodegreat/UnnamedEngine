@@ -6,9 +6,9 @@ using CSGL.Vulkan;
 
 namespace UnnamedEngine.Rendering {
     public abstract class Camera {
-        public DescriptorSetLayout Layout { get; internal set; }
-        public DescriptorSet Descriptor { get; internal set; }
+        public CameraManager Manager { get; internal set; }
         public int Index { get; internal set; }
+        public uint Offset { get; internal set; }
         public Matrix4x4 ProjectionView { get; protected set; }
         public Transform Transform { get; private set; }
 

@@ -113,7 +113,7 @@ namespace UnnamedEngine.UI {
             colorBlending.attachments = new List<PipelineColorBlendAttachmentState> { color };
 
             var pipelineLayoutInfo = new PipelineLayoutCreateInfo();
-            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { screen.Camera.Layout, cache.DescriptorLayout };
+            pipelineLayoutInfo.setLayouts = new List<DescriptorSetLayout> { screen.Camera.Manager.Layout, cache.DescriptorLayout };
             pipelineLayoutInfo.pushConstantRanges = new List<VkPushConstantRange> {
                 new VkPushConstantRange {
                     offset = 0,
