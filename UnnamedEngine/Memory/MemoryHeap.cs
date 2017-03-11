@@ -5,12 +5,11 @@ using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
 
-namespace UnnamedEngine.Utilities {
+namespace UnnamedEngine.Memory {
     public class MemoryHeap : IDisposable {
         bool disposed;
 
         Device device;
-        int heapIndex;
 
         List<MemoryType> memoryTypes;
         List<DeviceMemory> pages;

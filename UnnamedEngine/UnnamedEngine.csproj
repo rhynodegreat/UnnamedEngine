@@ -100,12 +100,12 @@
     <Compile Include="UI\Text\Glyph.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\UIRoot.cs" />
-    <Compile Include="Utilities\Allocation.cs" />
+    <Compile Include="Memory\Allocation.cs" />
     <Compile Include="Utilities\DirectedAcyclicGraph.cs" />
-    <Compile Include="Utilities\LinearAllocator.cs" />
-    <Compile Include="Utilities\MemoryHeap.cs" />
-    <Compile Include="Utilities\HeapAllocator.cs" />
-    <Compile Include="Utilities\Node.cs" />
+    <Compile Include="Memory\LinearAllocator.cs" />
+    <Compile Include="Memory\MemoryHeap.cs" />
+    <Compile Include="Memory\HeapAllocator.cs" />
+    <Compile Include="Memory\Node.cs" />
     <Compile Include="Utilities\OpenList.cs" />
     <Compile Include="Utilities\Pool.cs" />
   </ItemGroup>

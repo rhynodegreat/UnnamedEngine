@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using CSGL.Vulkan;
 
-namespace UnnamedEngine.Utilities {
+namespace UnnamedEngine.Memory {
     public class HeapAllocator {
         List<Heap> heaps;
         object locker;

@@ -5,7 +5,7 @@ using CSGL.Vulkan;
 using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Resources;
-using UnnamedEngine.Utilities;
+using UnnamedEngine.Memory;
 
 namespace UnnamedEngine.Core {
     public class Memory : IDisposable {
