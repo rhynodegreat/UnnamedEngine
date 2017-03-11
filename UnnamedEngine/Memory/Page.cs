@@ -41,8 +41,8 @@ namespace UnnamedEngine.Memory {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            Memory.Dispose();
             if (Mapped) Unmap();
+            Memory.Dispose();
 
             disposed = true;
         }
