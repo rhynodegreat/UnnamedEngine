@@ -7,7 +7,7 @@ using CSGL.Vulkan;
 using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
-using UnnamedEngine.Utilities;
+using UnnamedEngine.Resources;
 
 namespace UnnamedEngine.Rendering {
     public class CameraManager : IDisposable {
@@ -18,7 +18,7 @@ namespace UnnamedEngine.Rendering {
         List<Camera> cameras;
         int lastCapacity;
         DescriptorPool pool;
-        Buffer buffer;
+        UniformBuffer<Matrix4x4> buffer;
 
         public DescriptorSetLayout Layout { get; private set; }
         public DescriptorSet Descriptor { get; private set; }
@@ -52,21 +52,7 @@ namespace UnnamedEngine.Rendering {
         }
 
         public void Update() {
-            if (cameras.Capacity > lastCapacity) {
-                lastCapacity = cameras.Capacity;
-                CreateBuffer();
-            }
-
-            IntPtr data = buffer.Memory.Map(buffer.Offset, buffer.Size);
-
-            for (int i = 0; i < cameras.Count; i++) {
-                cameras[i].Index = i;
-                cameras[i].InternalUpdate();
-                IntPtr ptr = data + (i * (int)Interop.SizeOf<Matrix4x4>());
-                Interop.Copy(cameras[i].ProjectionView, ptr);
-            }
-
-            buffer.Memory.Unmap();
+            buffer.Update();
         }
 
         void CreateDescriptor() {
@@ -101,14 +87,7 @@ namespace UnnamedEngine.Rendering {
         }
 
         void CreateBuffer() {
-            if (buffer != null) engine.Memory.FreeDevice(buffer);
-
-            BufferCreateInfo info = new BufferCreateInfo();
-            info.size = (uint)(cameras.Capacity * Interop.SizeOf<Matrix4x4>());
-            info.usage = VkBufferUsageFlags.UniformBufferBit;
-            info.sharingMode = VkSharingMode.Exclusive;
-
-            buffer = engine.Memory.AllocUniform(info);
+            buffer = new UniformBuffer<Matrix4x4>(engine, 1, VkBufferUsageFlags.None);
 
             Descriptor.Update(new List<WriteDescriptorSet> {
                 new WriteDescriptorSet {
@@ -118,8 +97,8 @@ namespace UnnamedEngine.Rendering {
                     dstSet = Descriptor,
                     bufferInfo = new List<DescriptorBufferInfo> {
                         new DescriptorBufferInfo {
-                            buffer = buffer,
-                            offset = buffer.Offset,
+                            buffer = buffer.Buffer,
+                            offset = buffer.Buffer.Offset,
                             range = (uint)Interop.SizeOf<Matrix4x4>()
                         }
                     }
@@ -137,7 +116,7 @@ namespace UnnamedEngine.Rendering {
 
             Layout.Dispose();
             pool.Dispose();
-            engine.Memory.FreeDevice(buffer);
+            buffer.Dispose();
 
             disposed = true;
         }
