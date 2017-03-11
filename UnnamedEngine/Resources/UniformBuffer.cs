@@ -20,6 +20,7 @@ namespace UnnamedEngine.Resources {
         VkBufferUsageFlags usage;
         public Buffer Buffer { get; private set; }
         public int Count { get; private set; }
+        int capacity;
         List<T> data;
 
         public UniformBuffer(Engine engine, int count, VkBufferUsageFlags usage) {
@@ -30,6 +31,7 @@ namespace UnnamedEngine.Resources {
 
             data = new List<T>(count);
             Count = count;
+            capacity = data.Capacity;
             this.usage = usage;
 
             int alignment = (int)engine.Graphics.PhysicalDevice.Properties.Limits.minUniformBufferOffsetAlignment;
@@ -60,8 +62,9 @@ namespace UnnamedEngine.Resources {
         }
 
         public void Update() {
-            if (Count < data.Count) {
-                Count = data.Count;
+            Count = data.Count;
+            if (capacity < data.Capacity) {
+                capacity = data.Capacity;
                 CreateBuffer();
             }
 
