@@ -12,7 +12,7 @@ namespace UnnamedEngine.Memory {
         Device device;
 
         List<MemoryType> memoryTypes;
-        List<DeviceMemory> pages;
+        List<Page> pages;
 
         public ulong TotalSize { get; private set; }
         public ulong PageSize { get; private set; }
@@ -25,7 +25,7 @@ namespace UnnamedEngine.Memory {
             this.device = device;
 
             memoryTypes = new List<MemoryType>();
-            pages = new List<DeviceMemory>();
+            pages = new List<Page>();
             locker = new object();
 
             TotalSize = props.GetMemoryHeaps(heapIndex).size;
@@ -52,7 +52,7 @@ namespace UnnamedEngine.Memory {
             return false;
         }
 
-        public DeviceMemory Alloc(ulong size, uint memoryTypeIndex) {
+        public Page Alloc(ulong size, uint memoryTypeIndex) {
             ulong allocSize = PageSize;
             while (allocSize < size) allocSize += PageSize; //ensure allocated size is multiple of PageSize
 
@@ -60,16 +60,17 @@ namespace UnnamedEngine.Memory {
                 if (allocated + allocSize > TotalSize) return null;
 
                 DeviceMemory memory = new DeviceMemory(device, allocSize, memoryTypeIndex);
-                pages.Add(memory);
+                Page page = new Page(memory);
+                pages.Add(page);
                 allocated += allocSize;
-                return memory;
+                return page;
             }
         }
 
-        public void Free(DeviceMemory memory) {
-            pages.Remove(memory);
-            memory.Dispose();
-            allocated -= memory.Size;
+        public void Free(Page page) {
+            pages.Remove(page);
+            page.Dispose();
+            allocated -= page.Memory.Size;
         }
 
         public void Dispose() {

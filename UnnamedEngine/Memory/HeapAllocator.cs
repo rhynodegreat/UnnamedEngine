@@ -7,13 +7,13 @@ namespace UnnamedEngine.Memory {
     public class HeapAllocator {
         List<Heap> heaps;
         object locker;
-        Dictionary<DeviceMemory, Page> pageMap;
+        Dictionary<DeviceMemory, HeapPage> pageMap;
 
         public HeapAllocator(List<Memory.Heap> heaps) {
             this.heaps = new List<Heap>();
             HashSet<Memory.Heap> set = new HashSet<Memory.Heap>();
             locker = new object();
-            pageMap = new Dictionary<DeviceMemory, Page>();
+            pageMap = new Dictionary<DeviceMemory, HeapPage>();
 
             foreach (var heap in heaps) {
                 if (!set.Contains(heap)) {
@@ -44,12 +44,12 @@ namespace UnnamedEngine.Memory {
                 for (int i = 0; i < heaps.Count; i++) {
                     int typeIndex;
                     if (heaps[i].heap.Match(requirements.memoryTypeBits, flags, out typeIndex)) {
-                        DeviceMemory memory = heaps[i].heap.Alloc(requirements.size, (uint)typeIndex);
+                        Page memory = heaps[i].heap.Alloc(requirements.size, (uint)typeIndex);
                         if (memory == null) continue;
 
-                        Page page = new Page(memory);
+                        HeapPage page = new HeapPage(memory);
                         heaps[i].pages.Add(page);
-                        pageMap.Add(memory, page);
+                        pageMap.Add(memory.Memory, page);
                         return page.Alloc(requirements);
                     }
                 }
@@ -66,21 +66,21 @@ namespace UnnamedEngine.Memory {
             }
         }
 
-        class Page {
-            public DeviceMemory memory;
+        class HeapPage {
+            public Page memory;
             Node head;
             ulong size;
             object locker;
 
-            public Page(DeviceMemory memory) {
+            public HeapPage(Page memory) {
                 this.memory = memory;
-                head = new Node(0, memory.Size);
-                size = memory.Size;
+                head = new Node(0, memory.Memory.Size);
+                size = memory.Memory.Size;
                 locker = new object();
             }
 
             public bool Match(int memoryTypeIndex) {
-                return memory.MemoryTypeIndex == (uint)memoryTypeIndex;
+                return memory.Memory.MemoryTypeIndex == (uint)memoryTypeIndex;
             }
             
             public Allocation Alloc(VkMemoryRequirements requirements) {
@@ -106,7 +106,7 @@ namespace UnnamedEngine.Memory {
 
                             if (available >= requirements.size) {
                                 current.Split(start, requirements.size);
-                                Allocation result = new Allocation(memory, start, requirements.size);
+                                Allocation result = new Allocation(memory.Memory, start, requirements.size);
                                 return result;
                             }
                         }
@@ -143,11 +143,11 @@ namespace UnnamedEngine.Memory {
 
         class Heap {
             public Memory.Heap heap;
-            public List<Page> pages;
+            public List<HeapPage> pages;
 
             public Heap(Memory.Heap heap) {
                 this.heap = heap;
-                pages = new List<Page>();
+                pages = new List<HeapPage>();
             }
         }
     }

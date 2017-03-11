@@ -42,11 +42,14 @@ namespace UnnamedEngine.Memory {
                 for (int i = 0; i < heaps.Count; i++) {
                     int typeIndex;
                     if (heaps[i].heap.Match(requirements.memoryTypeBits, flags, out typeIndex)) {
-                        DeviceMemory memory = heaps[i].heap.Alloc(requirements.size, (uint)typeIndex);
+                        Page memory = heaps[i].heap.Alloc(requirements.size, (uint)typeIndex);
                         if (memory == null) continue;
 
-                        Page page = new Page(memory);
+                        LinearPage page = new LinearPage(memory);
                         heaps[i].pages.Add(page);
+
+                        memory.Map(0, memory.Memory.Size);  //map this page immediately
+
                         return page.Alloc(requirements);
                     }
                 }
@@ -63,20 +66,20 @@ namespace UnnamedEngine.Memory {
             }
         }
 
-        class Page {
-            DeviceMemory memory;
+        class LinearPage {
+            Page memory;
             ulong size;
             ulong used;
             object locker;
 
-            public Page(DeviceMemory memory) {
+            public LinearPage(Page memory) {
                 this.memory = memory;
-                size = memory.Size;
+                size = memory.Memory.Size;
                 locker = new object();
             }
 
             public bool Match(int memoryTypeIndex) {
-                return memory.MemoryTypeIndex == (uint)memoryTypeIndex;
+                return memory.Memory.MemoryTypeIndex == (uint)memoryTypeIndex;
             }
 
             public Allocation Alloc(VkMemoryRequirements requirements) {
@@ -100,7 +103,7 @@ namespace UnnamedEngine.Memory {
 
                     if (available >= requirements.size) {
                         used = start + requirements.size;
-                        return new Allocation(memory, start, requirements.size);
+                        return new Allocation(memory.Memory, start, requirements.size);
                     }
                 }
 
@@ -116,11 +119,11 @@ namespace UnnamedEngine.Memory {
 
         class Heap {
             public Memory.Heap heap;
-            public List<Page> pages;
+            public List<LinearPage> pages;
 
             public Heap(Memory.Heap heap) {
                 this.heap = heap;
-                pages = new List<Page>();
+                pages = new List<LinearPage>();
             }
         }
     }
