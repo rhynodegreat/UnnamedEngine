@@ -76,6 +76,8 @@ namespace UnnamedEngine.Resources {
         void Dispose(bool disposing) {
             if (disposed) return;
 
+            engine.Memory.FreeUniform(Buffer);
+
             disposed = true;
         }
 
