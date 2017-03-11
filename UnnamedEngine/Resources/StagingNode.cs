@@ -7,6 +7,7 @@ using Buffer = CSGL.Vulkan.Buffer;
 
 using UnnamedEngine.Core;
 using UnnamedEngine.Utilities;
+using UnnamedEngine.Memory;
 
 namespace UnnamedEngine.Resources {
     public class StagingNode : TransferNode, IDisposable {
@@ -221,9 +222,9 @@ namespace UnnamedEngine.Resources {
             
             Buffer staging = CreateStaging(size, buffer);
 
-            IntPtr ptr = staging.Memory.Map(staging.Offset, staging.Size);
+            Page page = engine.Memory.GetStagingPage(staging.Memory);
+            IntPtr ptr = page.Mapping + (int)staging.Offset;
             Interop.Copy(data, ptr, (long)size);
-            staging.Memory.Unmap();
 
             lock (bufferTransfers) {
                 bufferTransfers.Add(new BufferTransfer(staging, buffer));
@@ -256,9 +257,9 @@ namespace UnnamedEngine.Resources {
             
             Image staging = CreateStaging(size, width, height, image);
 
-            IntPtr ptr = staging.Memory.Map(staging.Offset, staging.Size);
+            Page page = engine.Memory.GetStagingPage(staging.Memory);
+            IntPtr ptr = page.Mapping + (int)staging.Offset;
             Interop.Copy(data, ptr, (long)size);
-            staging.Memory.Unmap();
 
             lock (imageTransfers) {
                 imageTransfers.Add(new ImageTransfer(staging, image, region, destLayout));
