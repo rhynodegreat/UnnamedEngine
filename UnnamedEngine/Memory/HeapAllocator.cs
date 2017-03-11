@@ -9,9 +9,9 @@ namespace UnnamedEngine.Memory {
         object locker;
         Dictionary<DeviceMemory, Page> pageMap;
 
-        public HeapAllocator(List<MemoryHeap> heaps) {
+        public HeapAllocator(List<Memory.Heap> heaps) {
             this.heaps = new List<Heap>();
-            HashSet<MemoryHeap> set = new HashSet<MemoryHeap>();
+            HashSet<Memory.Heap> set = new HashSet<Memory.Heap>();
             locker = new object();
             pageMap = new Dictionary<DeviceMemory, Page>();
 
@@ -142,10 +142,10 @@ namespace UnnamedEngine.Memory {
         }
 
         class Heap {
-            public MemoryHeap heap;
+            public Memory.Heap heap;
             public List<Page> pages;
 
-            public Heap(MemoryHeap heap) {
+            public Heap(Memory.Heap heap) {
                 this.heap = heap;
                 pages = new List<Page>();
             }

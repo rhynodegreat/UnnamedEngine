@@ -8,9 +8,9 @@ namespace UnnamedEngine.Memory {
         List<Heap> heaps;
         object locker;
 
-        public LinearAllocator(List<MemoryHeap> heaps) {
+        public LinearAllocator(List<Memory.Heap> heaps) {
             this.heaps = new List<Heap>();
-            HashSet<MemoryHeap> set = new HashSet<MemoryHeap>();
+            HashSet<Memory.Heap> set = new HashSet<Memory.Heap>();
             locker = new object();
 
             foreach (var heap in heaps) {
@@ -115,10 +115,10 @@ namespace UnnamedEngine.Memory {
         }
 
         class Heap {
-            public MemoryHeap heap;
+            public Memory.Heap heap;
             public List<Page> pages;
 
-            public Heap(MemoryHeap heap) {
+            public Heap(Memory.Heap heap) {
                 this.heap = heap;
                 pages = new List<Page>();
             }
