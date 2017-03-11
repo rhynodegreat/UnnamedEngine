@@ -89,6 +89,7 @@
     <Compile Include="Resources\OpaqueVertexData.cs" />
     <Compile Include="Resources\StagingNode.cs" />
     <Compile Include="Resources\TransferNode.cs" />
+    <Compile Include="Resources\UniformBuffer.cs" />
     <Compile Include="Resources\VertexData.cs" />
     <Compile Include="UI\Panel.cs" />
     <Compile Include="UI\PanelRenderer.cs" />
