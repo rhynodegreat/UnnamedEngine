@@ -8,12 +8,14 @@ namespace UnnamedEngine.Memory {
         List<Heap> heaps;
         object locker;
         bool persistentMap;
+        Dictionary<DeviceMemory, Page> pageMap;
 
         public LinearAllocator(List<Memory.Heap> heaps, bool persistentMap) {
             this.heaps = new List<Heap>();
             HashSet<Memory.Heap> set = new HashSet<Memory.Heap>();
             locker = new object();
             this.persistentMap = persistentMap;
+            pageMap = new Dictionary<DeviceMemory, Page>();
 
             foreach (var heap in heaps) {
                 if (!set.Contains(heap)) {
@@ -49,6 +51,7 @@ namespace UnnamedEngine.Memory {
 
                         LinearPage page = new LinearPage(memory);
                         heaps[i].pages.Add(page);
+                        pageMap.Add(memory.Memory, memory);
 
                         if (persistentMap) memory.Map(0, memory.Memory.Size);  //map this page immediately
 
@@ -66,6 +69,13 @@ namespace UnnamedEngine.Memory {
                     heaps[i].pages[j].Reset();
                 }
             }
+        }
+
+        public Page GetPage(DeviceMemory memory) {
+            if (pageMap.ContainsKey(memory)) {
+                return pageMap[memory];
+            }
+            return null;
         }
 
         class LinearPage {

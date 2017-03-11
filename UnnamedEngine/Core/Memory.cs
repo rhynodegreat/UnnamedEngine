@@ -155,6 +155,10 @@ namespace UnnamedEngine.Core {
             return uniformAllocator.GetPage(memory);
         }
 
+        public Page GetStagingPage(DeviceMemory memory) {
+            return stagingAllocator.GetPage(memory);
+        }
+
         void FindHeaps() {
             PhysicalDevice physicalDevice = engine.Graphics.PhysicalDevice;
             VkPhysicalDeviceMemoryProperties props = physicalDevice.MemoryProperties;
