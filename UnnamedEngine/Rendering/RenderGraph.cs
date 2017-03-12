@@ -137,7 +137,7 @@ namespace UnnamedEngine.Rendering {
         }
 
         public void AddDependency(RenderNode source, RenderNode dest, SubpassDependency dependency) {
-            if (dependencyPairs == null) throw new ArgumentNullException(nameof(dependency));
+            if (dependency == null) throw new ArgumentNullException(nameof(dependency));
 
             for (int i = 0; i < dependencyPairs.Count; i++) {
                 var pair = dependencyPairs[i];
