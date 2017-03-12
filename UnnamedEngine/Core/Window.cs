@@ -159,12 +159,6 @@ namespace UnnamedEngine.Core {
         }
 
         VkPresentModeKHR ChooseSwapPresentMode(IList<VkPresentModeKHR> modes) {
-            foreach (var m in modes) {
-                if (m == VkPresentModeKHR.MailboxKhr) {
-                    return m;
-                }
-            }
-
             return VkPresentModeKHR.FifoKhr;
         }
 
