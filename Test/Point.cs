@@ -27,7 +27,6 @@ namespace Test {
 
         List<Light> lights;
         List<uint> lightIndices;
-        List<LightData> lightData;
         CommandPool pool;
         CommandBuffer commandBuffer;
         PipelineLayout pipelineLayout;
@@ -37,7 +36,6 @@ namespace Test {
         DescriptorSet set;
         UniformBuffer<LightData> uniform;
         Mesh mesh;
-        bool dirty = true;
 
         [StructLayout(LayoutKind.Explicit, Size = 80)]
         struct LightData {
@@ -60,7 +58,6 @@ namespace Test {
             this.lightCount = lightCount;
             lights = new List<Light>();
             lightIndices = new List<uint>();
-            lightData = new List<LightData>();
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
@@ -76,7 +73,6 @@ namespace Test {
 
             deferred.OnFramebufferChanged += () => {
                 CreatePipeline();
-                dirty = true;
             };
         }
 
@@ -86,13 +82,12 @@ namespace Test {
             if (lights.Count == lightCount) throw new PointException(nameof(lightCount));
 
             lights.Add(light);
-            lightData.Add(new LightData());
-            dirty = true;
+            uniform.Add();
         }
 
         public void RemoveLight(Light light) {
-            dirty = lights.Remove(light);
-            lightData.RemoveAt(lightData.Count - 1);
+            lights.Remove(light);
+            uniform.Remove();
         }
 
         void CreateDescriptor() {
@@ -143,7 +138,7 @@ namespace Test {
                 float brightness = Math.Max(color.r, Math.Max(color.g, color.b));
                 float radius = 16f * (float)Math.Sqrt(brightness);  //(1/256) = brightness / (r^2)
 
-                lightData[i] = new LightData {
+                uniform[i] = new LightData {
                     color = color,
                     transform = Matrix4x4.CreateScale(radius) * Matrix4x4.CreateTranslation(lights[i].Transform.Position) };
             }

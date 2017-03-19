@@ -26,7 +26,6 @@ namespace Test {
 
         List<Light> lights;
         List<uint> lightIndices;
-        List<LightData> lightData;
         CommandPool pool;
         CommandBuffer commandBuffer;
         PipelineLayout pipelineLayout;
@@ -35,7 +34,6 @@ namespace Test {
         DescriptorPool descriptorPool;
         DescriptorSet set;
         UniformBuffer<LightData> uniform;
-        bool dirty = true;
 
         struct LightData {
             public Color4 color;
@@ -54,7 +52,6 @@ namespace Test {
             this.lightCount = lightCount;
             lights = new List<Light>();
             lightIndices = new List<uint>();
-            lightData = new List<LightData>();
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
             poolInfo.flags = VkCommandPoolCreateFlags.ResetCommandBufferBit;
@@ -69,7 +66,6 @@ namespace Test {
 
             deferred.OnFramebufferChanged += () => {
                 CreatePipeline();
-                dirty = true;
             };
         }
 
@@ -79,13 +75,12 @@ namespace Test {
             if (lights.Count == lightCount) throw new DirectionalException(nameof(lightCount));
 
             lights.Add(light);
-            lightData.Add(new LightData());
-            dirty = true;
+            uniform.Add();
         }
 
         public void RemoveLight(Light light) {
-            dirty = lights.Remove(light);
-            lightData.RemoveAt(lightData.Count - 1);
+            lights.Remove(light);
+            uniform.Remove();
         }
 
         void CreateDescriptor() {
@@ -132,7 +127,7 @@ namespace Test {
 
         void UpdateUniform() {
             for (int i = 0; i < lights.Count; i++) {
-                lightData[i] = new LightData { color = lights[i].Color, direction = new Vector4(lights[i].Transform.Forward, 0) };
+                uniform[i] = new LightData { color = lights[i].Color, direction = new Vector4(lights[i].Transform.Forward, 0) };
             }
 
             uniform.Update();
@@ -276,10 +271,7 @@ namespace Test {
 
         public CommandBuffer GetCommandBuffer() {
             UpdateUniform();
-            if (dirty) {
-                RecordCommands();
-                dirty = false;
-            }
+            RecordCommands();
             return commandBuffer;
         }
 
