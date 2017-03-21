@@ -155,7 +155,7 @@ namespace UnnamedEngine.UI {
             frag.Dispose();
         }
 
-        public void PreRender(Entity e, Transform transform, UIElement element) {
+        public void PreRenderElement(Entity e, Transform transform, UIElement element) {
             Label l = (Label)element;
             int hash = l.Text.GetHashCode() ^ l.Font.GetHashCode(); //this hash has to be computed here because the GetHashCode of Label can't be changed, since we're using as the dictionary key
 
@@ -166,6 +166,10 @@ namespace UnnamedEngine.UI {
                 cache.AddString(l.Font, l.Text);
                 labelHashes[l] = hash;
             }
+        }
+
+        public void PreRender() {
+            cache.Update();
         }
 
         public void Render(CommandBuffer commandbuffer, Entity e, Transform transform, UIElement element) {

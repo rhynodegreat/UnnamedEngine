@@ -157,7 +157,11 @@ namespace UnnamedEngine.UI {
             frag.Dispose();
         }
 
-        public void PreRender(Entity e, Transform transform, UIElement element) {
+        public void PreRenderElement(Entity e, Transform transform, UIElement element) {
+
+        }
+
+        public void PreRender() {
 
         }
 

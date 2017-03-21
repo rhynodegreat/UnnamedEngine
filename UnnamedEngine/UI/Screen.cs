@@ -30,6 +30,7 @@ namespace UnnamedEngine.UI {
         SubmitNode submitNode;
         
         Dictionary<Type, UIRenderer> rendererMap;
+        List<UIRenderer> rendererList;
         CommandPool pool;
         CommandBuffer commandBuffer;
         CommandBufferBeginInfo beginInfo;
@@ -62,6 +63,7 @@ namespace UnnamedEngine.UI {
             Height = height;
 
             rendererMap = new Dictionary<Type, UIRenderer>();
+            rendererList = new List<UIRenderer>();
 
             Manager = new EntityManager();
             Root = new Entity();
@@ -89,10 +91,14 @@ namespace UnnamedEngine.UI {
         public void AddRenderer(Type type, UIRenderer renderer) {
             if (rendererMap.ContainsKey(type)) throw new ScreenException("Type already has a renderer defined");
             rendererMap.Add(type, renderer);
+            rendererList.Add(renderer);
         }
 
         public void RemoveRenderer(Type type) {
-            rendererMap.Remove(type);
+            if (rendererMap.ContainsKey(type)) {
+                rendererList.Remove(rendererMap[type]);
+                rendererMap.Remove(type);
+            }
         }
 
         public void Recreate(int width, int height) {
@@ -126,8 +132,12 @@ namespace UnnamedEngine.UI {
                 if (!rendererMap.ContainsKey(type)) continue;
 
                 UIRenderer renderer = rendererMap[type];
-                renderer.PreRender(e, current, element);
+                renderer.PreRenderElement(e, current, element);
                 list.Add(new RenderInfo(renderer, e, current, element));
+            }
+
+            for (int i = 0; i < rendererList.Count; i++) {
+                rendererList[i].PreRender();
             }
         }
 

@@ -8,7 +8,8 @@ using UnnamedEngine.ECS;
 
 namespace UnnamedEngine.UI {
     public interface UIRenderer : IDisposable {
-        void PreRender(Entity e, Transform transform, UIElement element);
+        void PreRenderElement(Entity e, Transform transform, UIElement element);
+        void PreRender();
         void Render(CommandBuffer commandbuffer, Entity e, Transform transform, UIElement element);
     }
 }
