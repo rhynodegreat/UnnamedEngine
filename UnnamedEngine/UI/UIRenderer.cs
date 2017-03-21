@@ -10,6 +10,6 @@ namespace UnnamedEngine.UI {
     public interface UIRenderer : IDisposable {
         void PreRenderElement(Entity e, Transform transform, UIElement element);
         void PreRender();
-        void Render(CommandBuffer commandbuffer, Entity e, Transform transform, UIElement element);
+        void Render(CommandBuffer commandBuffer, Entity e, Transform transform, UIElement element);
     }
 }
