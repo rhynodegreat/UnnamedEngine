@@ -114,10 +114,10 @@ namespace Test {
 
             GlyphCache cache = new GlyphCache(engine, 1, pageSize, range, padding, scale, threshold);
             Font font = new Font("C:/Windows/Fonts/arialbd.ttf");
-            //for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
-            //    cache.AddChar(font, i);
-            //}
-            //cache.Update();
+            for (int i = 33; i < 127; i++) {    //ascii 33 (!) to 126 (~)
+                cache.AddChar(font, i);
+            }
+            cache.Update();
 
             Camera uiCam = new OrthographicCamera(window.Width, window.Height, -1, 1);
             window.OnSizeChanged += uiCam.Recreate;

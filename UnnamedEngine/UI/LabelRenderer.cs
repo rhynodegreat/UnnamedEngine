@@ -10,9 +10,22 @@ using UnnamedEngine.Core;
 using UnnamedEngine.ECS;
 using UnnamedEngine.Rendering;
 using UnnamedEngine.UI.Text;
+using UnnamedEngine.Resources;
 
 namespace UnnamedEngine.UI {
     public class LabelRenderer : UIRenderer {
+        struct LabelInfo {
+            public int hash;
+            public Mesh mesh;
+            public int indexCount;
+
+            public LabelInfo(int hash) {
+                this.hash = hash;
+                this.mesh = null;
+                this.indexCount = 0;
+            }
+        }
+
         bool disposed;
 
         Engine engine;
@@ -20,7 +33,8 @@ namespace UnnamedEngine.UI {
         RenderPass renderPass;
         GlyphCache cache;
 
-        Dictionary<Label, int> labelHashes;
+        Dictionary<Label, LabelInfo> labelMap;
+        HashSet<Label> renderedLabels;
 
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
@@ -36,7 +50,8 @@ namespace UnnamedEngine.UI {
             this.renderPass = renderPass;
             this.cache = cache;
 
-            labelHashes = new Dictionary<Label, int>();
+            labelMap = new Dictionary<Label, LabelInfo>();
+            renderedLabels = new HashSet<Label>();
 
             CreatePipeline();
 
@@ -65,6 +80,22 @@ namespace UnnamedEngine.UI {
             fragInfo.stage = VkShaderStageFlags.FragmentBit;
             fragInfo.module = frag;
             fragInfo.name = "main";
+
+            SpecializationInfo specialization = new SpecializationInfo();
+            specialization.mapEntries = new List<VkSpecializationMapEntry> {
+                new VkSpecializationMapEntry {
+                    constantID = 0,
+                    offset = 0,
+                    size = 4
+                }
+            };
+
+            byte[] specializationData = new byte[4];
+            Interop.Copy(cache.Range, specializationData, 0);
+
+            specialization.data = specializationData;
+
+            fragInfo.specializationInfo = specialization;
 
             var shaderStages = new List<PipelineShaderStageCreateInfo> { vertInfo, fragInfo };
 
@@ -105,8 +136,12 @@ namespace UnnamedEngine.UI {
                                                 | VkColorComponentFlags.BBit
                                                 | VkColorComponentFlags.ABit;
             color.blendEnable = true;
+            color.colorBlendOp = VkBlendOp.Add;
             color.srcColorBlendFactor = VkBlendFactor.SrcAlpha;
             color.dstColorBlendFactor = VkBlendFactor.OneMinusSrcAlpha;
+            color.alphaBlendOp = VkBlendOp.Add;
+            color.srcAlphaBlendFactor = VkBlendFactor.One;
+            color.dstAlphaBlendFactor = VkBlendFactor.Zero;
 
             var colorBlending = new PipelineColorBlendStateCreateInfo();
             colorBlending.logicOp = VkLogicOp.Copy;
@@ -156,24 +191,90 @@ namespace UnnamedEngine.UI {
         }
 
         public void PreRenderElement(Entity e, Transform transform, UIElement element) {
-            Label l = (Label)element;
-            int hash = l.Text.GetHashCode() ^ l.Font.GetHashCode(); //this hash has to be computed here because the GetHashCode of Label can't be changed, since we're using as the dictionary key
+            Label label = (Label)element;
+            int hash = label.Text.GetHashCode() ^ label.Font.GetHashCode(); //this hash has to be computed here because the GetHashCode of Label can't be changed, since we're using as the dictionary key
 
-            if (!labelHashes.ContainsKey(l)) {
-                cache.AddString(l.Font, l.Text);
-                labelHashes.Add(l, hash);
-            } else if (labelHashes[l] != hash) {
-                cache.AddString(l.Font, l.Text);
-                labelHashes[l] = hash;
+            if (!labelMap.ContainsKey(label)) {
+                labelMap.Add(label, CreateMesh(label, hash));
+            } else if (labelMap[label].hash != hash) {
+                labelMap[label] = UpdateMesh(label);
             }
+
+            renderedLabels.Add(label);
+        }
+
+        LabelInfo CreateMesh(Label label, int hash) {
+            cache.AddString(label.Font, label.Text);
+
+            LabelInfo info = new LabelInfo(hash);
+            VertexData vertexData = new VertexData<LabelVertex>(engine);
+
+            Mesh mesh = new Mesh(engine, vertexData, null);
+            info.mesh = mesh;
+            UpdateMesh(label, mesh);
+
+            return info;
+        }
+
+        LabelInfo UpdateMesh(Label label) {
+            cache.AddString(label.Font, label.Text);
+
+            LabelInfo info = labelMap[label];
+            UpdateMesh(label, info.mesh);
+
+            return info;
+        }
+
+        void UpdateMesh(Label label, Mesh mesh) {
+            List<LabelVertex> verts = new List<LabelVertex>();
+
+            verts.Add(new LabelVertex {
+                position = new Vector3(0, 0, 0),
+                uv = new Vector3(0, 0, 0)
+            });
+
+            verts.Add(new LabelVertex {
+                position = new Vector3(1024, 0, 0),
+                uv = new Vector3(1024, 0, 0)
+            });
+
+            verts.Add(new LabelVertex {
+                position = new Vector3(0, 1024, 0),
+                uv = new Vector3(0, 1024, 0)
+            });
+
+            ((VertexData<LabelVertex>)mesh.VertexData).SetData(verts);
+            mesh.Apply();
         }
 
         public void PreRender() {
             cache.Update();
+
+            List<Label> toRemove = new List<Label>();
+            foreach (var l in labelMap.Keys) {
+                if (!renderedLabels.Contains(l)) {
+                    toRemove.Add(l);
+                }
+            }
+
+            for (int i = 0; i < toRemove.Count; i++) {
+                labelMap[toRemove[i]].mesh?.Dispose();
+                labelMap.Remove(toRemove[i]);
+            }
+
+            renderedLabels.Clear();
         }
 
-        public void Render(CommandBuffer commandbuffer, Entity e, Transform transform, UIElement element) {
+        public void Render(CommandBuffer commandBuffer, Entity e, Transform transform, UIElement element) {
+            Label l = (Label)element;
+            LabelInfo info = labelMap[l];
 
+            commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Manager.Descriptor, screen.Camera.Offset);
+            commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, cache.Descriptor);
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1), new Vector4(0, 0, 0, 1f), 0f, 1, 0.25f));
+            commandBuffer.BindVertexBuffer(0, info.mesh.VertexData.Buffer, 0);
+            commandBuffer.Draw(3, 1, 0, 0);
         }
 
         public void Dispose() {
@@ -187,6 +288,10 @@ namespace UnnamedEngine.UI {
             pipeline.Dispose();
             pipelineLayout.Dispose();
 
+            foreach (var info in labelMap.Values) {
+                info.mesh?.Dispose();
+            }
+
             disposed = true;
         }
 
@@ -195,11 +300,11 @@ namespace UnnamedEngine.UI {
         }
 
         struct FontMetrics {
-            Vector4 color;
-            Vector4 borderColor;
-            float bias;
-            float scale;
-            float borderThickness;
+            public Vector4 color;
+            public Vector4 borderColor;
+            public float bias;
+            public float scale;
+            public float borderThickness;
 
             public FontMetrics(Vector4 color, Vector4 borderColor, float bias, float scale, float borderThickness) {
                 this.color = color;
