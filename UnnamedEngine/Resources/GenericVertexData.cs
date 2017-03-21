@@ -81,6 +81,7 @@ namespace UnnamedEngine.Resources {
             Interop.Copy(array, vertexData);
             VertexCount = count;
             InternalData = vertexData;
+            Size = (int)Interop.SizeOf(vertexData);
         }
 
         public void SetData(List<T> list) {
