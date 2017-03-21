@@ -81,6 +81,7 @@ namespace UnnamedEngine.UI.Text {
         HashSet<int> pageUpdates;
         List<GlyphInfo> glyphUpdates;
         HashSet<GlyphPair> glyphUpdateSet;
+        object glyphUpdateLocker;
         Dictionary<GlyphPair, GlyphMetrics> infoMap;
         List<RenderInfo> renderQueue;
         DescriptorPool pool;
@@ -107,6 +108,7 @@ namespace UnnamedEngine.UI.Text {
             pageUpdates = new HashSet<int>();
             glyphUpdates = new List<GlyphInfo>();
             glyphUpdateSet = new HashSet<GlyphPair>();
+            glyphUpdateLocker = new object();
             renderQueue = new List<RenderInfo>();
             PageSize = pageSize;
             Range = range;
@@ -143,14 +145,15 @@ namespace UnnamedEngine.UI.Text {
             if (infoMap.ContainsKey(pair)) return;
             if (glyphUpdateSet.Contains(pair)) return;
 
-            glyphUpdateSet.Add(pair);
-
             Glyph glyph = font.GetGlyph(codepoint);
             GlyphMetrics metrics = new GlyphMetrics();
             metrics.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY) * Scale;
             metrics.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height) * Scale;
 
-            glyphUpdates.Add(new GlyphInfo(font, codepoint, glyph, metrics));
+            lock (glyphUpdateLocker) {
+                glyphUpdates.Add(new GlyphInfo(font, codepoint, glyph, metrics));
+                glyphUpdateSet.Add(pair);
+            }
         }
 
         void AddGlyph(GlyphInfo info) {
@@ -205,45 +208,48 @@ namespace UnnamedEngine.UI.Text {
         }
 
         public void Update() {
-            if (glyphUpdates.Count > 0) {
-                glyphUpdates.Sort((GlyphInfo a, GlyphInfo b) => {
-                    float aArea = a.metrics.size.X * a.metrics.size.Y;
-                    float bArea = b.metrics.size.X * b.metrics.size.Y;
-                    return bArea.CompareTo(aArea);
-                });
+            lock (glyphUpdateLocker) {
+                if (glyphUpdates.Count > 0) {
+                    glyphUpdates.Sort((GlyphInfo a, GlyphInfo b) => {
+                        float aArea = a.metrics.size.X * a.metrics.size.Y;
+                        float bArea = b.metrics.size.X * b.metrics.size.Y;
+                        return bArea.CompareTo(aArea);
+                    });
 
-                for (int i = 0; i < glyphUpdates.Count; i++) {
-                    AddGlyph(glyphUpdates[i]);
+                    for (int i = 0; i < glyphUpdates.Count; i++) {
+                        AddGlyph(glyphUpdates[i]);
+                    }
+
+                    Parallel.For(0, renderQueue.Count, Render);
+
+                    renderQueue.Clear();
+                    glyphUpdates.Clear();
                 }
 
-                Parallel.For(0, renderQueue.Count, Render);
+                //pageUpdates does not need to be locked. It's only modified through the Parallel.For loop above
+                if (PageCount < pages.Count) {
+                    while (PageCount < pages.Count) {
+                        PageCount *= 2;
+                    }
 
-                renderQueue.Clear();
-                glyphUpdates.Clear();
-            }
+                    CreateImage();
+                    UpdateDescriptor();
 
-            if (PageCount < pages.Count) {
-                while (PageCount < pages.Count) {
-                    PageCount *= 2;
+                    for (int i = 0; i < pages.Count; i++) {
+                        UpdatePage(i);
+                    }
+
+                    pageUpdates.Clear();    //since image was recreated, all pages have been updated
+                    return;
                 }
 
-                CreateImage();
-                UpdateDescriptor();
-
-                for (int i = 0; i < pages.Count; i++) {
-                    UpdatePage(i);
+                foreach (int index in pageUpdates) {
+                    UpdatePage(index);
                 }
 
-                pageUpdates.Clear();    //since image was recreated, all pages have been updated
-                return;
+                pageUpdates.Clear();
+                glyphUpdateSet.Clear();
             }
-
-            foreach (int index in pageUpdates) {
-                UpdatePage(index);
-            }
-
-            pageUpdates.Clear();
-            glyphUpdateSet.Clear();
         }
 
         void UpdatePage(int index) {
