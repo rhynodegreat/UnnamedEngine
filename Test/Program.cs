@@ -151,7 +151,7 @@ namespace Test {
             t2.Parent = ui.Screen.Root.GetFirst<Transform>();
             ui.Screen.Manager.AddEntity(e2);
 
-            Framerate framerate = new Framerate(engine, p);
+            Framerate framerate = new Framerate(engine, p, l);
 
             renderer.AddNode(ui);
             renderer.Bake();
