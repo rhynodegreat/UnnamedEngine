@@ -229,6 +229,7 @@ namespace UnnamedEngine.UI {
         }
 
         void UpdateMesh(Label label, Mesh mesh) {
+            if (string.IsNullOrEmpty(label.Text)) return;
             List<LabelVertex> verts = new List<LabelVertex>();
             Vector3 pos = new Vector3(0, 64, 0);
 
@@ -283,6 +284,7 @@ namespace UnnamedEngine.UI {
         public void Render(CommandBuffer commandBuffer, Entity e, Transform transform, UIElement element) {
             Label l = (Label)element;
             LabelInfo info = labelMap[l];
+            if (string.IsNullOrEmpty(l.Text)) return;
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Manager.Descriptor, screen.Camera.Offset);
