@@ -144,8 +144,11 @@ namespace Test {
             Entity e2 = new Entity();
             Transform t2 = new Transform();
             Label l = new Label();
-            l.Text = "asdf";
             l.Font = font;
+            l.FontSize = 0.5f;
+            l.Outline = 0.375f;
+            l.Color = new Color4(1, 1, 1, 1);
+            l.OutlineColor = new Color4(0, 0, 0, 1);
             e2.AddComponent(t2);
             e2.AddComponent(l);
             t2.Parent = ui.Screen.Root.GetFirst<Transform>();

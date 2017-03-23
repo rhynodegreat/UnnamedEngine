@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 
 using CSGL;
+using CSGL.Graphics;
 using CSGL.Vulkan;
 
 using UnnamedEngine.Core;
@@ -232,18 +233,18 @@ namespace UnnamedEngine.UI {
             Vector3 pos = new Vector3(0, 64, 0);
 
             foreach (char c in label.Text) {
-                Emit(label.Font, c, verts, ref pos);
+                Emit(label.Font, c, verts, label.FontSize, ref pos);
             }
 
             ((VertexData<LabelVertex>)mesh.VertexData).SetData(verts);
             mesh.Apply();
         }
 
-        void Emit(Font font, int codepoint, List<LabelVertex> verts, ref Vector3 pos) {
+        void Emit(Font font, int codepoint, List<LabelVertex> verts, float scale, ref Vector3 pos) {
             //screen has y axis going down, glyph metric has y axis going up
             var metrics = cache.GetInfo(font, codepoint);
-            var offset = metrics.offset;
-            var size = metrics.size;
+            var offset = metrics.offset * scale;
+            var size = metrics.size * scale;
             size.Y *= -1;
 
             var v1 = new LabelVertex(new Vector3(0, size.Y, 0) + pos + offset, metrics.uvPosition);
@@ -258,7 +259,7 @@ namespace UnnamedEngine.UI {
             verts.Add(v4);
             verts.Add(v3);
 
-            pos += new Vector3(metrics.advance, 0, 0);
+            pos += new Vector3(metrics.advance * scale, 0, 0);
         }
 
         public void PreRender() {
@@ -286,7 +287,7 @@ namespace UnnamedEngine.UI {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Manager.Descriptor, screen.Camera.Offset);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, cache.Descriptor);
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1), new Vector4(0, 0, 0, 1f), 0f, 1, 0.25f));
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(l.Color, l.OutlineColor, l.Thickness, l.FontSize, l.Outline));
             commandBuffer.BindVertexBuffer(0, info.mesh.VertexData.Buffer, 0);
             commandBuffer.Draw(info.mesh.VertexData.VertexCount, 1, 0, 0);
         }
@@ -314,13 +315,13 @@ namespace UnnamedEngine.UI {
         }
 
         struct FontMetrics {
-            public Vector4 color;
-            public Vector4 borderColor;
+            public Color4 color;
+            public Color4 borderColor;
             public float bias;
             public float scale;
             public float borderThickness;
 
-            public FontMetrics(Vector4 color, Vector4 borderColor, float bias, float scale, float borderThickness) {
+            public FontMetrics(Color4 color, Color4 borderColor, float bias, float scale, float borderThickness) {
                 this.color = color;
                 this.borderColor = borderColor;
                 this.bias = bias;
