@@ -14,15 +14,16 @@ using UnnamedEngine.Resources;
 
 namespace UnnamedEngine.UI {
     public class LabelRenderer : UIRenderer {
-        struct LabelInfo {
+        class LabelInfo : IDisposable {
             public int hash;
             public Mesh mesh;
-            public int indexCount;
 
             public LabelInfo(int hash) {
                 this.hash = hash;
-                this.mesh = null;
-                this.indexCount = 0;
+            }
+
+            public void Dispose() {
+                mesh?.Dispose();
             }
         }
 
@@ -227,24 +228,36 @@ namespace UnnamedEngine.UI {
 
         void UpdateMesh(Label label, Mesh mesh) {
             List<LabelVertex> verts = new List<LabelVertex>();
+            Vector3 pos = new Vector3(0, 64, 0);
 
-            verts.Add(new LabelVertex {
-                position = new Vector3(0, 0, 0),
-                uv = new Vector3(0, 0, 0)
-            });
-
-            verts.Add(new LabelVertex {
-                position = new Vector3(1024, 0, 0),
-                uv = new Vector3(1024, 0, 0)
-            });
-
-            verts.Add(new LabelVertex {
-                position = new Vector3(0, 1024, 0),
-                uv = new Vector3(0, 1024, 0)
-            });
+            foreach (char c in label.Text) {
+                Emit(label.Font, c, verts, ref pos);
+            }
 
             ((VertexData<LabelVertex>)mesh.VertexData).SetData(verts);
             mesh.Apply();
+        }
+
+        void Emit(Font font, int codepoint, List<LabelVertex> verts, ref Vector3 pos) {
+            //screen has y axis going down, glyph metric has y axis going up
+            var metrics = cache.GetInfo(font, codepoint);
+            var offset = metrics.offset;
+            var size = metrics.size;
+            size.Y *= -1;
+
+            var v1 = new LabelVertex(new Vector3(0, size.Y, 0) + pos + offset, metrics.uvPosition);
+            var v2 = new LabelVertex(size + pos + offset, metrics.uvPosition + new Vector3(metrics.size.X, 0, 0));
+            var v3 = new LabelVertex(pos + offset, metrics.uvPosition + new Vector3(0, metrics.size.Y, 0));
+            var v4 = new LabelVertex(new Vector3(size.X, 0, 0) + pos + offset, metrics.uvPosition + metrics.size);
+
+            verts.Add(v1);
+            verts.Add(v2);
+            verts.Add(v3);
+            verts.Add(v2);
+            verts.Add(v4);
+            verts.Add(v3);
+
+            pos += new Vector3(metrics.advance, 0, 0);
         }
 
         public void PreRender() {
@@ -274,7 +287,7 @@ namespace UnnamedEngine.UI {
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, cache.Descriptor);
             commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(new Vector4(1), new Vector4(0, 0, 0, 1f), 0f, 1, 0.25f));
             commandBuffer.BindVertexBuffer(0, info.mesh.VertexData.Buffer, 0);
-            commandBuffer.Draw(3, 1, 0, 0);
+            commandBuffer.Draw(info.mesh.VertexData.VertexCount, 1, 0, 0);
         }
 
         public void Dispose() {
@@ -289,7 +302,7 @@ namespace UnnamedEngine.UI {
             pipelineLayout.Dispose();
 
             foreach (var info in labelMap.Values) {
-                info.mesh?.Dispose();
+                info.Dispose();
             }
 
             disposed = true;
