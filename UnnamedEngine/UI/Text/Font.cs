@@ -14,6 +14,8 @@ namespace UnnamedEngine.UI.Text {
         Dictionary<int, Glyph> glyphMap;
         Glyph unknownGlyph;
 
+        public float Height { get; private set; }
+
         public Font(byte[] data, int faceIndex) {
             if (library == null) {
                 library = new Library();
@@ -22,6 +24,8 @@ namespace UnnamedEngine.UI.Text {
             lock (library) {
                 face = new Face(library, data, faceIndex);
             }
+
+            Height = face.Height / 64f; //defined in 1/64 pixel increments
 
             glyphMap = new Dictionary<int, Glyph>();
         }
