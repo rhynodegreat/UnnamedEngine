@@ -165,8 +165,6 @@ namespace Test {
             graph.Add(renderer);
             graph.Bake();
 
-            VertexData<TestVertex> test = new VertexData<TestVertex>(engine);
-
             using (engine)
             using (gbuffer)
             using (cache) {
@@ -174,11 +172,6 @@ namespace Test {
             }
 
             GLFW.Terminate();
-        }
-
-        struct TestVertex {
-            public Vector3 pos;
-            public Vector3 col;
         }
 
         Instance CreateInstance() {
