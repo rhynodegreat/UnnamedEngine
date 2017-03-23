@@ -23,14 +23,12 @@ namespace UnnamedEngine.UI.Text {
     public class Glyph {
         public Font Font { get; private set; }
         public Shape Shape { get; private set; }
-        public int Codepoint { get; private set; }
         public int GlyphIndex { get; private set; }
         public Metrics Metrics { get; private set; }
 
-        internal Glyph(Font font, Shape shape, int codepoint, int glyphIndex, Metrics info) {
+        internal Glyph(Font font, Shape shape, int glyphIndex, Metrics info) {
             Font = font;
             Shape = shape;
-            Codepoint = codepoint;
             GlyphIndex = glyphIndex;
             Metrics = info;
         }

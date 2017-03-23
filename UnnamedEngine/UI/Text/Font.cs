@@ -58,7 +58,7 @@ namespace UnnamedEngine.UI.Text {
 
                 Metrics info = new Metrics(width, height, bearingX, bearingY, advance);
 
-                Glyph result = new Glyph(this, shape, codepoint, glyphIndex, info);
+                Glyph result = new Glyph(this, shape, glyphIndex, info);
                 glyphMap.Add(codepoint, result);
                 if (glyphIndex == 0) unknownGlyph = result;
 
