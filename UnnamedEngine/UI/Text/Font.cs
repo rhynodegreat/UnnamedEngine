@@ -25,7 +25,7 @@ namespace UnnamedEngine.UI.Text {
                 face = new Face(library, data, faceIndex);
             }
 
-            Height = face.Height / 64f; //defined in 1/64 pixel increments
+            Height = face.Ascender / 64f; //defined in 1/64 pixel increments
 
             glyphMap = new Dictionary<int, Glyph>();
         }
