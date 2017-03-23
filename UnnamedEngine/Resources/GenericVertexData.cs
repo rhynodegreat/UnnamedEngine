@@ -77,7 +77,11 @@ namespace UnnamedEngine.Resources {
         }
 
         public void SetData(T[] array, int count) {
-            T[] vertexData = new T[count];
+            //attempt to reuse array in InternalData
+            T[] vertexData = InternalData as T[];
+            if (vertexData == null || vertexData.Length < count) {
+                vertexData = new T[count];
+            }
             Interop.Copy(array, vertexData);
             VertexCount = count;
             InternalData = vertexData;
