@@ -201,7 +201,7 @@ namespace UnnamedEngine.UI.Text {
             MSDF.GenerateMSDF(pages[pageIndex].Bitmap, glyph.Shape, rectf, Range, new Vector2(Scale, Scale), new Vector2(-metrics.offset.X + Padding + Range * Scale / 4, metrics.offset.Y + Padding + Range * Scale / 4), Threshold);
             MSDF.CorrectErrors(pages[pageIndex].Bitmap, rect, new Vector2(errorThreshold, errorThreshold));
 
-            pageUpdates.Add(pageIndex);
+            lock (pageUpdates) pageUpdates.Add(pageIndex);
         }
 
         public GlyphMetrics GetInfo(Font font, int codepoint) {
