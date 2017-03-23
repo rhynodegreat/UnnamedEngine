@@ -43,6 +43,7 @@ namespace UnnamedEngine.UI.Text {
                 int glyphIndex = (int)face.GetCharIndex((uint)codepoint);
                 if (glyphIndex == 0 && unknownGlyph != null) {
                     glyphMap.Add(codepoint, unknownGlyph);
+                    return unknownGlyph;
                 }
 
                 Shape shape = MSDF.LoadGlyph(face, codepoint);
