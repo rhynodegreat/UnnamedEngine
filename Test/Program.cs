@@ -152,7 +152,7 @@ namespace Test {
             e2.AddComponent(t2);
             e2.AddComponent(l);
             t2.Parent = ui.Screen.Root.GetFirst<Transform>();
-            t2.Position = new Vector3(0, 64, 0);
+            t2.Position = new Vector3(0, 0, 0);
             ui.Screen.Manager.AddEntity(e2);
 
             Framerate framerate = new Framerate(engine, p, l);

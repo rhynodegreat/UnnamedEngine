@@ -233,7 +233,8 @@ namespace UnnamedEngine.UI {
         void UpdateMesh(Label label, Mesh mesh) {
             if (string.IsNullOrEmpty(label.Text)) return;
             List<LabelVertex> verts = new List<LabelVertex>();
-            Vector3 pos = new Vector3();
+            float height = label.Font.Height * cache.Scale * label.FontSize;
+            Vector3 pos = new Vector3(0, height, 0);
 
             foreach (char c in label.Text) {
                 Emit(label.Font, c, verts, label.FontSize, ref pos);
