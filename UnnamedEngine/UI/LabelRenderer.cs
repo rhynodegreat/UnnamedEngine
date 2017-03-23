@@ -37,6 +37,7 @@ namespace UnnamedEngine.UI {
 
         Dictionary<Label, LabelInfo> labelMap;
         HashSet<Label> renderedLabels;
+        Queue<Label> updateQueue;
 
         PipelineLayout pipelineLayout;
         Pipeline pipeline;
@@ -54,6 +55,7 @@ namespace UnnamedEngine.UI {
 
             labelMap = new Dictionary<Label, LabelInfo>();
             renderedLabels = new HashSet<Label>();
+            updateQueue = new Queue<Label>();
 
             CreatePipeline();
 
@@ -213,7 +215,7 @@ namespace UnnamedEngine.UI {
 
             Mesh mesh = new Mesh(engine, vertexData, null);
             info.mesh = mesh;
-            UpdateMesh(label, mesh);
+            updateQueue.Enqueue(label);
 
             return info;
         }
@@ -223,7 +225,7 @@ namespace UnnamedEngine.UI {
 
             LabelInfo info = labelMap[label];
             info.hash = hash;
-            UpdateMesh(label, info.mesh);
+            updateQueue.Enqueue(label);
 
             return info;
         }
@@ -265,6 +267,12 @@ namespace UnnamedEngine.UI {
 
         public void PreRender() {
             cache.Update();
+
+            while (updateQueue.Count > 0) {
+                Label label = updateQueue.Dequeue();
+                LabelInfo info = labelMap[label];
+                UpdateMesh(label, info.mesh);
+            }
 
             List<Label> toRemove = new List<Label>();
             foreach (var l in labelMap.Keys) {
