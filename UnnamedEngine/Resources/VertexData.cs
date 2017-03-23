@@ -168,7 +168,7 @@ namespace UnnamedEngine.Resources {
         void Dispose(bool disposing) {
             if (disposed) return;
 
-            if (Buffer != null) engine.Memory.FreeDevice(Buffer);
+            engine.Memory.FreeDevice(Buffer);
 
             disposed = true;
         }
