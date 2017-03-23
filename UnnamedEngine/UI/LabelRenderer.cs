@@ -157,7 +157,7 @@ namespace UnnamedEngine.UI {
                 new VkPushConstantRange {
                     offset = 0,
                     size = (uint)Interop.SizeOf<FontMetrics>(),
-                    stageFlags = VkShaderStageFlags.FragmentBit
+                    stageFlags = VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit
                 }
             };
 
@@ -233,7 +233,7 @@ namespace UnnamedEngine.UI {
         void UpdateMesh(Label label, Mesh mesh) {
             if (string.IsNullOrEmpty(label.Text)) return;
             List<LabelVertex> verts = new List<LabelVertex>();
-            Vector3 pos = new Vector3(0, 64, 0);
+            Vector3 pos = new Vector3();
 
             foreach (char c in label.Text) {
                 Emit(label.Font, c, verts, label.FontSize, ref pos);
@@ -297,7 +297,7 @@ namespace UnnamedEngine.UI {
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Manager.Descriptor, screen.Camera.Offset);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, cache.Descriptor);
-            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.FragmentBit, 0, new FontMetrics(l.Color, l.OutlineColor, l.Thickness, l.FontSize, l.Outline));
+            commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit, 0, new FontMetrics(transform.WorldTransform, l.Color, l.OutlineColor, l.Thickness, l.FontSize, l.Outline));
             commandBuffer.BindVertexBuffer(0, info.mesh.VertexData.Buffer, 0);
             commandBuffer.Draw(info.mesh.VertexData.VertexCount, 1, 0, 0);
         }
@@ -325,13 +325,15 @@ namespace UnnamedEngine.UI {
         }
 
         struct FontMetrics {
+            public Matrix4x4 model;
             public Color4 color;
             public Color4 borderColor;
             public float bias;
             public float scale;
             public float borderThickness;
 
-            public FontMetrics(Color4 color, Color4 borderColor, float bias, float scale, float borderThickness) {
+            public FontMetrics(Matrix4x4 model, Color4 color, Color4 borderColor, float bias, float scale, float borderThickness) {
+                this.model = model;
                 this.color = color;
                 this.borderColor = borderColor;
                 this.bias = bias;
