@@ -198,7 +198,7 @@ namespace UnnamedEngine.UI {
             if (!labelMap.ContainsKey(label)) {
                 labelMap.Add(label, CreateMesh(label, hash));
             } else if (labelMap[label].hash != hash) {
-                labelMap[label] = UpdateMesh(label);
+                labelMap[label] = UpdateMesh(label, hash);
             }
 
             renderedLabels.Add(label);
@@ -217,10 +217,11 @@ namespace UnnamedEngine.UI {
             return info;
         }
 
-        LabelInfo UpdateMesh(Label label) {
+        LabelInfo UpdateMesh(Label label, int hash) {
             cache.AddString(label.Font, label.Text);
 
             LabelInfo info = labelMap[label];
+            info.hash = hash;
             UpdateMesh(label, info.mesh);
 
             return info;
