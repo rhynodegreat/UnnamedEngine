@@ -14,9 +14,10 @@ using UnnamedEngine.Utilities;
 
 namespace UnnamedEngine.UI.Text {
     public struct GlyphMetrics {
-        public Vector2 offset;
-        public Vector2 size;
+        public Vector3 offset;
+        public Vector3 size;
         public Vector3 uvPosition;
+        public float advance;
     }
 
     public class GlyphCache : IDisposable {
@@ -147,8 +148,9 @@ namespace UnnamedEngine.UI.Text {
 
             Glyph glyph = font.GetGlyph(codepoint);
             GlyphMetrics metrics = new GlyphMetrics();
-            metrics.offset = new Vector2(glyph.Metrics.bearingX, glyph.Metrics.height - glyph.Metrics.bearingY) * Scale;
-            metrics.size = new Vector2(glyph.Metrics.width, glyph.Metrics.height) * Scale;
+            metrics.offset = new Vector3(glyph.Metrics.bearingX - Range, glyph.Metrics.height - glyph.Metrics.bearingY + Range, 0) * Scale;
+            metrics.size = new Vector3(glyph.Metrics.width + Range * 2, glyph.Metrics.height + Range * 2, 0) * Scale;
+            metrics.advance = glyph.Metrics.advance * Scale;
 
             lock (glyphUpdateLocker) {
                 glyphUpdates.Add(new GlyphInfo(font, codepoint, glyph, metrics));
@@ -160,20 +162,19 @@ namespace UnnamedEngine.UI.Text {
             Font font = info.font;
             int codepoint = info.codepoint;
             Glyph glyph = info.glyph;
-            GlyphMetrics metrics = info.metrics;
 
-            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(metrics.size.X + Range * Scale / 2) + Padding * 2, (int)Math.Ceiling(metrics.size.Y + Range * Scale / 2) + Padding * 2);
+            Rectanglei rect = new Rectanglei(0, 0, (int)Math.Ceiling(info.metrics.size.X + Range * Scale / 2) + Padding * 2, (int)Math.Ceiling(info.metrics.size.Y + Range * Scale / 2) + Padding * 2);
 
-            AddToPage(glyph, ref metrics, rect);
+            AddToPage(glyph, ref info.metrics, rect);
 
-            infoMap.Add(new GlyphPair(info.font, info.codepoint), metrics);
+            infoMap.Add(new GlyphPair(info.font, info.codepoint), info.metrics);
         }
 
         void AddToPage(Glyph glyph, ref GlyphMetrics info, Rectanglei rect) {
             for (int i = 0; i < pages.Count; i++) {
                 if (pages[i].AttemptAdd(ref rect)) {
                     QueueRender(i, glyph, info, rect);
-                    info.uvPosition = new Vector3(rect.X, rect.Y, i);
+                    info.uvPosition = new Vector3(rect.X + Padding, rect.Y + Padding, i);
                     return;
                 }
             }
@@ -182,7 +183,7 @@ namespace UnnamedEngine.UI.Text {
             newPage.AttemptAdd(ref rect);
             pages.Add(newPage);
             QueueRender(pages.Count - 1, glyph, info, rect);
-            info.uvPosition = new Vector3(rect.X, rect.Y, pages.Count - 1);
+            info.uvPosition = new Vector3(rect.X + Padding, rect.Y + Padding, pages.Count - 1);
         }
 
         void QueueRender(int pageIndex, Glyph glyph, GlyphMetrics metrics, Rectanglei rect) {
