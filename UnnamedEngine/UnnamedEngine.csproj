@@ -78,6 +78,7 @@
     <Compile Include="Rendering\RenderGraph.cs" />
     <Compile Include="Rendering\RenderNode.cs" />
     <Compile Include="Rendering\Transform.cs" />
+    <Compile Include="Resources\AssetCache.cs" />
     <Compile Include="Resources\GenericVertexData.cs" />
     <Compile Include="Resources\IndexData.cs" />
     <Compile Include="Resources\Mesh.cs" />
