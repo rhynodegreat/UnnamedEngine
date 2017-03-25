@@ -13,7 +13,7 @@ namespace UnnamedEngine.Resources {
             locker = new ReaderWriterLockSlim();
         }
 
-        public void Add(string name, object asset, bool strongReference = false) {
+        public void Add(string name, object asset) {
             if (name == null) throw new ArgumentNullException(nameof(name));
 
             try {
