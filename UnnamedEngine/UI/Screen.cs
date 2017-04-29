@@ -6,20 +6,15 @@ using CSGL.Vulkan;
 using UnnamedEngine.Core;
 using UnnamedEngine.Rendering;
 using UnnamedEngine.Utilities;
-using UnnamedEngine.ECS;
 
 namespace UnnamedEngine.UI {
     public class Screen : IDisposable {
         struct RenderInfo {
             public UIRenderer renderer;
-            public Entity entity;
-            public Transform transform;
             public UIElement element;
 
-            public RenderInfo(UIRenderer renderer, Entity entity, Transform transform, UIElement element) {
+            public RenderInfo(UIRenderer renderer, UIElement element) {
                 this.renderer = renderer;
-                this.entity = entity;
-                this.transform = transform;
                 this.element = element;
             }
         }
@@ -35,7 +30,7 @@ namespace UnnamedEngine.UI {
         CommandBuffer commandBuffer;
         CommandBufferBeginInfo beginInfo;
 
-        Stack<Transform> stack;
+        Stack<UIElement> stack;
         List<RenderInfo> list;
 
         public Image Stencil { get; private set; }
@@ -45,8 +40,8 @@ namespace UnnamedEngine.UI {
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public EntityManager Manager { get; private set; }
-        public Entity Root { get; private set; }
+        public List<UIElement> roots;
+        
         public VkFormat StencilFormat { get; private set; } = VkFormat.D32SfloatS8Uint;
 
         public event Action<int, int> OnSizeChanged = delegate { };
@@ -62,16 +57,12 @@ namespace UnnamedEngine.UI {
             Width = width;
             Height = height;
 
+            roots = new List<UIElement>();
+
             rendererMap = new Dictionary<Type, UIRenderer>();
             rendererList = new List<UIRenderer>();
 
-            Manager = new EntityManager();
-            Root = new Entity();
-            Root.AddComponent(new Transform());
-            Root.AddComponent(new UIRoot(this));
-            Manager.AddEntity(Root);
-
-            stack = new Stack<Transform>();
+            stack = new Stack<UIElement>();
             list = new List<RenderInfo>();
 
             CommandPoolCreateInfo poolInfo = new CommandPoolCreateInfo();
@@ -101,6 +92,15 @@ namespace UnnamedEngine.UI {
             }
         }
 
+        public void AddRoot(UIElement element) {
+            if (roots.Contains(element)) throw new ScreenException("Element has already been added to this screen");
+            roots.Add(element);
+        }
+
+        public bool RemoveRoot(UIElement element) {
+            return roots.Remove(element);
+        }
+
         public void Recreate(int width, int height) {
             Width = width;
             Height = height;
@@ -111,29 +111,26 @@ namespace UnnamedEngine.UI {
         }
 
         public void PreRender() {
-            Transform root = Root.GetFirst<Transform>();
             stack.Clear();
             list.Clear();
-            stack.Push(root);
+
+            for (int i = roots.Count - 1; i >= 0; i--) {
+                stack.Push(roots[i]);
+            }
 
             while (stack.Count > 0) {
-                Transform current = stack.Pop();
+                UIElement element = stack.Pop();
 
-                for (int i = current.ChildCount - 1; i >= 0; i--) {
-                    stack.Push(current[i]);
+                for (int i = element.ChildCount - 1; i >= 0; i--) {
+                    stack.Push(element[i]);
                 }
-
-                Entity e = Manager.GetEntity(current);
-
-                UIElement element = e.GetFirst<UIElement>();
-                if (element == null) continue;
 
                 Type type = element.GetType();
                 if (!rendererMap.ContainsKey(type)) continue;
 
                 UIRenderer renderer = rendererMap[type];
-                renderer.PreRenderElement(e, current, element);
-                list.Add(new RenderInfo(renderer, e, current, element));
+                renderer.PreRenderElement(element);
+                list.Add(new RenderInfo(renderer, element));
             }
 
             for (int i = 0; i < rendererList.Count; i++) {
@@ -143,7 +140,7 @@ namespace UnnamedEngine.UI {
 
         public void Render(CommandBuffer commandBuffer) {
             for (int i = 0; i < list.Count; i++) {
-                list[i].renderer.Render(commandBuffer, list[i].entity, list[i].transform, list[i].element);
+                list[i].renderer.Render(commandBuffer, list[i].element);
             }
         }
 

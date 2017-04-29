@@ -157,7 +157,7 @@ namespace UnnamedEngine.UI {
             frag.Dispose();
         }
 
-        public void PreRenderElement(Entity e, Transform transform, UIElement element) {
+        public void PreRenderElement(UIElement element) {
 
         }
 
@@ -165,7 +165,8 @@ namespace UnnamedEngine.UI {
 
         }
 
-        public void Render(CommandBuffer commandBuffer, Entity e, Transform transform, UIElement element) {
+        public void Render(CommandBuffer commandBuffer, UIElement element) {
+            Transform transform = element.Transform;
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Manager.Descriptor, screen.Camera.Offset);
 

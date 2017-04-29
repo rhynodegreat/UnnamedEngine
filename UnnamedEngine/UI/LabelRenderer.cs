@@ -194,7 +194,7 @@ namespace UnnamedEngine.UI {
             frag.Dispose();
         }
 
-        public void PreRenderElement(Entity e, Transform transform, UIElement element) {
+        public void PreRenderElement(UIElement element) {
             Label label = (Label)element;
             int hash = label.Text.GetHashCode() ^ label.Font.GetHashCode(); //this hash has to be computed here because the GetHashCode of Label can't be changed, since we're using as the dictionary key
 
@@ -290,8 +290,9 @@ namespace UnnamedEngine.UI {
             renderedLabels.Clear();
         }
 
-        public void Render(CommandBuffer commandBuffer, Entity e, Transform transform, UIElement element) {
+        public void Render(CommandBuffer commandBuffer, UIElement element) {
             Label l = (Label)element;
+            Transform transform = element.Transform;
             LabelInfo info = labelMap[l];
             if (string.IsNullOrEmpty(l.Text)) return;
 

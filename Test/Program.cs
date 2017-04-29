@@ -130,30 +130,19 @@ namespace Test {
 
             LabelRenderer labelRenderer = new LabelRenderer(engine, ui.Screen, ui.RenderPass, cache);
             ui.Screen.AddRenderer(typeof(Label), labelRenderer);
-
-            Entity e = new Entity();
-            Transform t = new Transform();
+            
             Panel p = new Panel();
             p.Size = new Vector2(300, 20);
             p.Color = new Color4(1, 0, 0, 1);
-            e.AddComponent(t);
-            e.AddComponent(p);
-            t.Parent = ui.Screen.Root.GetFirst<Transform>();
-            ui.Screen.Manager.AddEntity(e);
+            ui.Screen.AddRoot(p);
 
-            Entity e2 = new Entity();
-            Transform t2 = new Transform();
             Label l = new Label();
             l.Font = font;
             l.FontSize = 0.5f;
             l.Outline = 0.375f;
             l.Color = new Color4(1, 1, 1, 1);
             l.OutlineColor = new Color4(0, 0, 0, 1);
-            e2.AddComponent(t2);
-            e2.AddComponent(l);
-            t2.Parent = ui.Screen.Root.GetFirst<Transform>();
-            t2.Position = new Vector3(0, 0, 0);
-            ui.Screen.Manager.AddEntity(e2);
+            ui.Screen.AddRoot(l);
 
             Framerate framerate = new Framerate(engine, p, l);
 
