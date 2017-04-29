@@ -23,8 +23,7 @@ namespace UnnamedEngine.Core {
         HeapAllocator uniformAllocator;
         HeapAllocator hostReadAllocator;
         
-        List<IDisposable> frontStagingBuffers;
-        List<IDisposable> backStagingBuffers;
+        List<IDisposable> stagingBuffers;
 
         const int devicePageSize = 256 * 1024 * 1024;
         const int fastHostPageSize = 32 * 1024 * 1024;
@@ -34,8 +33,7 @@ namespace UnnamedEngine.Core {
         internal Memory(Engine engine) {
             this.engine = engine;
             
-            frontStagingBuffers = new List<IDisposable>();
-            backStagingBuffers = new List<IDisposable>();
+            stagingBuffers = new List<IDisposable>();
 
             FindHeaps();
         }
@@ -59,8 +57,8 @@ namespace UnnamedEngine.Core {
         public Buffer AllocStaging(BufferCreateInfo info) {
             Buffer buffer = AllocStagingInternal(info);
 
-            lock (backStagingBuffers) {
-                backStagingBuffers.Add(buffer);
+            lock (stagingBuffers) {
+                stagingBuffers.Add(buffer);
             }
 
             return buffer;
@@ -69,27 +67,20 @@ namespace UnnamedEngine.Core {
         public Image AllocStaging(ImageCreateInfo info) {
             Image image = AllocStagingInternal(info);
 
-            lock (backStagingBuffers) {
-                backStagingBuffers.Add(image);
+            lock (stagingBuffers) {
+                stagingBuffers.Add(image);
             }
 
             return image;
         }
 
         public void ResetStaging() {
-            lock (frontStagingBuffers) {
-                for (int i = 0; i < frontStagingBuffers.Count; i++) {
-                    frontStagingBuffers[i].Dispose();
+            lock (stagingBuffers) {
+                for (int i = 0; i < stagingBuffers.Count; i++) {
+                    stagingBuffers[i].Dispose();
                 }
 
-                frontStagingBuffers.Clear();
-            }
-
-            lock (frontStagingBuffers)
-            lock (backStagingBuffers) {
-                List<IDisposable> temp = frontStagingBuffers;
-                frontStagingBuffers = backStagingBuffers;
-                backStagingBuffers = temp;
+                stagingBuffers.Clear();
             }
 
             stagingAllocator.Reset();
