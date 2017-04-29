@@ -35,6 +35,8 @@ namespace UnnamedEngine.Core {
             
             stagingBuffers = new List<IDisposable>();
 
+            TransferNode = new StagingNode(engine);
+
             FindHeaps();
         }
 
@@ -158,8 +160,6 @@ namespace UnnamedEngine.Core {
             FindFastHost(props);
             FindHostRead(props);
             FindHost(props);
-
-            TransferNode = new StagingNode(engine);
 
             deviceAllocator = new HeapAllocator(new List<Heap> {
                 deviceHeap,
