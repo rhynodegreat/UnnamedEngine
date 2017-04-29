@@ -96,9 +96,4 @@ namespace UnnamedEngine.Core {
             //nothing
         }
     }
-
-    public class RenderNodeException : Exception {
-        public RenderNodeException(string message) : base(message) { }
-        public RenderNodeException(string format, params object[] args) : base(string.Format(format, args)) { }
-    }
 }
