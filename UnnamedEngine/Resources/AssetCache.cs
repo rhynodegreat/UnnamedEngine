@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 
 namespace UnnamedEngine.Resources {
-    public class AssetCache {
+    public class AssetCache : IDisposable {
+        bool disposed;
 
         Dictionary<string, object> assetMap;
         ReaderWriterLockSlim locker;
@@ -54,6 +55,26 @@ namespace UnnamedEngine.Resources {
             finally {
                 locker.ExitWriteLock();
             }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+        }
+
+        void Dispose(bool disposing) {
+            if (disposed) return;
+
+            foreach (var o in assetMap.Values) {
+                if (o is IDisposable) {
+                    ((IDisposable)o).Dispose();
+                }
+            }
+
+            disposed = true;
+        }
+
+        ~AssetCache() {
+            Dispose(false);
         }
     }
 
