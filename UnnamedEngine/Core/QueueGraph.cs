@@ -72,7 +72,6 @@ namespace UnnamedEngine.Core {
                     queues.Add(node.Queue);
 
                     FenceCreateInfo info = new FenceCreateInfo();
-                    info.Flags = VkFenceCreateFlags.SignaledBit;
 
                     fences.Add(new Fence(graphics.Device, info));
                 }
@@ -134,11 +133,13 @@ namespace UnnamedEngine.Core {
             queueList.Add(info);
             return queueList.Count - 1;
         }
-        
-        public void Submit() {
+
+        public void Wait() {
             Fence.Wait(graphics.Device, fences, true, ulong.MaxValue);
             Fence.Reset(graphics.Device, fences);
-
+        }
+        
+        public void Submit() {
             for (int i = 0; i < nodeList.Count; i++) {
                 nodeList[i].node.PreSubmit();
             }

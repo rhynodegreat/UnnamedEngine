@@ -59,6 +59,7 @@ namespace UnnamedEngine.Core {
                 Cameras.Update();
 
                 QueueGraph.Submit();
+                QueueGraph.Wait();
                 Memory.ResetStaging();
             }
 
