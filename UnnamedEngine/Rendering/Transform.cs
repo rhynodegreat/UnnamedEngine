@@ -154,6 +154,7 @@ namespace UnnamedEngine.Rendering {
         public void AddChild(Transform other) {
             other.Parent?.RemoveChild(other);
             children.Add(other);
+            other.parent = this;
         }
 
         public void RemoveChild(Transform other) {
