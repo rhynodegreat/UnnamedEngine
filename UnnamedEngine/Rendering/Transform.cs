@@ -17,12 +17,6 @@ namespace UnnamedEngine.Rendering {
             get {
                 return parent;
             }
-            set {
-                if (value.IsDescendantOf(this)) throw new TransformException("Can not set parent of transform to it's descendant");
-                parent?.RemoveChild(this);
-                parent = value;
-                parent?.AddChild(this);
-            }
         }
 
         public Matrix4x4 WorldTransform {
@@ -157,11 +151,12 @@ namespace UnnamedEngine.Rendering {
             get { return children[i]; }
         }
 
-        void AddChild(Transform other) {
+        public void AddChild(Transform other) {
+            other.Parent?.RemoveChild(other);
             children.Add(other);
         }
 
-        void RemoveChild(Transform other) {
+        public void RemoveChild(Transform other) {
             children.Remove(other);
         }
 
