@@ -5,7 +5,6 @@ using CSGL.Vulkan;
 
 namespace UnnamedEngine.Core {
     public abstract class QueueNode : IDisposable {
-        bool disposed;
         protected Device device;
         List<QueueNode> input;
         List<QueueNode> output;
