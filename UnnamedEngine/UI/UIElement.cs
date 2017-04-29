@@ -24,10 +24,7 @@ namespace UnnamedEngine.UI {
         }
 
         public void AddChild(UIElement element) {
-            if (element.Parent != null) {
-                element.Parent.RemoveChild(element);
-            }
-
+            element.Parent?.RemoveChild(element);
             children.Add(element);
         }
 
