@@ -27,6 +27,8 @@ namespace UnnamedEngine.Resources {
         Pool<ImageMemoryBarrier> imageBarriersPool;
         List<ImageMemoryBarrier> imageBarriers;
 
+        List<IDisposable> completed;
+
         struct BufferTransfer {
             public Buffer staging;
             public Buffer dest;
@@ -78,6 +80,8 @@ namespace UnnamedEngine.Resources {
 
             imageBarriersPool = new Pool<ImageMemoryBarrier>(() => new ImageMemoryBarrier());
             imageBarriers = new List<ImageMemoryBarrier>();
+
+            completed = new List<IDisposable>();
         }
 
         public override List<CommandBuffer> GetCommands() {
@@ -146,6 +150,7 @@ namespace UnnamedEngine.Resources {
                         imageTransfer.dest, VkImageLayout.TransferDstOptimal,
                         region
                     );
+                    completed.Add(imageTransfer.staging);
                 }
 
                 //transition dest images to their dest layouts
@@ -174,6 +179,7 @@ namespace UnnamedEngine.Resources {
             lock (bufferTransfers) {
                 for (int i = 0; i < bufferTransfers.Count; i++) {
                     buffer.CopyBuffer(bufferTransfers[i].staging, bufferTransfers[i].dest);
+                    completed.Add(bufferTransfers[i].staging);
 
                     BufferMemoryBarrier barrier = bufferBarrierPool.Get();
                     barrier.buffer = bufferTransfers[i].dest;
@@ -190,6 +196,14 @@ namespace UnnamedEngine.Resources {
             buffer.End();
 
             return submitBuffers;
+        }
+
+        public override void PreSubmit() {
+            for (int i = 0; i < completed.Count; i++) {
+                completed[i].Dispose();
+            }
+
+            completed.Clear();
         }
 
         public override void PostSubmit() {
@@ -276,6 +290,10 @@ namespace UnnamedEngine.Resources {
             base.Dispose(disposing);
 
             pool.Dispose();
+
+            for (int i = 0; i < completed.Count; i++) {
+                completed[i].Dispose();
+            }
 
             disposed = true;
         }
