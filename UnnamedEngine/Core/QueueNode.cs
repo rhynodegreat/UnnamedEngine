@@ -8,7 +8,6 @@ namespace UnnamedEngine.Core {
         protected Device device;
         List<QueueNode> input;
         List<QueueNode> output;
-        List<CommandBuffer> internalCommands;
 
         public Queue Queue { get; private set; }
         public IList<QueueNode> Input { get; private set; }
@@ -38,7 +37,6 @@ namespace UnnamedEngine.Core {
             Output = output.AsReadOnly();
             ExtraInput = new List<WaitPair>();
             ExtraOutput = new List<Semaphore>();
-            internalCommands = new List<CommandBuffer>();
         }
 
         public abstract List<CommandBuffer> GetCommands();
