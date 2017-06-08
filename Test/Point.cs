@@ -262,10 +262,10 @@ namespace Test {
             info.layout = pipelineLayout;
             info.renderPass = renderPass;
             info.subpass = subpassIndex;
-            info.basePipeline = oldPipeline;
+            info.basePipelineHandle = oldPipeline;
             info.basePipelineIndex = -1;
 
-            pipeline = new Pipeline(engine.Graphics.Device, info, null);
+            pipeline = new GraphicsPipeline(engine.Graphics.Device, info, null);
 
             oldPipeline?.Dispose();
 
