@@ -136,7 +136,7 @@ namespace Test {
             p.Color = new Color4(1, 0, 0, 1);
             ui.Screen.AddRoot(p);
 
-            Label l = new Label();
+            Label l = new Label(engine, cache);
             l.Font = font;
             l.FontSize = 0.5f;
             l.Outline = 0.375f;

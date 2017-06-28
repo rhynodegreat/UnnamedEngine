@@ -15,27 +15,13 @@ using UnnamedEngine.Resources;
 
 namespace UnnamedEngine.UI {
     public class LabelRenderer : UIRenderer {
-        class LabelInfo : IDisposable {
-            public int hash;
-            public Mesh mesh;
-
-            public LabelInfo(int hash) {
-                this.hash = hash;
-            }
-
-            public void Dispose() {
-                mesh?.Dispose();
-            }
-        }
-
         bool disposed;
 
         Engine engine;
         Screen screen;
         RenderPass renderPass;
         GlyphCache cache;
-
-        Dictionary<Label, LabelInfo> labelMap;
+        
         HashSet<Label> renderedLabels;
         Queue<Label> updateQueue;
 
@@ -52,8 +38,7 @@ namespace UnnamedEngine.UI {
             this.screen = screen;
             this.renderPass = renderPass;
             this.cache = cache;
-
-            labelMap = new Dictionary<Label, LabelInfo>();
+            
             renderedLabels = new HashSet<Label>();
             updateQueue = new Queue<Label>();
 
@@ -194,114 +179,25 @@ namespace UnnamedEngine.UI {
             frag.Dispose();
         }
 
-        public void PreRenderElement(UIElement element) {
-            Label label = (Label)element;
-            int hash = label.Text.GetHashCode() ^ label.Font.GetHashCode(); //this hash has to be computed here because the GetHashCode of Label can't be changed, since we're using as the dictionary key
-
-            if (!labelMap.ContainsKey(label)) {
-                labelMap.Add(label, CreateMesh(label, hash));
-            } else if (labelMap[label].hash != hash) {
-                labelMap[label] = UpdateMesh(label, hash);
-            }
-
-            renderedLabels.Add(label);
-        }
-
-        LabelInfo CreateMesh(Label label, int hash) {
-            cache.AddString(label.Font, label.Text);
-
-            LabelInfo info = new LabelInfo(hash);
-            VertexData vertexData = new VertexData<LabelVertex>(engine);
-
-            Mesh mesh = new Mesh(engine, vertexData, null);
-            info.mesh = mesh;
-            updateQueue.Enqueue(label);
-
-            return info;
-        }
-
-        LabelInfo UpdateMesh(Label label, int hash) {
-            cache.AddString(label.Font, label.Text);
-
-            LabelInfo info = labelMap[label];
-            info.hash = hash;
-            updateQueue.Enqueue(label);
-
-            return info;
-        }
-
-        void UpdateMesh(Label label, Mesh mesh) {
-            if (string.IsNullOrEmpty(label.Text)) return;
-            List<LabelVertex> verts = new List<LabelVertex>();
-            float height = label.Font.Height * cache.Scale * label.FontSize;
-            Vector3 pos = new Vector3(0, height, 0);
-
-            foreach (char c in label.Text) {
-                Emit(label.Font, c, verts, label.FontSize, ref pos);
-            }
-
-            ((VertexData<LabelVertex>)mesh.VertexData).SetData(verts);
-            mesh.Apply();
-        }
-
-        void Emit(Font font, int codepoint, List<LabelVertex> verts, float scale, ref Vector3 pos) {
-            //screen has y axis going down, glyph metric has y axis going up
-            var metrics = cache.GetInfo(font, codepoint);
-            var offset = metrics.offset * scale;
-            var size = metrics.size * scale;
-            size.Y *= -1;
-
-            var v1 = new LabelVertex(new Vector3(0, size.Y, 0) + pos + offset, metrics.uvPosition);
-            var v2 = new LabelVertex(size + pos + offset, metrics.uvPosition + new Vector3(metrics.size.X, 0, 0));
-            var v3 = new LabelVertex(pos + offset, metrics.uvPosition + new Vector3(0, metrics.size.Y, 0));
-            var v4 = new LabelVertex(new Vector3(size.X, 0, 0) + pos + offset, metrics.uvPosition + metrics.size);
-
-            verts.Add(v1);
-            verts.Add(v2);
-            verts.Add(v3);
-            verts.Add(v2);
-            verts.Add(v4);
-            verts.Add(v3);
-
-            pos += new Vector3(metrics.advance * scale, 0, 0);
-        }
-
         public void PreRender() {
             cache.Update();
+        }
 
-            while (updateQueue.Count > 0) {
-                Label label = updateQueue.Dequeue();
-                LabelInfo info = labelMap[label];
-                UpdateMesh(label, info.mesh);
-            }
-
-            List<Label> toRemove = new List<Label>();
-            foreach (var l in labelMap.Keys) {
-                if (!renderedLabels.Contains(l)) {
-                    toRemove.Add(l);
-                }
-            }
-
-            for (int i = 0; i < toRemove.Count; i++) {
-                labelMap[toRemove[i]].mesh?.Dispose();
-                labelMap.Remove(toRemove[i]);
-            }
-
-            renderedLabels.Clear();
+        public void PreRenderElement(UIElement element) {
+            ((Label)element).Update();
         }
 
         public void Render(CommandBuffer commandBuffer, UIElement element) {
             Label l = (Label)element;
             Transform transform = element.Transform;
-            LabelInfo info = labelMap[l];
             if (string.IsNullOrEmpty(l.Text)) return;
 
             commandBuffer.BindPipeline(VkPipelineBindPoint.Graphics, pipeline);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 0, screen.Camera.Manager.Descriptor, screen.Camera.Offset);
             commandBuffer.BindDescriptorSets(VkPipelineBindPoint.Graphics, pipelineLayout, 1, cache.Descriptor);
             commandBuffer.PushConstants(pipelineLayout, VkShaderStageFlags.VertexBit | VkShaderStageFlags.FragmentBit, 0, new FontMetrics(transform.WorldTransform, l.Color, l.OutlineColor, l.Thickness, l.FontSize, l.Outline));
-            commandBuffer.BindVertexBuffer(0, info.mesh.VertexData.Buffer, 0);
-            commandBuffer.Draw(info.mesh.VertexData.VertexCount, 1, 0, 0);
+            commandBuffer.BindVertexBuffer(0, l.Mesh.VertexData.Buffer, 0);
+            commandBuffer.Draw(l.Mesh.VertexData.VertexCount, 1, 0, 0);
         }
 
         public void Dispose() {
@@ -314,10 +210,6 @@ namespace UnnamedEngine.UI {
 
             pipeline.Dispose();
             pipelineLayout.Dispose();
-
-            foreach (var info in labelMap.Values) {
-                info.Dispose();
-            }
 
             disposed = true;
         }

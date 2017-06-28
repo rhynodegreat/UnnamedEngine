@@ -142,6 +142,7 @@ namespace UnnamedEngine.Resources {
         protected abstract void ReadVertices(BinaryReader reader);
 
         public void Apply() {
+            if (Size == 0) return;
             if (Size > lastSize) {
                 engine.Memory.FreeDevice(Buffer);
 

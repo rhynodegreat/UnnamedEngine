@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnnamedEngine.Rendering;
 
 namespace UnnamedEngine.UI {
-    public abstract class UIElement {
+    public abstract class UIElement : IDisposable {
         public Transform Transform { get; private set; }
         public Vector2 Size { get; set; }
         public UIElement Parent { get; private set; }
@@ -36,6 +36,10 @@ namespace UnnamedEngine.UI {
             get {
                 return children[index];
             }
+        }
+
+        public virtual void Dispose() {
+            //does nothing
         }
     }
 }

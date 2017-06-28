@@ -216,9 +216,18 @@ namespace UnnamedEngine.UI {
 
             if (disposing) {
                 foreach (var renderer in rendererMap.Values) renderer.Dispose();
+                foreach (var root in roots) Dispose(root);
             }
 
             disposed = true;
+        }
+
+        void Dispose(UIElement element) {
+            element.Dispose();
+
+            for (int i = 0; i < element.ChildCount; i++) {
+                Dispose(element[i]);
+            }
         }
 
         ~Screen() {
