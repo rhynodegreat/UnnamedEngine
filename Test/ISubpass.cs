@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using CSGL.Vulkan;
+using CSGL.Vulkan1;
 
 namespace Test {
     public interface ISubpass : IRenderer {

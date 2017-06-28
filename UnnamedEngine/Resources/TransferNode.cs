@@ -4,8 +4,8 @@ using System.Runtime.InteropServices;
 
 using CSGL;
 using CSGL.Graphics;
-using CSGL.Vulkan;
-using Buffer = CSGL.Vulkan.Buffer;
+using CSGL.Vulkan1;
+using Buffer = CSGL.Vulkan1.Buffer;
 
 using UnnamedEngine.Core;
 

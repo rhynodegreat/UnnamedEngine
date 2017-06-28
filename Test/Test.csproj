@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\SharpFont.4.0.1\build\SharpFont.props" Condition="Exists('..\packages\SharpFont.4.0.1\build\SharpFont.props')" />
+  <Import Project="..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props" Condition="Exists('..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -12,6 +14,8 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,10 +39,38 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CSGL.GL4, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CSharpGameLibrary.0.1.1-alpha\lib\net452\CSGL.GL4.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CSGL.STB, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CSharpGameLibrary.0.1.1-alpha\lib\net452\CSGL.STB.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CSGL.Vulkan1, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CSharpGameLibrary.0.1.1-alpha\lib\net452\CSGL.Vulkan1.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CSharpGameLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CSharpGameLibrary.0.1.1-alpha\lib\net452\CSharpGameLibrary.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MSDFGen, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CSGL.MSDFGen.0.1.0-alpha\lib\net452\MSDFGen.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SharpFont, Version=4.0.1.200, Culture=neutral, PublicKeyToken=48add4c483071cdf, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpFont.4.0.1\lib\net45\SharpFont.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Numerics.Vectors.4.3.0\lib\portable-net45+win8+wp8+wpa81\System.Numerics.Vectors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.3.0\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml.Linq" />
@@ -139,27 +171,30 @@
     <None Include="shaders\tri_vert.spv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="SharpFont.dll.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CSharpGameLibrary\CSGL.Vulkan\CSGL.Vulkan.csproj">
-      <Project>{f3e51928-2259-4aed-9581-e7d4c49ea957}</Project>
-      <Name>CSGL.Vulkan</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CSharpGameLibrary\CSharpGameLibrary\CSharpGameLibrary.csproj">
-      <Project>{d7103402-1c84-4921-af9c-38d9a6231e7a}</Project>
-      <Name>CSharpGameLibrary</Name>
-    </ProjectReference>
     <ProjectReference Include="..\UnnamedEngine\UnnamedEngine.csproj">
       <Project>{39a33d3a-59db-4779-b240-0dd029612901}</Project>
       <Name>UnnamedEngine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="freetype6.dll" />
     <Content Include="glfw3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\CSharpGameLibrary.0.1.1-alpha\build\CSharpGameLibrary.targets" Condition="Exists('..\packages\CSharpGameLibrary.0.1.1-alpha\build\CSharpGameLibrary.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\CSharpGameLibrary.0.1.1-alpha\build\CSharpGameLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CSharpGameLibrary.0.1.1-alpha\build\CSharpGameLibrary.targets'))" />
+    <Error Condition="!Exists('..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props'))" />
+    <Error Condition="!Exists('..\packages\SharpFont.4.0.1\build\SharpFont.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.4.0.1\build\SharpFont.props'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

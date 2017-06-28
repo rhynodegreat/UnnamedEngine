@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 
 using CSGL.GLFW;
-using CSGL.Vulkan;
+using CSGL.Vulkan1;
 using GWindow = CSGL.GLFW.Window;
-using Image = CSGL.Vulkan.Image;
+using Image = CSGL.Vulkan1.Image;
 
 namespace UnnamedEngine.Core {
     public class Window : IDisposable {

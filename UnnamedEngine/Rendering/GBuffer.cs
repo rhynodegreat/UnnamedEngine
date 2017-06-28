@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 
 using CSGL;
-using CSGL.Vulkan;
-using Image = CSGL.Vulkan.Image;
+using CSGL.Vulkan1;
+using Image = CSGL.Vulkan1.Image;
 
 using UnnamedEngine.Core;
 using UnnamedEngine.Utilities;
